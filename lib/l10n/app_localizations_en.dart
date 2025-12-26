@@ -33,7 +33,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get current => 'Current';
 
   @override
-  String get animationDuration => 'Animation Duration';
+  String get animationDuration => 'Duration';
 
   @override
   String get confirm => 'Confirm';

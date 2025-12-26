@@ -26,7 +26,7 @@ class SoftwareSettingPage extends StatelessWidget {
           onPressed: () {
             popupOrNavigate(context, SetDurationPage());
           },
-          icon: Icon(Icons.access_time),
+          icon: Icon(Icons.timer),
           child: Text(localizations.animationDuration),
         ),
         ButtonWithMaxWidth(

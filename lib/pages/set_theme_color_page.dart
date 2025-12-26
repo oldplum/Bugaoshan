@@ -52,13 +52,12 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
         builder: (context) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(l10n.changeThemeColor),
+              title: Text(l10n.themeColor),
               actions: [
                 TextButton(
                   onPressed: _confirmChanges,
                   child: Text(l10n.confirmButton),
                 ),
-                paddingWidget,
               ],
             ),
 

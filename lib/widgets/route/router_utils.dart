@@ -6,6 +6,7 @@ import 'popup_context.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 BuildContext get logicRootContext => navigatorKey.currentContext!;
+const bool _showCloseButton = false;
 
 Future popupContent(
   Widget child,
@@ -35,14 +36,15 @@ Future popupContent(
           child: Stack(
             children: [
               widget,
-              Positioned(
-                top: 4,
-                right: 4,
-                child: IconButton(
-                  icon: Icon(Icons.close),
-                  onPressed: () => Navigator.of(context0).pop(),
+              if (_showCloseButton)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () => Navigator.of(context0).pop(),
+                  ),
                 ),
-              ),
             ],
           ),
         ),

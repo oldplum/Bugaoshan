@@ -7,7 +7,7 @@
     "followSystem": "Follow System",
     "modifyLanguage": "Modify Language",
     "current": "Current",
-    "animationDuration": "Animation Duration",
+    "animationDuration": "Duration",
     "confirm": "Confirm",
     "currentAnimationDuration": "Current Animation Duration: {value} ms",
     "animationDurationUpdated": "Animation Duration updated to {value} ms",

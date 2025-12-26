@@ -154,7 +154,7 @@ abstract class AppLocalizations {
   /// No description provided for @animationDuration.
   ///
   /// In en, this message translates to:
-  /// **'Animation Duration'**
+  /// **'Duration'**
   String get animationDuration;
 
   /// No description provided for @confirm.

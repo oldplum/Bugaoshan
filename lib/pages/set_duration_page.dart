@@ -88,7 +88,6 @@ class _SetDurationPageState extends State<SetDurationPage> {
               ),
             ),
           ),
-          paddingWidget,
         ],
       ),
       body: Padding(
