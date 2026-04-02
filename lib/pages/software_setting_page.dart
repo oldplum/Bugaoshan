@@ -62,7 +62,9 @@ class SoftwareSettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(child: Text(localizations.colorOpacity)),
-                        Text('${(appConfig.colorOpacity.value * 100).round()}%'),
+                        Text(
+                          '${(appConfig.colorOpacity.value * 100).round()}%',
+                        ),
                       ],
                     ),
                     Slider(

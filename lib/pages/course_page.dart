@@ -6,9 +6,7 @@ import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/pages/course_edit_page.dart';
 import 'package:rubbish_plan/pages/import_schedule_page.dart';
-import 'package:rubbish_plan/pages/schedule_management_page.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
-import 'package:rubbish_plan/widgets/common/text.dart';
 import 'package:rubbish_plan/widgets/course/course_detail_sheet.dart';
 import 'package:rubbish_plan/widgets/course/course_grid.dart';
 import 'package:rubbish_plan/widgets/dialog/dialog.dart';
@@ -32,7 +30,7 @@ class _CoursePageState extends State<CoursePage> {
     _pageController = PageController(
       initialPage: courseProvider.currentWeek.value - 1,
     );
-    
+
     // Listen to changes in currentWeek to animate the PageView
     courseProvider.currentWeek.addListener(_onCurrentWeekChanged);
   }
@@ -46,7 +44,8 @@ class _CoursePageState extends State<CoursePage> {
 
   void _onCurrentWeekChanged() {
     final targetPage = courseProvider.currentWeek.value - 1;
-    if (_pageController.hasClients && _pageController.page?.round() != targetPage) {
+    if (_pageController.hasClients &&
+        _pageController.page?.round() != targetPage) {
       _pageController.animateToPage(
         targetPage,
         duration: const Duration(milliseconds: 300),
@@ -112,9 +111,16 @@ class _CoursePageState extends State<CoursePage> {
     );
   }
 
-  Widget _buildTopBar(BuildContext context, AppLocalizations l10n, int week, int totalWeeks) {
+  Widget _buildTopBar(
+    BuildContext context,
+    AppLocalizations l10n,
+    int week,
+    int totalWeeks,
+  ) {
     final config = courseProvider.scheduleConfig.value;
-    final scheduleName = config.semesterName.isEmpty ? l10n.defaultScheduleName : config.semesterName;
+    final scheduleName = config.semesterName.isEmpty
+        ? l10n.defaultScheduleName
+        : config.semesterName;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -136,44 +142,43 @@ class _CoursePageState extends State<CoursePage> {
                 onTap: () => _goToCurrentWeek(),
                 child: Text(
                   l10n.currentWeek(week),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               IconButton(
-                onPressed: week < totalWeeks ? () => _changeWeek(week + 1) : null,
+                onPressed: week < totalWeeks
+                    ? () => _changeWeek(week + 1)
+                    : null,
                 icon: const Icon(Icons.chevron_right, size: 20),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 36),
               ),
             ],
           ),
-          
+
           // Center: Schedule Name (Horizontal Center)
           Expanded(
             child: Center(
               child: Text(
                 scheduleName,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
-          
+
           // Right: Action buttons
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: _showSchedulePicker,
-                icon: const Icon(Icons.list_alt_rounded, size: 20),
-                tooltip: l10n.scheduleManagement,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-              ),
               IconButton(
                 onPressed: _onImport,
                 icon: const Icon(Icons.download, size: 20),
@@ -208,10 +213,6 @@ class _CoursePageState extends State<CoursePage> {
     courseProvider.updateCurrentWeek(currentWeek);
   }
 
-  void _showSchedulePicker() {
-    popupOrNavigate(context, const ScheduleManagementPage());
-  }
-
   void _onImport() {
     final l10n = AppLocalizations.of(context)!;
     final outerContext = context; // Capture the stable context
@@ -228,12 +229,15 @@ class _CoursePageState extends State<CoursePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Text(
                   l10n.importSchedule,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const Divider(),
@@ -243,7 +247,10 @@ class _CoursePageState extends State<CoursePage> {
                 title: Text(l10n.importFromText),
                 onTap: () {
                   Navigator.pop(context);
-                  popupOrNavigate(outerContext, ImportSchedulePage(courseProvider: courseProvider));
+                  popupOrNavigate(
+                    outerContext,
+                    ImportSchedulePage(courseProvider: courseProvider),
+                  );
                 },
               ),
               const SizedBox(height: 8),
@@ -268,9 +275,9 @@ class _CoursePageState extends State<CoursePage> {
     await Clipboard.setData(ClipboardData(text: jsonStr));
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.exportSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.exportSuccess)));
     }
   }
 
@@ -285,10 +292,8 @@ class _CoursePageState extends State<CoursePage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => CourseDetailSheet(
-        course: course,
-        courseProvider: courseProvider,
-      ),
+      builder: (context) =>
+          CourseDetailSheet(course: course, courseProvider: courseProvider),
     );
   }
 
@@ -307,10 +312,7 @@ class _CoursePageState extends State<CoursePage> {
   void _onEmptyTap(int dayOfWeek, int section) {
     popupOrNavigate(
       context,
-      CourseEditPage(
-        prefillDayOfWeek: dayOfWeek,
-        prefillSection: section,
-      ),
+      CourseEditPage(prefillDayOfWeek: dayOfWeek, prefillSection: section),
     );
   }
 }

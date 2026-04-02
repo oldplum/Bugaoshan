@@ -60,12 +60,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.scheduleSetting),
-        actions: [
-          TextButton(
-            onPressed: _save,
-            child: Text(l10n.save),
-          ),
-        ],
+        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -170,12 +165,16 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 8,
       children: [
-        Text(l10n.totalWeeks(20).split(':')[0]), // Using a trick to get the label
+        Text(
+          l10n.totalWeeks(20).split(':')[0],
+        ), // Using a trick to get the label
         Row(
           children: [
             IconButton(
               icon: const Icon(Icons.remove),
-              onPressed: _totalWeeks > 1 ? () => setState(() => _totalWeeks--) : null,
+              onPressed: _totalWeeks > 1
+                  ? () => setState(() => _totalWeeks--)
+                  : null,
             ),
             Expanded(
               child: Center(
@@ -187,7 +186,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             ),
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: _totalWeeks < 52 ? () => setState(() => _totalWeeks++) : null,
+              onPressed: _totalWeeks < 52
+                  ? () => setState(() => _totalWeeks++)
+                  : null,
             ),
           ],
         ),
@@ -209,7 +210,11 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     }
   }
 
-  Widget _buildSectionCounter(String label, int value, ValueChanged<int> onChanged) {
+  Widget _buildSectionCounter(
+    String label,
+    int value,
+    ValueChanged<int> onChanged,
+  ) {
     return Row(
       children: [
         Expanded(child: Text(label)),
@@ -237,20 +242,23 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   // Removed _syncFollowingSlots because it's now in time_slot_setting_page.dart
 
   void _adjustTimeSlots() {
-    final totalSections = _morningSections + _afternoonSections + _eveningSections;
-    
+    final totalSections =
+        _morningSections + _afternoonSections + _eveningSections;
+
     while (_timeSlots.length < totalSections) {
       // Just append a dummy slot, the user or sync logic can adjust it
       final hour = 8 + _timeSlots.length;
-      _timeSlots.add(TimeSlot(
-        startTime: TimeOfDay(hour: hour, minute: 0),
-        endTime: TimeOfDay(hour: hour, minute: 45),
-      ));
+      _timeSlots.add(
+        TimeSlot(
+          startTime: TimeOfDay(hour: hour, minute: 0),
+          endTime: TimeOfDay(hour: hour, minute: 45),
+        ),
+      );
     }
     if (_timeSlots.length > totalSections) {
       _timeSlots = _timeSlots.sublist(0, totalSections);
     }
-    
+
     // Optionally trigger a full sync when sections change, but for now we just maintain the length
   }
 
@@ -324,4 +332,4 @@ class _DatePickerField extends StatelessWidget {
   }
 }
 
-  // _TimeSlotEditor moved to time_slot_setting_page.dart
+// _TimeSlotEditor moved to time_slot_setting_page.dart

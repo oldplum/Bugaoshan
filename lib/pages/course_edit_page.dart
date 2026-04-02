@@ -51,12 +51,20 @@ class _CourseEditPageState extends State<CourseEditPage> {
     _nameController = TextEditingController(text: course?.name ?? '');
     _teacherController = TextEditingController(text: course?.teacher ?? '');
     _locationController = TextEditingController(text: course?.location ?? '');
-    _selectedColor = course?.color ?? _presetColors[Random().nextInt(_presetColors.length)];
+    _selectedColor =
+        course?.color ?? _presetColors[Random().nextInt(_presetColors.length)];
     _startWeek = (course?.startWeek ?? 1).clamp(1, config.totalWeeks);
-    _endWeek = (course?.endWeek ?? config.totalWeeks).clamp(1, config.totalWeeks);
+    _endWeek = (course?.endWeek ?? config.totalWeeks).clamp(
+      1,
+      config.totalWeeks,
+    );
     _dayOfWeek = course?.dayOfWeek ?? widget.prefillDayOfWeek ?? 1;
-    _startSection = (course?.startSection ?? widget.prefillSection ?? 1).clamp(1, maxSections);
-    _endSection = (course?.endSection ?? ((widget.prefillSection ?? 1) + 1)).clamp(1, maxSections);
+    _startSection = (course?.startSection ?? widget.prefillSection ?? 1).clamp(
+      1,
+      maxSections,
+    );
+    _endSection = (course?.endSection ?? ((widget.prefillSection ?? 1) + 1))
+        .clamp(1, maxSections);
     _weekType = course?.weekType ?? WeekType.every;
   }
 
@@ -74,19 +82,19 @@ class _CourseEditPageState extends State<CourseEditPage> {
     final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
     final sections = courseProvider.scheduleConfig.value.sectionsPerDay;
     final dayNames = [
-      l10n.monday, l10n.tuesday, l10n.wednesday,
-      l10n.thursday, l10n.friday, l10n.saturday, l10n.sunday,
+      l10n.monday,
+      l10n.tuesday,
+      l10n.wednesday,
+      l10n.thursday,
+      l10n.friday,
+      l10n.saturday,
+      l10n.sunday,
     ];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? l10n.editCourse : l10n.addCourse),
-        actions: [
-          TextButton(
-            onPressed: _save,
-            child: Text(l10n.save),
-          ),
-        ],
+        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -99,24 +107,37 @@ class _CourseEditPageState extends State<CourseEditPage> {
               // Course name
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: l10n.courseName, border: const OutlineInputBorder()),
-                validator: (v) => (v == null || v.isEmpty) ? l10n.fieldRequired : null,
+                decoration: InputDecoration(
+                  labelText: l10n.courseName,
+                  border: const OutlineInputBorder(),
+                ),
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? l10n.fieldRequired : null,
               ),
               // Teacher
               TextFormField(
                 controller: _teacherController,
-                decoration: InputDecoration(labelText: l10n.teacher, border: const OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: l10n.teacher,
+                  border: const OutlineInputBorder(),
+                ),
               ),
               // Location
               TextFormField(
                 controller: _locationController,
-                decoration: InputDecoration(labelText: l10n.location, border: const OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: l10n.location,
+                  border: const OutlineInputBorder(),
+                ),
               ),
               // Color picker
               _buildColorPicker(context, l10n),
               const Divider(),
               // Week range
-              Text(l10n.weekRange(_startWeek, _endWeek), style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                l10n.weekRange(_startWeek, _endWeek),
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               Row(
                 children: [
                   Expanded(child: Text(l10n.startWeek)),
@@ -125,7 +146,10 @@ class _CourseEditPageState extends State<CourseEditPage> {
                     child: DropdownButtonFormField<int>(
                       initialValue: _startWeek,
                       items: List.generate(totalWeeks, (i) => i + 1)
-                          .map((w) => DropdownMenuItem(value: w, child: Text('$w')))
+                          .map(
+                            (w) =>
+                                DropdownMenuItem(value: w, child: Text('$w')),
+                          )
                           .toList(),
                       onChanged: (v) {
                         if (v != null) {
@@ -145,9 +169,18 @@ class _CourseEditPageState extends State<CourseEditPage> {
                     width: 80,
                     child: DropdownButtonFormField<int>(
                       initialValue: _endWeek,
-                      items: List.generate(totalWeeks - _startWeek + 1, (i) => _startWeek + i)
-                          .map((w) => DropdownMenuItem(value: w, child: Text('$w')))
-                          .toList(),
+                      items:
+                          List.generate(
+                                totalWeeks - _startWeek + 1,
+                                (i) => _startWeek + i,
+                              )
+                              .map(
+                                (w) => DropdownMenuItem(
+                                  value: w,
+                                  child: Text('$w'),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (v) {
                         if (v != null) setState(() => _endWeek = v);
                       },
@@ -156,14 +189,18 @@ class _CourseEditPageState extends State<CourseEditPage> {
                 ],
               ),
               // Week type
-              Text(l10n.weekType, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                l10n.weekType,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               Wrap(
                 spacing: 8,
                 children: [
                   ChoiceChip(
                     label: Text(l10n.everyWeek),
                     selected: _weekType == WeekType.every,
-                    onSelected: (_) => setState(() => _weekType = WeekType.every),
+                    onSelected: (_) =>
+                        setState(() => _weekType = WeekType.every),
                   ),
                   ChoiceChip(
                     label: Text(l10n.oddWeek),
@@ -173,12 +210,16 @@ class _CourseEditPageState extends State<CourseEditPage> {
                   ChoiceChip(
                     label: Text(l10n.evenWeek),
                     selected: _weekType == WeekType.even,
-                    onSelected: (_) => setState(() => _weekType = WeekType.even),
+                    onSelected: (_) =>
+                        setState(() => _weekType = WeekType.even),
                   ),
                 ],
               ),
               const Divider(),
-              Text(l10n.dayOfWeek, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                l10n.dayOfWeek,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               Wrap(
                 spacing: 8,
                 children: List.generate(7, (i) {
@@ -194,10 +235,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
               ),
               const Divider(),
               // Section range
-              Text(
-                l10n.section,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
+              Text(l10n.section, style: Theme.of(context).textTheme.titleSmall),
               Row(
                 children: [
                   Expanded(child: Text(l10n.startSection)),
@@ -206,7 +244,10 @@ class _CourseEditPageState extends State<CourseEditPage> {
                     child: DropdownButtonFormField<int>(
                       initialValue: _startSection,
                       items: List.generate(sections, (i) => i + 1)
-                          .map((s) => DropdownMenuItem(value: s, child: Text('$s')))
+                          .map(
+                            (s) =>
+                                DropdownMenuItem(value: s, child: Text('$s')),
+                          )
                           .toList(),
                       onChanged: (v) {
                         if (v != null) {
@@ -226,9 +267,18 @@ class _CourseEditPageState extends State<CourseEditPage> {
                     width: 80,
                     child: DropdownButtonFormField<int>(
                       initialValue: _endSection,
-                      items: List.generate(sections - _startSection + 1, (i) => _startSection + i)
-                          .map((s) => DropdownMenuItem(value: s, child: Text('$s')))
-                          .toList(),
+                      items:
+                          List.generate(
+                                sections - _startSection + 1,
+                                (i) => _startSection + i,
+                              )
+                              .map(
+                                (s) => DropdownMenuItem(
+                                  value: s,
+                                  child: Text('$s'),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (v) {
                         if (v != null) setState(() => _endSection = v);
                       },
@@ -243,10 +293,15 @@ class _CourseEditPageState extends State<CourseEditPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: _deleteCourse,
-                    icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                    icon: Icon(
+                      Icons.delete,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     label: Text(
                       l10n.deleteCourse,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
                 ),
@@ -277,7 +332,10 @@ class _CourseEditPageState extends State<CourseEditPage> {
                     color: color,
                     shape: BoxShape.circle,
                     border: _selectedColor.toARGB32() == color.toARGB32()
-                        ? Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3)
+                        ? Border.all(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            width: 3,
+                          )
                         : null,
                   ),
                 ),
@@ -289,13 +347,21 @@ class _CourseEditPageState extends State<CourseEditPage> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: _presetColors.every((c) => c.toARGB32() != _selectedColor.toARGB32())
+                  color:
+                      _presetColors.every(
+                        (c) => c.toARGB32() != _selectedColor.toARGB32(),
+                      )
                       ? _selectedColor
                       : Colors.grey.shade300,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 ),
-                child: _presetColors.every((c) => c.toARGB32() != _selectedColor.toARGB32())
+                child:
+                    _presetColors.every(
+                      (c) => c.toARGB32() != _selectedColor.toARGB32(),
+                    )
                     ? null
                     : const Icon(Icons.add, size: 18, color: Colors.grey),
               ),
@@ -331,12 +397,14 @@ class _CourseEditPageState extends State<CourseEditPage> {
     final config = courseProvider.scheduleConfig.value;
     final morningEnd = config.morningSections;
     final afternoonEnd = config.morningSections + config.afternoonSections;
-    
+
     bool isValidPeriod = false;
     if (_startSection <= morningEnd && _endSection <= morningEnd) {
       isValidPeriod = true; // Morning
-    } else if (_startSection > morningEnd && _startSection <= afternoonEnd && 
-               _endSection > morningEnd && _endSection <= afternoonEnd) {
+    } else if (_startSection > morningEnd &&
+        _startSection <= afternoonEnd &&
+        _endSection > morningEnd &&
+        _endSection <= afternoonEnd) {
       isValidPeriod = true; // Afternoon
     } else if (_startSection > afternoonEnd && _endSection > afternoonEnd) {
       isValidPeriod = true; // Evening

@@ -16,20 +16,23 @@ class DatabaseService {
     await Hive.openBox(_boxMetadata);
     _metadataBox = Hive.box(_boxMetadata);
 
-    String currentId = _metadataBox!.get(_keyCurrentScheduleId, defaultValue: 'default') as String;
+    String currentId =
+        _metadataBox!.get(_keyCurrentScheduleId, defaultValue: 'default')
+            as String;
 
     // Migration / Initialization
     if (!_metadataBox!.containsKey(_keySchedules)) {
       await Hive.openBox('courses');
       final oldCoursesBox = Hive.box('courses');
       final jsonStr = oldCoursesBox.get(_keyScheduleConfig) as String?;
-      
+
       ScheduleConfig defaultConfig;
       if (jsonStr != null && jsonStr.isNotEmpty) {
         try {
           defaultConfig = ScheduleConfig.fromJson(_decodeJson(jsonStr));
           defaultConfig.id = 'default';
-          if (defaultConfig.semesterName.isEmpty) defaultConfig.semesterName = '默认课表';
+          if (defaultConfig.semesterName.isEmpty)
+            defaultConfig.semesterName = '默认课表';
         } catch (_) {
           defaultConfig = _defaultScheduleConfig();
         }
@@ -37,10 +40,12 @@ class DatabaseService {
         defaultConfig = _defaultScheduleConfig();
       }
 
-      await _metadataBox!.put(_keySchedules, [_encodeJson(defaultConfig.toJson())]);
+      await _metadataBox!.put(_keySchedules, [
+        _encodeJson(defaultConfig.toJson()),
+      ]);
       await _metadataBox!.put(_keyCurrentScheduleId, 'default');
       currentId = 'default';
-      
+
       _coursesBox = oldCoursesBox;
     } else {
       await _switchCoursesBox(currentId);
@@ -59,7 +64,8 @@ class DatabaseService {
   // ==================== Schedules Management ====================
 
   String getCurrentScheduleId() {
-    return _metadataBox!.get(_keyCurrentScheduleId, defaultValue: 'default') as String;
+    return _metadataBox!.get(_keyCurrentScheduleId, defaultValue: 'default')
+        as String;
   }
 
   Future<void> switchSchedule(String scheduleId) async {
@@ -70,14 +76,19 @@ class DatabaseService {
   List<ScheduleConfig> getAllSchedules() {
     final list = _metadataBox!.get(_keySchedules) as List<dynamic>?;
     if (list == null) return [_defaultScheduleConfig()];
-    
-    return list.map((e) => ScheduleConfig.fromJson(_decodeJson(e as String))).toList();
+
+    return list
+        .map((e) => ScheduleConfig.fromJson(_decodeJson(e as String)))
+        .toList();
   }
 
   ScheduleConfig getScheduleConfig() {
     final currentId = getCurrentScheduleId();
     final schedules = getAllSchedules();
-    return schedules.firstWhere((s) => s.id == currentId, orElse: () => schedules.first);
+    return schedules.firstWhere(
+      (s) => s.id == currentId,
+      orElse: () => schedules.first,
+    );
   }
 
   Future<void> saveScheduleConfig(ScheduleConfig config) async {
@@ -101,13 +112,13 @@ class DatabaseService {
     final schedules = getAllSchedules();
     schedules.removeWhere((s) => s.id == scheduleId);
     await _saveSchedulesList(schedules);
-    
+
     // Clean up the courses box
     final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
     if (await Hive.boxExists(boxName)) {
       await Hive.deleteBoxFromDisk(boxName);
     }
-    
+
     // If we deleted the current one, switch to the first available
     if (getCurrentScheduleId() == scheduleId && schedules.isNotEmpty) {
       await switchSchedule(schedules.first.id);
@@ -123,7 +134,9 @@ class DatabaseService {
 
   List<Course> getCourses({String? scheduleId}) {
     if (scheduleId != null) {
-      final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
+      final boxName = scheduleId == 'default'
+          ? 'courses'
+          : 'courses_$scheduleId';
       // If the box is already open (could be the current one), use it
       if (Hive.isBoxOpen(boxName)) {
         final box = Hive.box(boxName);
@@ -133,7 +146,7 @@ class DatabaseService {
             .toList();
       }
       // Note: In a real app we might want to open and close the box,
-      // but for export we'll assume it's safe to return empty if not loaded 
+      // but for export we'll assume it's safe to return empty if not loaded
       // or we can handle it in provider.
       return [];
     }
@@ -159,12 +172,12 @@ class DatabaseService {
 
   Future<List<Course>> getCoursesAsync({String? scheduleId}) async {
     if (scheduleId == null) return getCourses();
-    
+
     final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
     if (Hive.isBoxOpen(boxName)) {
       return getCourses(scheduleId: scheduleId);
     }
-    
+
     final box = await Hive.openBox(boxName);
     final courses = box.values
         .whereType<Map>()
@@ -175,7 +188,9 @@ class DatabaseService {
   }
 
   Future<bool> hasConflict(Course course, {String? excludeId}) async {
-    return getCourses().any((c) => c.conflictsWith(course, excludeId: excludeId));
+    return getCourses().any(
+      (c) => c.conflictsWith(course, excludeId: excludeId),
+    );
   }
 
   // ==================== Clear All ====================

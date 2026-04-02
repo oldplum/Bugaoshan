@@ -57,23 +57,26 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
 
   void _syncFollowingSlots(int index) {
     int endIdx = 0;
-    
+
     if (index < widget.morningSections) {
       endIdx = widget.morningSections;
     } else if (index < widget.morningSections + widget.afternoonSections) {
       endIdx = widget.morningSections + widget.afternoonSections;
     } else {
-      endIdx = widget.morningSections + widget.afternoonSections + widget.eveningSections;
+      endIdx =
+          widget.morningSections +
+          widget.afternoonSections +
+          widget.eveningSections;
     }
 
     for (int i = index + 1; i < endIdx; i++) {
       if (i >= _timeSlots.length) break;
-      
+
       final prevSlot = _timeSlots[i - 1];
       int startMin = prevSlot.endTime.minute + _breakDuration;
       int startHour = prevSlot.endTime.hour + (startMin ~/ 60);
       startMin = startMin % 60;
-      
+
       int endMin = startMin + _courseDuration;
       int endHour = startHour + (endMin ~/ 60);
       endMin = endMin % 60;
@@ -104,12 +107,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.timeSlot),
-        actions: [
-          TextButton(
-            onPressed: _save,
-            child: Text(l10n.save),
-          ),
-        ],
+        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -171,7 +169,10 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       int endMin = slot.startTime.minute + _courseDuration;
                       int endHour = slot.startTime.hour + (endMin ~/ 60);
                       _timeSlots[i] = slot.copyWith(
-                        endTime: TimeOfDay(hour: endHour % 24, minute: endMin % 60),
+                        endTime: TimeOfDay(
+                          hour: endHour % 24,
+                          minute: endMin % 60,
+                        ),
                       );
                     } else {
                       _timeSlots[i] = slot;
@@ -226,9 +227,14 @@ class _TimeSlotEditor extends StatelessWidget {
                 GestureDetector(
                   onTap: () => _pickTime(context, true),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(startStr),
@@ -241,9 +247,14 @@ class _TimeSlotEditor extends StatelessWidget {
                 GestureDetector(
                   onTap: () => _pickTime(context, false),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(endStr),

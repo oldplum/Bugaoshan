@@ -220,7 +220,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evenWeek => 'Even Week';
 
   @override
-  String get section => 'Section';
+  String get section => 'Sec';
 
   @override
   String get sectionCount => 'Sections per Day';

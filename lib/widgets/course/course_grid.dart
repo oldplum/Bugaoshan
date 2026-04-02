@@ -55,8 +55,13 @@ class _CourseGridState extends State<CourseGrid> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dayNames = [
-      l10n.monday, l10n.tuesday, l10n.wednesday,
-      l10n.thursday, l10n.friday, l10n.saturday, l10n.sunday,
+      l10n.monday,
+      l10n.tuesday,
+      l10n.wednesday,
+      l10n.thursday,
+      l10n.friday,
+      l10n.saturday,
+      l10n.sunday,
     ];
     final sections = widget.config.sectionsPerDay;
     final timeSlots = widget.config.timeSlots;
@@ -102,7 +107,9 @@ class _CourseGridState extends State<CourseGrid> {
 
   Widget _buildHeaderRow(BuildContext context, List<String> dayNames) {
     final theme = Theme.of(context);
-    final visibleDays = widget.config.showWeekend ? dayNames : dayNames.sublist(0, 5);
+    final visibleDays = widget.config.showWeekend
+        ? dayNames
+        : dayNames.sublist(0, 5);
     return Container(
       height: 32,
       decoration: BoxDecoration(
@@ -129,7 +136,10 @@ class _CourseGridState extends State<CourseGrid> {
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        right: BorderSide(color: theme.colorScheme.outlineVariant, width: 0.5),
+                        right: BorderSide(
+                          color: theme.colorScheme.outlineVariant,
+                          width: 0.5,
+                        ),
                       ),
                     ),
                     child: Center(
@@ -152,13 +162,18 @@ class _CourseGridState extends State<CourseGrid> {
     );
   }
 
-  Widget _buildSectionColumn(int sections, List<TimeSlot> timeSlots, BuildContext context) {
+  Widget _buildSectionColumn(
+    int sections,
+    List<TimeSlot> timeSlots,
+    BuildContext context,
+  ) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Calculate boundaries
     final morningEnd = widget.config.morningSections;
-    final afternoonEnd = widget.config.morningSections + widget.config.afternoonSections;
+    final afternoonEnd =
+        widget.config.morningSections + widget.config.afternoonSections;
 
     return SizedBox(
       width: 52,
@@ -168,15 +183,17 @@ class _CourseGridState extends State<CourseGrid> {
           final startStr = slot != null
               ? '${slot.startTime.hour.toString().padLeft(2, '0')}:${slot.startTime.minute.toString().padLeft(2, '0')}'
               : '';
-              
+
           final isBoundary = (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
-              
+
           return Container(
             height: 72,
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: isBoundary ? theme.colorScheme.primary.withAlpha(150) : theme.colorScheme.outlineVariant, 
+                  color: isBoundary
+                      ? theme.colorScheme.primary.withAlpha(150)
+                      : theme.colorScheme.outlineVariant,
                   width: isBoundary ? 1.5 : 0.5,
                 ),
                 right: BorderSide(color: theme.colorScheme.outlineVariant),
@@ -187,15 +204,21 @@ class _CourseGridState extends State<CourseGrid> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${i + 1}${l10n.section}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    '${i + 1} ${l10n.section}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   if (startStr.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         startStr,
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                 ],
@@ -215,10 +238,11 @@ class _CourseGridState extends State<CourseGrid> {
   ) {
     final theme = Theme.of(context);
     final rowHeight = 72.0;
-    
+
     // Calculate boundaries
     final morningEnd = widget.config.morningSections;
-    final afternoonEnd = widget.config.morningSections + widget.config.afternoonSections;
+    final afternoonEnd =
+        widget.config.morningSections + widget.config.afternoonSections;
 
     return Expanded(
       child: SizedBox(
@@ -227,8 +251,9 @@ class _CourseGridState extends State<CourseGrid> {
           children: [
             // Grid lines
             ...List.generate(sections, (i) {
-              final isBoundary = (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
-              
+              final isBoundary =
+                  (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
+
               return Positioned(
                 top: i * rowHeight,
                 left: 0,
@@ -238,10 +263,15 @@ class _CourseGridState extends State<CourseGrid> {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: isBoundary ? theme.colorScheme.primary.withAlpha(150) : theme.colorScheme.outlineVariant, 
+                        color: isBoundary
+                            ? theme.colorScheme.primary.withAlpha(150)
+                            : theme.colorScheme.outlineVariant,
                         width: isBoundary ? 1.5 : 0.5,
                       ),
-                      right: BorderSide(color: theme.colorScheme.outlineVariant, width: 0.5),
+                      right: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                        width: 0.5,
+                      ),
                     ),
                   ),
                 ),
@@ -251,7 +281,8 @@ class _CourseGridState extends State<CourseGrid> {
             ...dayCourses.map((course) {
               final top = (course.startSection - 1) * rowHeight;
               // 不再设置固定 height，让内容自然撑开。最小高度仍然是课程占据的节数高度。
-              final minHeight = (course.endSection - course.startSection + 1) * rowHeight - 2;
+              final minHeight =
+                  (course.endSection - course.startSection + 1) * rowHeight - 2;
               return Positioned(
                 top: top + 1,
                 left: 1,
@@ -262,8 +293,12 @@ class _CourseGridState extends State<CourseGrid> {
                     course: course,
                     config: widget.config,
                     displayWeek: widget.displayWeek,
-                    onTap: widget.onCourseTap != null ? () => widget.onCourseTap!(course) : null,
-                    onLongPress: widget.onCourseLongPress != null ? () => widget.onCourseLongPress!(course) : null,
+                    onTap: widget.onCourseTap != null
+                        ? () => widget.onCourseTap!(course)
+                        : null,
+                    onLongPress: widget.onCourseLongPress != null
+                        ? () => widget.onCourseLongPress!(course)
+                        : null,
                   ),
                 ),
               );
@@ -276,9 +311,10 @@ class _CourseGridState extends State<CourseGrid> {
                 (c) => section >= c.startSection && section <= c.endSection,
               );
               if (hasCourse) return const SizedBox.shrink();
-              
-              final isSelected = _selectedEmptyDay == day && _selectedEmptySection == section;
-              
+
+              final isSelected =
+                  _selectedEmptyDay == day && _selectedEmptySection == section;
+
               return Positioned(
                 top: i * rowHeight,
                 left: 0,
@@ -286,14 +322,21 @@ class _CourseGridState extends State<CourseGrid> {
                 height: rowHeight,
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onTap: widget.onEmptyTap != null ? () => _handleEmptyTap(day, section) : null,
-                  child: isSelected 
+                  onTap: widget.onEmptyTap != null
+                      ? () => _handleEmptyTap(day, section)
+                      : null,
+                  child: isSelected
                       ? Container(
                           margin: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withAlpha(100), // e.g. pinkish/primary with opacity
+                            color: theme.colorScheme.primary.withAlpha(
+                              100,
+                            ), // e.g. pinkish/primary with opacity
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: theme.colorScheme.primary.withAlpha(150), width: 1),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withAlpha(150),
+                              width: 1,
+                            ),
                           ),
                           child: Center(
                             child: Icon(
@@ -342,9 +385,10 @@ class _CourseCard extends StatelessWidget {
       builder: (context, _) {
         final isActive = course.isActiveInWeek(displayWeek);
         final color = course.color.withValues(
-            alpha: isActive
-                ? appConfig.colorOpacity.value
-                : appConfig.colorOpacity.value * 0.2);
+          alpha: isActive
+              ? appConfig.colorOpacity.value
+              : appConfig.colorOpacity.value * 0.2,
+        );
         final textColor = Colors.white;
         final fontSize = appConfig.courseCardFontSize.value;
         final smallFontSize = fontSize - 1;
@@ -357,7 +401,9 @@ class _CourseCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(6),
-              border: isActive ? null : Border.all(color: textColor.withAlpha(50), width: 0.5),
+              border: isActive
+                  ? null
+                  : Border.all(color: textColor.withAlpha(50), width: 0.5),
             ),
             padding: const EdgeInsets.all(4),
             // 移除 SingleChildScrollView，让 Column 直接撑开 Container
@@ -403,7 +449,12 @@ class _CourseCard extends StatelessWidget {
     );
   }
 
-  Widget _buildIconText(IconData icon, String text, double fontSize, Color color) {
+  Widget _buildIconText(
+    IconData icon,
+    String text,
+    double fontSize,
+    Color color,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(top: 2),
       child: Row(
