@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/pages/home_page.dart';
 import 'package:rubbish_plan/providers/app_config_provider.dart';
@@ -35,11 +35,21 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: appConfigService.themeColor.value,
         ),
+        appBarTheme: const AppBarTheme(
+          toolbarHeight: 48,
+          centerTitle: true,
+          scrolledUnderElevation: 0,
+        ),
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: appConfigService.themeColor.value,
           brightness: Brightness.dark,
+        ),
+        appBarTheme: const AppBarTheme(
+          toolbarHeight: 48,
+          centerTitle: true,
+          scrolledUnderElevation: 0,
         ),
       ),
       themeMode: ThemeMode.system,

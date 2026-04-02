@@ -53,14 +53,15 @@ class CourseDetailSheet extends StatelessWidget {
                     child: Text(
                       course.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   IconButton(
-                    iconSize: 24,
-                    icon: Icon(Icons.delete_outline,
-                        color: Theme.of(context).colorScheme.error),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     onPressed: () async {
                       final confirm = await showYesNoDialog(
                         title: l10n.deleteCourse,
@@ -76,9 +77,10 @@ class CourseDetailSheet extends StatelessWidget {
                   ),
                   // Duplicate
                   IconButton(
-                    iconSize: 24,
-                    icon: Icon(Icons.copy_outlined,
-                        color: Theme.of(context).colorScheme.primary),
+                    icon: Icon(
+                      Icons.copy,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       final newCourse = course.copyWith(); // Create a new copy
@@ -91,9 +93,10 @@ class CourseDetailSheet extends StatelessWidget {
                   ),
                   // Edit
                   IconButton(
-                    iconSize: 24,
-                    icon: Icon(Icons.edit_outlined,
-                        color: Theme.of(context).colorScheme.primary),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       popupOrNavigate(context, CourseEditPage(course: course));
@@ -165,10 +168,7 @@ class _InfoItem extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text(
-                text,
-                style: const TextStyle(fontSize: 16),
-              ),
+              child: Text(text, style: const TextStyle(fontSize: 16)),
             ),
           ),
         ],

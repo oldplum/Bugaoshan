@@ -123,7 +123,7 @@ class _CoursePageState extends State<CoursePage> {
         : config.semesterName;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center, // 确保垂直居中
         children: [
@@ -154,7 +154,7 @@ class _CoursePageState extends State<CoursePage> {
                     : null,
                 icon: const Icon(Icons.chevron_right, size: 20),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 28, minHeight: 36),
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 32),
               ),
             ],
           ),
@@ -187,7 +187,7 @@ class _CoursePageState extends State<CoursePage> {
               ),
               IconButton(
                 onPressed: _onExport,
-                icon: const Icon(Icons.send, size: 20),
+                icon: const Icon(Icons.share, size: 20),
                 tooltip: l10n.exportSchedule,
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               ),

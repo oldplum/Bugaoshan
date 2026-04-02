@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/serivces/database_service.dart';
 
@@ -106,6 +106,7 @@ class CourseProvider {
   Future<void> updateScheduleConfig(ScheduleConfig config) async {
     await _db.saveScheduleConfig(config);
     scheduleConfig.value = config;
+    allSchedules.value = _db.getAllSchedules();
     currentWeek.value = config.getCurrentWeek();
   }
 

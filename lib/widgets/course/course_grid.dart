@@ -111,8 +111,13 @@ class _CourseGridState extends State<CourseGrid> {
     final visibleDays = widget.config.showWeekend
         ? dayNames
         : dayNames.sublist(0, 5);
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final semesterStart = widget.config.semesterStartDate;
+
     return Container(
-      height: 32,
+      height: 40,
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
         border: Border(
@@ -132,10 +137,19 @@ class _CourseGridState extends State<CourseGrid> {
           ),
           Expanded(
             child: Row(
-              children: visibleDays.map((name) {
+              children: List.generate(visibleDays.length, (index) {
+                final name = visibleDays[index];
+                final date = semesterStart.add(
+                  Duration(days: (widget.displayWeek - 1) * 7 + index),
+                );
+                final isToday = date.isAtSameMomentAs(today);
+
                 return Expanded(
                   child: Container(
                     decoration: BoxDecoration(
+                      color: isToday
+                          ? theme.colorScheme.primaryContainer.withAlpha(180)
+                          : null,
                       border: Border(
                         right: BorderSide(
                           color: theme.colorScheme.outlineVariant,
@@ -144,18 +158,39 @@ class _CourseGridState extends State<CourseGrid> {
                       ),
                     ),
                     child: Center(
-                      child: Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurface,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isToday
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: isToday
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            '${date.month}-${date.day}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: isToday
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isToday
+                                  ? theme.colorScheme.primary.withAlpha(200)
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ),
           ),
         ],
