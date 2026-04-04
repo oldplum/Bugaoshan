@@ -25,7 +25,7 @@ class AboutPage extends StatelessWidget {
             CircleAvatar(
               radius: 60,
               backgroundImage: const AssetImage('assets/avater.png'),
-              backgroundColor: Colors.grey.shade600,
+              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
             ),
             const SizedBox(height: 24),
             Text(
