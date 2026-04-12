@@ -455,7 +455,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importFromJwxtOnline => '从教务系统在线导入';
 
   @override
-  String get importFromJwxtOnlineHint => '将自动获取本学期课表，需要先在「我的」页面完成统一身份认证登录';
+  String get importFromJwxtOnlineHint => '将自动获取课表，需要先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get selectSemester => '选择学期';
+
+  @override
+  String get importAll => '全部导入';
 
   @override
   String get scuUnifiedAuth => '统一身份认证';

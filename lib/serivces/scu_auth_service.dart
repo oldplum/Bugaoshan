@@ -150,20 +150,67 @@ class ScuAuthService {
     return client;
   }
 
-  /// 获取本学期课表 JSON（需要先登录）
-  Future<Map<String, dynamic>> fetchJwxtSchedule() async {
+  /// 获取历年学期列表（需要先登录），返回 [{value: '2025-2026-2-1', label: '2025-2026学年春(当前)'}, ...]
+  Future<List<({String value, String label})>> fetchSemesters() async {
     final client = await bindSession();
     try {
       final resp = await client.get(
         Uri.parse(
           'http://zhjw.scu.edu.cn/student/courseSelect'
-          '/thisSemesterCurriculum/ajaxStudentSchedule/callback',
+          '/calendarSemesterCurriculum/index',
         ),
         headers: {
-          'Accept': 'application/json, text/plain, */*',
+          'Accept': 'text/html,*/*',
           'Referer': 'http://zhjw.scu.edu.cn/',
           'User-Agent': _headers['User-Agent']!,
         },
+      );
+      final body = resp.body.trim();
+      if (body.startsWith('<html') && body.contains('login') ||
+          resp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      // 解析 <option value="...">...</option>，文字内可能含子标签（如 <i>）
+      final regex = RegExp(
+        r'<option[^>]+value="([^"]+)"[^>]*>(.*?)</option>',
+        dotAll: true,
+      );
+      final matches = regex.allMatches(body);
+      final semesters = matches.map((m) {
+        final value = m.group(1)!.trim();
+        // 去掉内嵌标签，只保留纯文本
+        final label = m.group(2)!.replaceAll(RegExp(r'<[^>]+>'), '').trim();
+        return (value: value, label: label);
+      }).toList();
+      if (semesters.isEmpty) {
+        throw ScuLoginException('无法获取学期列表，请检查登录状态');
+      }
+      return semesters;
+    } finally {
+      client.close();
+    }
+  }
+
+  /// 获取指定学期课表 JSON（需要先登录），[planCode] 如 '2025-2026-2-1'
+  Future<Map<String, dynamic>> fetchJwxtSchedule({
+    required String planCode,
+  }) async {
+    final client = await bindSession();
+    try {
+      final resp = await client.post(
+        Uri.parse(
+          'http://zhjw.scu.edu.cn/student/courseSelect'
+          '/thisSemesterCurriculum/ajaxStudentSchedule/callback',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Referer':
+              'http://zhjw.scu.edu.cn/student/courseSelect/calendarSemesterCurriculum/index',
+          'User-Agent': _headers['User-Agent']!,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: 'planCode=$planCode',
       );
       dev.log('[SCU] jwxt status: ${resp.statusCode}', name: 'ScuAuth');
       dev.log(

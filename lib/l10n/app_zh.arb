@@ -142,7 +142,9 @@
     "logout": "退出登录",
     "logoutConfirm": "确定要退出登录吗？",
     "importFromJwxtOnline": "从教务系统在线导入",
-    "importFromJwxtOnlineHint": "将自动获取本学期课表，需要先在「我的」页面完成统一身份认证登录",
+    "importFromJwxtOnlineHint": "将自动获取课表，需要先在「我的」页面完成统一身份认证登录",
+    "selectSemester": "选择学期",
+    "importAll": "全部导入",
 
     "scuUnifiedAuth": "统一身份认证",
     "studentId": "学号",

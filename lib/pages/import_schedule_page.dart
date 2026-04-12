@@ -210,54 +210,130 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     }
 
     setState(() => _loading = true);
+
+    // 1. 获取学期列表
+    List<({String value, String label})> semesters;
     try {
-      final data = await authProvider.service.fetchJwxtSchedule();
-
-      if (!mounted) return;
-
-      // 让用户输入课表名
-      final nameController = TextEditingController(
-        text: 'JWXT Import ${DateTime.now().month}-${DateTime.now().day}',
-      );
-      final newName = await showDialog<String>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.importFromJwxt),
-          content: TextField(
-            controller: nameController,
-            autofocus: true,
-            decoration: InputDecoration(hintText: l10n.semesterName),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                final t = nameController.text.trim();
-                if (t.isNotEmpty) Navigator.pop(ctx, t);
-              },
-              child: Text(l10n.save),
-            ),
-          ],
-        ),
-      );
-      if (newName == null || !mounted) return;
-
-      final parsed = _parseJwxtData(data);
-      final config = parsed.config;
-      config.semesterName = newName;
-      config.id = DateTime.now().millisecondsSinceEpoch.toString();
-
-      if (widget.courseProvider.isScheduleNameTaken(config.semesterName)) {
-        config.semesterName =
-            '${config.semesterName} (${DateTime.now().millisecondsSinceEpoch % 1000})';
+      semesters = await authProvider.service.fetchSemesters();
+    } on ScuLoginException catch (e) {
+      if (e.sessionExpired) await authProvider.logout();
+      if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
+      if (mounted) setState(() => _loading = false);
+      return;
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(title: l10n.importFailed, content: e.toString());
+        setState(() => _loading = false);
       }
+      return;
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
 
-      await widget.courseProvider.addSchedule(config);
-      for (final course in parsed.courses) {
-        await widget.courseProvider.addCourse(course);
+    if (!mounted) return;
+
+    // 2. 让用户选择学期（单个或全部）
+    String selectedValue = semesters.first.value;
+    // null = 取消, true = 全部导入, false = 导入选中学期
+    final choice = await showDialog<Object>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text(l10n.selectSemester),
+            content: DropdownButton<String>(
+              value: selectedValue,
+              isExpanded: true,
+              items: semesters
+                  .map(
+                    (s) =>
+                        DropdownMenuItem(value: s.value, child: Text(s.label)),
+                  )
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) setDialogState(() => selectedValue = v);
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, 'all'),
+                child: Text(l10n.importAll),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, 'one'),
+                child: Text(l10n.confirm),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (choice == null || !mounted) return;
+
+    final importAll = choice == 'all';
+    final toImport = importAll
+        ? semesters
+        : [semesters.firstWhere((s) => s.value == selectedValue)];
+
+    setState(() => _loading = true);
+    try {
+      for (final semester in toImport) {
+        final data = await authProvider.service.fetchJwxtSchedule(
+          planCode: semester.value,
+        );
+        if (!mounted) return;
+
+        String scheduleName = semester.label;
+
+        // 单个导入时让用户自定义名称
+        if (!importAll) {
+          final nameController = TextEditingController(text: scheduleName);
+          final newName = await showDialog<String>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(l10n.importFromJwxt),
+              content: TextField(
+                controller: nameController,
+                autofocus: true,
+                decoration: InputDecoration(hintText: l10n.semesterName),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final t = nameController.text.trim();
+                    if (t.isNotEmpty) Navigator.pop(ctx, t);
+                  },
+                  child: Text(l10n.save),
+                ),
+              ],
+            ),
+          );
+          if (newName == null || !mounted) return;
+          scheduleName = newName;
+        }
+
+        final parsed = _parseJwxtData(data);
+        final config = parsed.config;
+        config.semesterName = scheduleName;
+        config.id = DateTime.now().millisecondsSinceEpoch.toString();
+
+        if (widget.courseProvider.isScheduleNameTaken(config.semesterName)) {
+          config.semesterName =
+              '${config.semesterName} (${DateTime.now().millisecondsSinceEpoch % 1000})';
+        }
+
+        await widget.courseProvider.addSchedule(config);
+        for (final course in parsed.courses) {
+          await widget.courseProvider.addCourse(course);
+        }
       }
 
       if (mounted) {

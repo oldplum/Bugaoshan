@@ -466,7 +466,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importFromJwxtOnlineHint =>
-      'Automatically fetch this semester\'s schedule. Please login with SCU Unified Identity in the Profile page first.';
+      'Automatically fetch schedule. Please login with SCU Unified Identity in the Profile page first.';
+
+  @override
+  String get selectSemester => 'Select Semester';
+
+  @override
+  String get importAll => 'Import All';
 
   @override
   String get scuUnifiedAuth => 'Unified Identity Authentication';

@@ -958,8 +958,20 @@ abstract class AppLocalizations {
   /// No description provided for @importFromJwxtOnlineHint.
   ///
   /// In en, this message translates to:
-  /// **'Automatically fetch this semester\'s schedule. Please login with SCU Unified Identity in the Profile page first.'**
+  /// **'Automatically fetch schedule. Please login with SCU Unified Identity in the Profile page first.'**
   String get importFromJwxtOnlineHint;
+
+  /// No description provided for @selectSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Semester'**
+  String get selectSemester;
+
+  /// No description provided for @importAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Import All'**
+  String get importAll;
 
   /// No description provided for @scuUnifiedAuth.
   ///
