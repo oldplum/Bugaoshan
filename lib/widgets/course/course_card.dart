@@ -99,33 +99,35 @@ class CourseCard extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.all(4),
                   child: SizedBox.expand(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isActive
-                              ? course.name
-                              : '${l10n.notThisWeek} ${course.name}',
-                          maxLines: titleMaxLines,
-                          style: TextStyle(
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                            height: 1.1,
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isActive
+                                ? course.name
+                                : '${l10n.notThisWeek} ${course.name}',
+                            maxLines: titleMaxLines,
+                            style: TextStyle(
+                              fontSize: fontSize,
+                              color: textColor,
+                              height: 1.1,
+                            ),
                           ),
-                        ),
-                        if (visibleDetails.isNotEmpty)
-                          const SizedBox(height: 2),
-                        ...visibleDetails.map(
-                          (detail) => _buildIconText(
-                            detail.icon,
-                            detail.text,
-                            smallFontSize,
-                            textColor,
-                            maxLines: detail.preferredMaxLines,
+                          if (visibleDetails.isNotEmpty)
+                            const SizedBox(height: 2),
+                          ...visibleDetails.map(
+                            (detail) => _buildIconText(
+                              detail.icon,
+                              detail.text,
+                              smallFontSize,
+                              textColor,
+                              maxLines: detail.preferredMaxLines,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -146,24 +148,14 @@ class CourseCard extends StatelessWidget {
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: fontSize, color: color.withAlpha(200)),
-          const SizedBox(width: 2),
-          Expanded(
-            child: Text(
-              text,
-              maxLines: maxLines,
-              style: TextStyle(
-                fontSize: fontSize,
-                color: color.withAlpha(230),
-                height: 1.1,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        maxLines: maxLines,
+        style: TextStyle(
+          fontSize: fontSize,
+          color: color.withAlpha(230),
+          height: 1.1,
+        ),
       ),
     );
   }
