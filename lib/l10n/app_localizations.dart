@@ -954,6 +954,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Automatically fetch this semester\'s schedule. Please login with SCU Unified Identity in the Profile page first.'**
   String get importFromJwxtOnlineHint;
+
+  /// No description provided for @scuUnifiedAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Unified Identity Authentication'**
+  String get scuUnifiedAuth;
+
+  /// No description provided for @studentId.
+  ///
+  /// In en, this message translates to:
+  /// **'Student ID'**
+  String get studentId;
+
+  /// No description provided for @studentIdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your student ID'**
+  String get studentIdRequired;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @passwordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get passwordRequired;
+
+  /// No description provided for @captcha.
+  ///
+  /// In en, this message translates to:
+  /// **'Captcha'**
+  String get captcha;
+
+  /// No description provided for @captchaRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the captcha'**
+  String get captchaRequired;
+
+  /// No description provided for @rememberPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember Password'**
+  String get rememberPassword;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginButton;
+
+  /// No description provided for @captchaLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load captcha: {error}'**
+  String captchaLoadFailed(Object error);
+
+  /// No description provided for @captchaNotLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Please load the captcha first'**
+  String get captchaNotLoaded;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error: {error}'**
+  String networkError(Object error);
 }
 
 class _AppLocalizationsDelegate

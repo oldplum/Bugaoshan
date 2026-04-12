@@ -453,6 +453,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get importFromJwxtOnlineHint => '将自动获取本学期课表，需要先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get scuUnifiedAuth => '统一身份认证';
+
+  @override
+  String get studentId => '学号';
+
+  @override
+  String get studentIdRequired => '请输入学号';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String get passwordRequired => '请输入密码';
+
+  @override
+  String get captcha => '验证码';
+
+  @override
+  String get captchaRequired => '请输入验证码';
+
+  @override
+  String get rememberPassword => '记住密码';
+
+  @override
+  String get loginButton => '登录';
+
+  @override
+  String captchaLoadFailed(Object error) {
+    return '验证码加载失败: $error';
+  }
+
+  @override
+  String get captchaNotLoaded => '请先加载验证码';
+
+  @override
+  String networkError(Object error) {
+    return '网络错误: $error';
+  }
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

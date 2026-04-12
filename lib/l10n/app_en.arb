@@ -141,5 +141,18 @@
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
     "importFromJwxtOnline": "Online Import from JWXT",
-    "importFromJwxtOnlineHint": "Automatically fetch this semester's schedule. Please login with SCU Unified Identity in the Profile page first."
+    "importFromJwxtOnlineHint": "Automatically fetch this semester's schedule. Please login with SCU Unified Identity in the Profile page first.",
+
+    "scuUnifiedAuth": "Unified Identity Authentication",
+    "studentId": "Student ID",
+    "studentIdRequired": "Please enter your student ID",
+    "password": "Password",
+    "passwordRequired": "Please enter your password",
+    "captcha": "Captcha",
+    "captchaRequired": "Please enter the captcha",
+    "rememberPassword": "Remember Password",
+    "loginButton": "Login",
+    "captchaLoadFailed": "Failed to load captcha: {error}",
+    "captchaNotLoaded": "Please load the captcha first",
+    "networkError": "Network error: {error}"
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
 import 'package:Bugaoshan/injection/injector.dart';
 import 'package:Bugaoshan/providers/scu_auth_provider.dart';
 import 'package:Bugaoshan/serivces/scu_auth_service.dart';
@@ -80,7 +81,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         _captchaCtrl.clear();
       });
     } catch (e) {
-      setState(() => _errorMsg = '验证码加载失败: $e');
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _errorMsg = l10n.captchaLoadFailed(e.toString()));
     } finally {
       setState(() => _captchaLoading = false);
     }
@@ -89,7 +92,8 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_captcha == null) {
-      setState(() => _errorMsg = '请先加载验证码');
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _errorMsg = l10n.captchaNotLoaded);
       return;
     }
 
@@ -121,7 +125,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       setState(() => _errorMsg = e.message);
       _loadCaptcha();
     } catch (e) {
-      setState(() => _errorMsg = '网络错误: $e');
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _errorMsg = l10n.networkError(e.toString()));
       _loadCaptcha();
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -130,8 +136,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('统一身份认证')),
+      appBar: AppBar(title: Text(l10n.scuUnifiedAuth)),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -146,19 +153,20 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                   const Icon(Icons.school, size: 64, color: Colors.blue),
                   TextFormField(
                     controller: _usernameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: '学号',
-                      prefixIcon: Icon(Icons.person_outline),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.studentId,
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? '请输入学号' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? l10n.studentIdRequired
+                        : null,
                   ),
                   TextFormField(
                     controller: _passwordCtrl,
                     decoration: InputDecoration(
-                      labelText: '密码',
+                      labelText: l10n.password,
                       prefixIcon: const Icon(Icons.lock_outline),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
@@ -173,7 +181,8 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                       ),
                     ),
                     obscureText: _obscurePassword,
-                    validator: (v) => (v == null || v.isEmpty) ? '请输入密码' : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? l10n.passwordRequired : null,
                   ),
                   _CaptchaRow(
                     captcha: _captcha,
@@ -188,7 +197,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                         onChanged: (v) =>
                             setState(() => _rememberPassword = v ?? false),
                       ),
-                      const Text('记住密码'),
+                      Text(l10n.rememberPassword),
                     ],
                   ),
                   if (_errorMsg != null)
@@ -207,7 +216,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('登录'),
+                        : Text(l10n.loginButton),
                   ),
                 ],
               ),
@@ -234,6 +243,7 @@ class _CaptchaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 12,
@@ -241,12 +251,13 @@ class _CaptchaRow extends StatelessWidget {
         Expanded(
           child: TextFormField(
             controller: controller,
-            decoration: const InputDecoration(
-              labelText: '验证码',
-              prefixIcon: Icon(Icons.security),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.captcha,
+              prefixIcon: const Icon(Icons.security),
+              border: const OutlineInputBorder(),
             ),
-            validator: (v) => (v == null || v.trim().isEmpty) ? '请输入验证码' : null,
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? l10n.captchaRequired : null,
           ),
         ),
         GestureDetector(

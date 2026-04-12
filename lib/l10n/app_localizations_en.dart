@@ -464,4 +464,44 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get importFromJwxtOnlineHint =>
       'Automatically fetch this semester\'s schedule. Please login with SCU Unified Identity in the Profile page first.';
+
+  @override
+  String get scuUnifiedAuth => 'Unified Identity Authentication';
+
+  @override
+  String get studentId => 'Student ID';
+
+  @override
+  String get studentIdRequired => 'Please enter your student ID';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get passwordRequired => 'Please enter your password';
+
+  @override
+  String get captcha => 'Captcha';
+
+  @override
+  String get captchaRequired => 'Please enter the captcha';
+
+  @override
+  String get rememberPassword => 'Remember Password';
+
+  @override
+  String get loginButton => 'Login';
+
+  @override
+  String captchaLoadFailed(Object error) {
+    return 'Failed to load captcha: $error';
+  }
+
+  @override
+  String get captchaNotLoaded => 'Please load the captcha first';
+
+  @override
+  String networkError(Object error) {
+    return 'Network error: $error';
+  }
 }
