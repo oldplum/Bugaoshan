@@ -123,15 +123,15 @@ jobs:
 
       - name: Create archives
         run: |
-          zip -r windows.zip windows/
-          cd android-apk && zip ../android-apk.zip *.apk && cd ..
-          cd ios-ipa && zip ../ios-ipa.zip *.ipa && cd ..
+          cp android-apk/*.apk android.apk
+          cp ios-ipa/*.ipa ios.ipa
+          cd windows && zip -r ../windows.zip . && cd ..
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            android-apk.zip
-            ios-ipa.zip
+            android.apk
+            ios.ipa
             windows.zip
           generate_release_notes: true
