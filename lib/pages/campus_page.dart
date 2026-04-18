@@ -19,7 +19,6 @@ class CampusPage extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(l10n.campus)),
         SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: SliverList.list(
