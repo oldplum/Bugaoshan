@@ -6,6 +6,8 @@
     "campus": "Campus",
     "classroomQuery": "Classroom Query",
     "classroomQueryDesc": "Check classroom availability and borrowing status",
+    "utilitiesSection": "Utilities",
+    "academicSection": "Academic",
     "moreFeaturesTitle": "More Features",
     "moreFeaturesDesc": "Create an Issue to request more features",
     "selectCampus": "Select Campus",

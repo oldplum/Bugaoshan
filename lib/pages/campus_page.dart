@@ -22,20 +22,7 @@ class CampusPage extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           sliver: SliverList.list(
             children: [
-              _CampusCard(
-                icon: Icons.meeting_room_outlined,
-                title: l10n.classroomQuery,
-                desc: l10n.classroomQueryDesc,
-                appOnly: isWeb,
-                onTap: isWeb
-                    ? null
-                    : () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ClassroomPage(),
-                        ),
-                      ),
-              ),
+              _SectionHeader(title: l10n.academicSection),
               const SizedBox(height: 8),
               _CampusCard(
                 icon: Icons.bar_chart_outlined,
@@ -58,7 +45,24 @@ class CampusPage extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const TrainProgramPage()),
                 ),
               ),
+              const SizedBox(height: 24),
+              _SectionHeader(title: l10n.utilitiesSection),
               const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.meeting_room_outlined,
+                title: l10n.classroomQuery,
+                desc: l10n.classroomQueryDesc,
+                appOnly: isWeb,
+                onTap: isWeb
+                    ? null
+                    : () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ClassroomPage(),
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 24),
               _MoreFeaturesCard(),
             ],
           ),
@@ -163,6 +167,26 @@ class _CampusCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

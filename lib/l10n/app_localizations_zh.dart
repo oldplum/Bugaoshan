@@ -30,6 +30,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get classroomQueryDesc => '查询教室空闲、借用和上课信息';
 
   @override
+  String get utilitiesSection => '实用工具';
+
+  @override
+  String get academicSection => '学术';
+
+  @override
   String get moreFeaturesTitle => '更多功能';
 
   @override
@@ -715,4 +721,10 @@ class AppLocalizationsZhHansCn extends AppLocalizationsZh {
 
   @override
   String get selfLanguage => '中文-简体-中国';
+
+  @override
+  String get utilitiesSection => '实用工具';
+
+  @override
+  String get academicSection => '学术';
 }

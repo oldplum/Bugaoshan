@@ -31,6 +31,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check classroom availability and borrowing status';
 
   @override
+  String get utilitiesSection => 'Utilities';
+
+  @override
+  String get academicSection => 'Academic';
+
+  @override
   String get moreFeaturesTitle => 'More Features';
 
   @override
