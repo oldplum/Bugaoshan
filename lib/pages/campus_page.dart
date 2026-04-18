@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
+import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -73,6 +74,17 @@ class CampusPage extends StatelessWidget {
                           builder: (_) => const ClassroomPage(),
                         ),
                       ),
+              ),
+              const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.router_outlined,
+                title: l10n.networkDeviceQuery,
+                desc: l10n.networkDeviceQueryDesc,
+                appOnly: false,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NetworkDevicePage()),
+                ),
               ),
               const SizedBox(height: 24),
               _MoreFeaturesCard(),
