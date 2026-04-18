@@ -64,13 +64,17 @@ class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
         _hasMore = results.length >= 10;
       });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
