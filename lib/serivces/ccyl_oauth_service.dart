@@ -25,8 +25,6 @@ class CcylOAuthService {
       '&application_key=scdxplugin_cas_apereo17',
     );
 
-    dev.log('[CCYL OAuth] SP logged URL: $spLoggedUrl', name: 'CcylOAuth');
-
     try {
       final response = await client.followRedirects(
         spLoggedUrl,
@@ -39,12 +37,10 @@ class CcylOAuthService {
       );
 
       final finalUrl = response.request?.url.toString() ?? '';
-      dev.log('[CCYL OAuth] Final URL: $finalUrl', name: 'CcylOAuth');
 
       if (finalUrl.contains('code=')) {
         final uri = Uri.parse(finalUrl);
         final code = uri.queryParameters['code'];
-        dev.log('[CCYL OAuth] Got code: $code', name: 'CcylOAuth');
         return code;
       }
 
@@ -53,18 +49,11 @@ class CcylOAuthService {
       final bodyUri = _extractRedirectUri(body);
       if (bodyUri != null && bodyUri.contains('code=')) {
         final code = Uri.parse(bodyUri).queryParameters['code'];
-        dev.log('[CCYL OAuth] Got code from body: $code', name: 'CcylOAuth');
         return code;
       }
 
-      dev.log(
-        '[CCYL OAuth] No code in URL, status: ${response.statusCode}, '
-        'finalUrl: $finalUrl',
-        name: 'CcylOAuth',
-      );
       return null;
     } catch (e, st) {
-      dev.log('[CCYL OAuth] Error: $e\n$st', name: 'CcylOAuth');
       return null;
     } finally {
       // client 是 reusable 的，close() 是空操作，不会真正关闭底层连接

@@ -32,7 +32,6 @@ class ScuAuthService {
       '?_enterprise_id=$_enterpriseId&timestamp=$ts',
     );
     final resp = await http.get(uri, headers: _headers);
-    dev.log('[SCU] captcha response: ${resp.body}', name: 'ScuAuth');
 
     final json = _parseJson(resp.body, 'captcha');
     final data = json['data'];
@@ -68,7 +67,6 @@ class ScuAuthService {
       headers: _headers,
       body: '{}',
     );
-    dev.log('[SCU] sm2_key response: ${sm2Resp.body}', name: 'ScuAuth');
 
     final sm2Json = _parseJson(sm2Resp.body, 'sm2_key');
     final sm2Data = sm2Json['data'] as Map<String, dynamic>?;
@@ -105,7 +103,6 @@ class ScuAuthService {
       headers: _headers,
       body: payload,
     );
-    dev.log('[SCU] rest_token response: ${tokenResp.body}', name: 'ScuAuth');
 
     final result = _parseJson(tokenResp.body, 'rest_token');
     if (result['success'] != true) {
@@ -147,7 +144,6 @@ class ScuAuthService {
     if (sessionResult['success'] != true) {
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
     }
-    dev.log('[SCU] session/save ok', name: 'ScuAuth');
 
     // ── Step 2: 预热 JWT SSO（教务系统用）───────────────────────────────────
     await client.followRedirects(
@@ -160,10 +156,6 @@ class ScuAuthService {
         'User-Agent': _headers['User-Agent']!,
         'Authorization': 'Bearer $_accessToken',
       },
-    );
-    dev.log(
-      '[SCU] after jwt23 SSO, cookies: ${client.cookieHeader}',
-      name: 'ScuAuth',
     );
 
     // ── Step 3: 预热 CAS Apereo SSO（CCYL 团委系统用）──────────────────────
@@ -181,10 +173,6 @@ class ScuAuthService {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
         'User-Agent': _headers['User-Agent']!,
       },
-    );
-    dev.log(
-      '[SCU] after cas_apereo17 SSO, cookies: ${client.cookieHeader}',
-      name: 'ScuAuth',
     );
 
     client._reusable = true;
@@ -252,11 +240,6 @@ class ScuAuthService {
         },
         body: 'planCode=$planCode',
       );
-      dev.log('[SCU] jwxt status: ${resp.statusCode}', name: 'ScuAuth');
-      dev.log(
-        '[SCU] jwxt body[:300]: ${resp.body.substring(0, resp.body.length.clamp(0, 300))}',
-        name: 'ScuAuth',
-      );
       final body = resp.body.trim();
       if (body.startsWith('<') || resp.statusCode == 302) {
         throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
@@ -296,10 +279,6 @@ class ScuAuthService {
         throw ScuLoginException('无法从页面提取 allPassingScores callback URL');
       }
       final callbackPath = urlMatch.group(1)!;
-      dev.log(
-        '[SCU] passingScores callbackPath: $callbackPath',
-        name: 'ScuAuth',
-      );
 
       final callbackResp = await client.get(
         Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
@@ -335,10 +314,6 @@ class ScuAuthService {
           'User-Agent': _headers['User-Agent']!,
         },
       );
-      dev.log(
-        '[SCU] schemeScores/index status: ${indexResp.statusCode}',
-        name: 'ScuAuth',
-      );
 
       final indexBody = indexResp.body;
       if (indexBody.trim().isEmpty || indexResp.statusCode == 302) {
@@ -355,11 +330,6 @@ class ScuAuthService {
         throw ScuLoginException('无法从页面提取 schemeScores callback URL');
       }
       final callbackPath = urlMatch.group(1)!;
-      dev.log(
-        '[SCU] schemeScores callbackPath: $callbackPath',
-        name: 'ScuAuth',
-      );
-
       final callbackResp = await client.get(
         Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
         headers: {
@@ -368,10 +338,6 @@ class ScuAuthService {
               'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
           'User-Agent': _headers['User-Agent']!,
         },
-      );
-      dev.log(
-        '[SCU] schemeScores/callback status: ${callbackResp.statusCode}',
-        name: 'ScuAuth',
       );
 
       final body = callbackResp.body.trim();
@@ -465,7 +431,6 @@ class _CookieClient extends http.BaseClient {
         final name = kv.substring(0, eq).trim();
         final value = kv.substring(eq + 1).trim();
         _jar[host]![name] = value;
-        dev.log('[CookieJar] $host → $name=$value', name: 'ScuAuth');
       }
     }
   }
@@ -499,12 +464,6 @@ class _CookieClient extends http.BaseClient {
       final streamed = await _inner.send(request);
       final response = await http.Response.fromStream(streamed);
       _storeCookies(current, response);
-
-      dev.log(
-        '[SCU] redirect[$i] ${response.statusCode} $current'
-        '  cookies_sent=${cookies.keys.toList()}',
-        name: 'ScuAuth',
-      );
 
       if (response.statusCode >= 300 && response.statusCode < 400) {
         final location = response.headers['location'];

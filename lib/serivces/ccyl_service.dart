@@ -30,7 +30,6 @@ class CcylService {
       headers: _headers,
       body: jsonEncode({'code': oauthCode}),
     );
-    dev.log('[CCYL] login response: ${resp.body}', name: 'CcylService');
 
     final json = _parseJson(resp.body, 'loginByUc');
     if (json['code'] != 0) {
@@ -79,10 +78,6 @@ class CcylService {
         'quality': quality,
       }),
     );
-    dev.log(
-      '[CCYL] search activities response: ${resp.body}',
-      name: 'CcylService',
-    );
 
     final json = _parseJson(resp.body, 'list-activity-library');
     if (json['code'] != 0) {
@@ -111,7 +106,6 @@ class CcylService {
         'ps': pageSize,
       }),
     );
-    dev.log('[CCYL] my activities response: ${resp.body}', name: 'CcylService');
 
     final json = _parseJson(resp.body, 'list-mine');
     if (json['code'] != 0) {
@@ -142,10 +136,6 @@ class CcylService {
         'name': name,
       }),
     );
-    dev.log(
-      '[CCYL] ordered activities response: ${resp.body}',
-      name: 'CcylService',
-    );
 
     final json = _parseJson(resp.body, 'list-ordered-activity-library');
     if (json['code'] != 0) {
@@ -167,7 +157,6 @@ class CcylService {
       headers: _authHeaders(),
       body: '{}',
     );
-    dev.log('[CCYL] orgs response: ${resp.body}', name: 'CcylService');
 
     final json = _parseJson(resp.body, 'list-all');
     if (json['code'] != 0) {
@@ -194,10 +183,6 @@ class CcylService {
     final resp = await http.get(
       Uri.parse('$_apiBase/app/activity/get-lib-detail/$activityLibraryId'),
       headers: _authHeaders(),
-    );
-    dev.log(
-      '[CCYL] activity lib detail response: ${resp.body}',
-      name: 'CcylService',
     );
 
     final json = _parseJson(resp.body, 'get-lib-detail');
@@ -233,10 +218,6 @@ class CcylService {
       Uri.parse('$_apiBase/app/activity/get-detail'),
       headers: _authHeaders(),
       body: jsonEncode({'activityId': activityId}),
-    );
-    dev.log(
-      '[CCYL] activity detail response: ${resp.body}',
-      name: 'CcylService',
     );
 
     final json = _parseJson(resp.body, 'get-detail');
