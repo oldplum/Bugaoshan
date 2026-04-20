@@ -47,79 +47,9 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
 
-  build-ios:
-    name: iOS
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2.18.0
-        with:
-          flutter-version: "3.41.6"
-          channel: "stable"
-          cache: true
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs || true
-
-      - name: Generate localizations
-        run: flutter gen-l10n
-
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
-
-      - name: Create IPA
-        run: |
-          mkdir -p build/ios/iphoneos/Payload
-          cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
-          cd build/ios/iphoneos
-          zip -r ../Runner.ipa Payload
-
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ipa
-          path: build/ios/Runner.ipa
-
-  build-windows:
-    name: Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2.18.0
-        with:
-          flutter-version: "3.41.6"
-          channel: "stable"
-          cache: true
-
-      - name: Enable Windows desktop
-        run: flutter config --enable-windows-desktop
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs || true
-
-      - name: Generate localizations
-        run: flutter gen-l10n
-
-      - name: Build Windows
-        run: flutter build windows --release
-
-      - name: Upload Windows
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows
-          path: build/windows/x64/runner/Release
-
   release:
     name: Release
-    needs: [ build-android, build-ios, build-windows ]
+    needs: [ build-android ]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
       'workflow_dispatch'
@@ -132,14 +62,10 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           cp android-apk/*.apk bugaoshan_$VERSION.apk
-          cp ios-ipa/*.ipa bugaoshan_$VERSION.ipa
-          cd windows && zip -r ../bugaoshan_$VERSION.zip . && cd ..
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             bugaoshan_*.apk
-            bugaoshan_*.ipa
-            bugaoshan_*.zip
           generate_release_notes: true
