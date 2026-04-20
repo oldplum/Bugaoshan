@@ -146,21 +146,24 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
                 )
               : _activities.isEmpty && !_loading
               ? Center(child: Text(l10n.noData))
-              : ListView.builder(
-                  controller: _scrollController,
-                  itemCount: _activities.length + (_hasMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index >= _activities.length) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-                    final activity = _activities[index];
-                    return _ActivityCard(activity: activity);
-                  },
+              : RefreshIndicator(
+                  onRefresh: _loadActivities,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _activities.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index >= _activities.length) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                      final activity = _activities[index];
+                      return _ActivityCard(activity: activity);
+                    },
+                  ),
                 ),
         ),
       ],
