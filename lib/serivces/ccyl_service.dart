@@ -204,6 +204,32 @@ class CcylService {
     );
   }
 
+  Future<void> subscribeActivity(String activityLibraryId) async {
+    final json = await _httpPost(
+      'subscribe-act',
+      Uri.parse('$_apiBase/app/activity/subscribe-act/$activityLibraryId'),
+      _authHeaders(),
+      {},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '预约活动失败';
+      throw CcylException(msg);
+    }
+  }
+
+  Future<void> cancelSubscribe(String activityLibraryId) async {
+    final json = await _httpPost(
+      'cancel-subscribe',
+      Uri.parse('$_apiBase/app/activity/cancel-subscribe/$activityLibraryId'),
+      _authHeaders(),
+      {},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '取消预约失败';
+      throw CcylException(msg);
+    }
+  }
+
   Future<
     ({CyclActivity activity, CyclActivityLib? activityLib, bool isXtwRole})
   >

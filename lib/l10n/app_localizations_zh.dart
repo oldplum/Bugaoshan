@@ -768,6 +768,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylSubscribed => '已预约';
 
   @override
+  String get ccylSubscribe => '预约';
+
+  @override
+  String get ccylCancelSubscribe => '取消预约';
+
+  @override
+  String get ccylSubscribeSuccess => '预约成功';
+
+  @override
+  String get ccylCancelSuccess => '取消预约成功';
+
+  @override
+  String get ccylActionFailed => '操作失败';
+
+  @override
   String get ccylLoginRequired => '请先在「我的」页面完成统一身份认证登录';
 
   @override

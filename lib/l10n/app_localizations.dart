@@ -1573,6 +1573,36 @@ abstract class AppLocalizations {
   /// **'Subscribed'**
   String get ccylSubscribed;
 
+  /// No description provided for @ccylSubscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get ccylSubscribe;
+
+  /// No description provided for @ccylCancelSubscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Subscribe'**
+  String get ccylCancelSubscribe;
+
+  /// No description provided for @ccylSubscribeSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribed successfully'**
+  String get ccylSubscribeSuccess;
+
+  /// No description provided for @ccylCancelSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription cancelled successfully'**
+  String get ccylCancelSuccess;
+
+  /// No description provided for @ccylActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Action failed'**
+  String get ccylActionFailed;
+
   /// No description provided for @ccylLoginRequired.
   ///
   /// In en, this message translates to:

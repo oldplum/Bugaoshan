@@ -783,6 +783,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylSubscribed => 'Subscribed';
 
   @override
+  String get ccylSubscribe => 'Subscribe';
+
+  @override
+  String get ccylCancelSubscribe => 'Cancel Subscribe';
+
+  @override
+  String get ccylSubscribeSuccess => 'Subscribed successfully';
+
+  @override
+  String get ccylCancelSuccess => 'Subscription cancelled successfully';
+
+  @override
+  String get ccylActionFailed => 'Action failed';
+
+  @override
   String get ccylLoginRequired =>
       'Please complete SCU Unified Identity login in the Profile page first';
 

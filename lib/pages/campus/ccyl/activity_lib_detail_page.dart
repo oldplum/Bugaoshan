@@ -20,6 +20,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
   CyclActivityLib? _activityLib;
   List<CyclActivity> _activities = [];
   bool _subscribed = false;
+  bool _actionLoading = false;
 
   @override
   void initState() {
@@ -56,6 +57,44 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
     }
   }
 
+  Future<void> _toggleSubscription() async {
+    if (_activityLib == null || _actionLoading) return;
+    setState(() => _actionLoading = true);
+
+    try {
+      final provider = getIt<CcylProvider>();
+      if (_subscribed) {
+        await provider.service.cancelSubscribe(widget.activityLibraryId);
+      } else {
+        await provider.service.subscribeActivity(widget.activityLibraryId);
+      }
+      if (!mounted) return;
+      setState(() {
+        _subscribed = !_subscribed;
+        _actionLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _subscribed
+                ? AppLocalizations.of(context)!.ccylSubscribeSuccess
+                : AppLocalizations.of(context)!.ccylCancelSuccess,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Subscription action error: $e');
+      if (!mounted) return;
+      setState(() => _actionLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.ccylActionFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -63,6 +102,43 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.ccylActivitySeries)),
       body: _buildBody(l10n),
+      bottomNavigationBar: _buildBottomBar(l10n),
+    );
+  }
+
+  Widget? _buildBottomBar(AppLocalizations l10n) {
+    if (_loading || _error != null || _activityLib == null) return null;
+    if (_activities.isNotEmpty) return null;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: _actionLoading ? null : _toggleSubscription,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _subscribed
+                ? Colors.red.shade100
+                : Colors.green.shade100,
+            foregroundColor: _subscribed
+                ? Colors.red.shade700
+                : Colors.green.shade700,
+            minimumSize: const Size.fromHeight(48),
+          ),
+          child: _actionLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  _subscribed ? l10n.ccylCancelSubscribe : l10n.ccylSubscribe,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 
