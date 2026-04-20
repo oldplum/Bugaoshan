@@ -275,9 +275,11 @@ class _ActivityCard extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: activity.doing
-                          ? Colors.green.shade100
-                          : Colors.orange.shade100,
+                      color: activity.subscribed
+                          ? Colors.blue.shade100
+                          : (activity.doing
+                                ? Colors.green.shade100
+                                : Colors.orange.shade100),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -287,7 +289,9 @@ class _ActivityCard extends StatelessWidget {
                                 ? l10n.ccylInProgress
                                 : l10n.ccylAvailable),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: activity.doing ? Colors.green : Colors.orange,
+                        color: activity.subscribed
+                            ? Colors.blue
+                            : (activity.doing ? Colors.green : Colors.orange),
                       ),
                     ),
                   ),
