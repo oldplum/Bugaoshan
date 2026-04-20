@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/serivces/scu_auth_service.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/ccyl_provider.dart';
 
 const _keyAccessToken = 'scu_access_token';
 const _keyLoginTimestamp = 'scu_login_timestamp';
@@ -63,6 +65,7 @@ class ScuAuthProvider extends ChangeNotifier {
     _loginTimestamp = null;
     await _prefs.remove(_keyAccessToken);
     await _prefs.remove(_keyLoginTimestamp);
+    getIt<CcylProvider>().logout();
     notifyListeners();
   }
 }
