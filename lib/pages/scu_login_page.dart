@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -142,7 +143,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pop(true);
+      Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
       setState(() => _errorMsg = e.message);
       _loadCaptcha();
