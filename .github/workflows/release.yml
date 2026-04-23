@@ -30,22 +30,8 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - name: Debug - find hvigorw
-        run: |
-          echo "=== repo root ==="
-          ls -la
-          echo "=== ohos/ ==="
-          ls -la ohos/ 2>/dev/null || echo "not found"
-          echo "=== ohos/ohos_shell/ ==="
-          ls -la ohos/ohos_shell/ 2>/dev/null || echo "not found"
-          echo "=== find result ==="
-          find . -name "hvigorw" 2>/dev/null || echo "hvigorw not found anywhere"
 
-      - name: Setup OpenHarmony environment
-        uses: Snapp-Mobile/oh-action@v0.1
-        with:
-          working-directory: ohos/ohos_shell/ohos   # 按你实际路径调整
-
+     # ① 先装 flutter_ohos
       - name: Clone Flutter-OH SDK
         run: |
           git clone --depth=1 \
@@ -60,9 +46,20 @@ jobs:
           echo "FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn" >> $GITHUB_ENV
           echo "FLUTTER_GIT_URL=https://gitcode.com/openharmony-tpc/flutter_flutter.git" >> $GITHUB_ENV
 
+      # ② pub get 生成 ohos/hvigorw
       - name: Flutter pub get
         working-directory: ohos/ohos_shell
         run: flutter pub get
+
+      # ③ 验证 hvigorw 是否生成
+      - name: Debug - verify hvigorw
+        run: find ohos/ohos_shell -name "hvigorw" 2>/dev/null || echo "still not found"
+
+      # ④ 这时 oh-action 才能找到 hvigorw
+      - name: Setup OpenHarmony environment
+        uses: Snapp-Mobile/oh-action@v0.1
+        with:
+          working-directory: ohos/ohos_shell/ohos
 
       - name: Restore signing files
         run: |
@@ -71,7 +68,7 @@ jobs:
           echo "${{ secrets.OHOS_CER_BASE64 }}" | base64 -d > ~/.ohos/config/signing.cer
           echo "${{ secrets.OHOS_P7B_BASE64 }}" | base64 -d > ~/.ohos/config/signing.p7b
 
-      - name: Build unsigned HAP
+      - name: Build HAP
         working-directory: ohos/ohos_shell
         run: flutter build hap --release
 
@@ -84,7 +81,6 @@ jobs:
       - name: Sign HAP
         run: |
           UNSIGNED=$(find ohos/ohos_shell -name "*.hap" | head -1)
-          echo "Signing: $UNSIGNED"
           java -jar "$HAP_SIGN_JAR" sign-app \
             -keyAlias "debugKey" \
             -signAlg "SHA256withECDSA" \
