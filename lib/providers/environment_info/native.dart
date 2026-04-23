@@ -9,12 +9,15 @@ Future<String> getEnvironmentInfo() async {
   var exe = Platform.executable;
   var systemVersion = Platform.operatingSystemVersion;
   var documentsDir = await getApplicationDocumentsDirectory();
+  var supportDir = await getApplicationSupportDirectory();
+
   var environmentText =
       "Dart: $dartVersion\n"
       "System: $system\n"
       "System Ver: $systemVersion\n"
       "exe: $exe\n"
       "Args: $env\n"
-      "Documents Dir: ${documentsDir.path}\n";
+      "Documents Dir: ${documentsDir.path}\n"
+      "Support Dir: ${supportDir.path}\n";
   return environmentText;
 }
