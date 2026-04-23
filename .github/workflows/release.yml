@@ -47,13 +47,92 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
 
+  build-ohos:
+    name: HarmonyOS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Sync lib and assets to ohos_shell
+        run: |
+          cp -r lib/. ohos/ohos_shell/lib/
+          cp -r assets/. ohos/ohos_shell/assets/
+          find ohos/ohos_shell/lib -name "*.dart" \
+            -exec sed -i 's|package:bugaoshan/|package:bugaoshan_ohos/|g' {} +
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup OpenHarmony environment
+        uses: Snapp-Mobile/oh-action@v0.1
+
+      - name: Clone Flutter-OH SDK
+        run: |
+          git clone --depth=1 \
+            -b oh-3.35.7-dev \
+            https://gitcode.com/openharmony-tpc/flutter_flutter.git \
+            $HOME/flutter_ohos
+          echo "$HOME/flutter_ohos/bin" >> $GITHUB_PATH
+
+      - name: Set Flutter-OH env
+        run: |
+          echo "PUB_HOSTED_URL=https://pub.flutter-io.cn" >> $GITHUB_ENV
+          echo "FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn" >> $GITHUB_ENV
+          echo "FLUTTER_GIT_URL=https://gitcode.com/openharmony-tpc/flutter_flutter.git" >> $GITHUB_ENV
+
+      - name: Flutter pub get
+        working-directory: ohos/ohos_shell
+        run: flutter pub get
+
+      - name: Restore signing files
+        run: |
+          mkdir -p ~/.ohos/config
+          echo "${{ secrets.OHOS_P12_BASE64 }}" | base64 -d > ~/.ohos/config/signing.p12
+          echo "${{ secrets.OHOS_CER_BASE64 }}" | base64 -d > ~/.ohos/config/signing.cer
+          echo "${{ secrets.OHOS_P7B_BASE64 }}" | base64 -d > ~/.ohos/config/signing.p7b
+
+      - name: Build unsigned HAP
+        working-directory: ohos/ohos_shell
+        run: flutter build hap --release
+
+      - name: Find hap-sign-tool
+        run: |
+          JAR=$(find $HOME /opt -name "hap-sign-tool.jar" 2>/dev/null | head -1)
+          echo "HAP_SIGN_JAR=$JAR" >> $GITHUB_ENV
+          echo "Found at: $JAR"
+
+      - name: Sign HAP
+        run: |
+          UNSIGNED=$(find ohos/ohos_shell -name "*.hap" | head -1)
+          echo "Signing: $UNSIGNED"
+          java -jar "$HAP_SIGN_JAR" sign-app \
+            -keyAlias "debugKey" \
+            -signAlg "SHA256withECDSA" \
+            -mode "localSign" \
+            -appCertFile ~/.ohos/config/signing.cer \
+            -profileFile ~/.ohos/config/signing.p7b \
+            -inFile "$UNSIGNED" \
+            -keystoreFile ~/.ohos/config/signing.p12 \
+            -outFile /tmp/bugaoshan-signed.hap \
+            -keyPwd "${{ secrets.OHOS_P12_PASSWORD }}" \
+            -keystorePwd "${{ secrets.OHOS_P12_PASSWORD }}"
+
+      - name: Upload HAP
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohos-hap
+          path: /tmp/bugaoshan-signed.hap
+
   release:
     name: Release
-    needs: [ build-android ]
+    needs: [build-android, build-ohos]
     runs-on: ubuntu-latest
-    # 仅在推送 tag 或手动触发时运行
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
-      'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
 
@@ -61,7 +140,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 必须设置为 0 才能获取所有历史用于生成日志
+          fetch-depth: 0
 
       - name: Download APK
         uses: actions/download-artifact@v4
@@ -69,22 +148,24 @@ jobs:
           name: android-apk
           path: android-apk
 
+      - name: Download HAP
+        uses: actions/download-artifact@v4
+        with:
+          name: ohos-hap
+          path: ohos-hap
+
       - name: Get version and tags
         id: vars
         run: |
-          # 确定当前版本号（优先使用输入的 version，其次是 tag 名）
           CURRENT_TAG="${{ github.event.inputs.version }}"
           if [ -z "$CURRENT_TAG" ]; then
             CURRENT_TAG="${GITHUB_REF_NAME}"
           fi
           echo "tag=${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
-
-          # 获取上一个 tag 用于对比
           PREV_TAG=$(git tag --sort=-version:refname \
             | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
             | grep -v "^${CURRENT_TAG}$" \
             | head -n 1 || true)
-
           if [ -z "$PREV_TAG" ]; then
             PREV_TAG=$(git rev-list --max-parents=0 HEAD)
             echo "range=${PREV_TAG}..HEAD" >> "$GITHUB_OUTPUT"
@@ -98,50 +179,46 @@ jobs:
         id: changelog
         run: |
           RANGE="${{ steps.vars.outputs.range }}"
-
-          # 提取不同类型的提交记录
           FEATURES=$(git log "$RANGE" --pretty="- %s (%h)" | grep -E '^- feat(\(.+\))?!?:' || true)
           FIXES=$(git log "$RANGE" --pretty="- %s (%h)" | grep -E '^- fix(\(.+\))?!?:' || true)
           OTHERS=$(git log "$RANGE" --pretty="- %s (%h)" | grep -vE '^- (feat|fix)(\(.+\))?!?:' || true)
-
           {
             echo "body<<EOF"
             echo "## What's Changed"
             echo ""
             echo "> Commits from \`${{ steps.vars.outputs.prev }}\` → \`${{ steps.vars.outputs.tag }}\`"
             echo ""
-
             if [ -n "$FEATURES" ]; then
               echo "### ✨ Features"
               echo "$FEATURES"
               echo ""
             fi
-
             if [ -n "$FIXES" ]; then
               echo "### 🐛 Bug Fixes"
               echo "$FIXES"
               echo ""
             fi
-
             if [ -n "$OTHERS" ]; then
               echo "### 🔧 Other Changes"
               echo "$OTHERS"
               echo ""
             fi
-
             echo "**Full diff:** https://github.com/${{ github.repository }}/compare/${{ steps.vars.outputs.prev }}...${{ steps.vars.outputs.tag }}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Prepare APK file
+      - name: Prepare release files
         run: |
           VERSION="${{ steps.vars.outputs.tag }}"
-          # 将下载的 APK 重命名
           for file in android-apk/*.apk; do
             filename=$(basename -- "$file")
             arch=$(echo $filename | sed 's/app-//' | sed 's/-release.apk//')
             cp "$file" "bugaoshan_${VERSION}_${arch}.apk"
           done
+          HAP=$(find ohos-hap -name "*.hap" | head -1)
+          if [ -n "$HAP" ]; then
+            cp "$HAP" "bugaoshan_${VERSION}_ohos.hap"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -151,6 +228,8 @@ jobs:
           body: ${{ steps.changelog.outputs.body }}
           files: |
             bugaoshan_*.apk
+            bugaoshan_*_ohos.hap
           draft: false
           prerelease: ${{ contains(steps.vars.outputs.tag, '-') }}
           generate_release_notes: false
+
