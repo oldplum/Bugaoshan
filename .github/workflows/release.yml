@@ -84,7 +84,8 @@ jobs:
         run: flutter build windows --release
 
       - name: Archive Windows Release
-        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath windows-release.zip
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
+          windows-release.zip
 
       - name: Upload Windows
         uses: actions/upload-artifact@v4
@@ -132,9 +133,10 @@ jobs:
 
   release:
     name: Release
-    needs: [build-android, build-windows, build-linux]
+    needs: [ build-android, build-windows, build-linux ]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
+      'workflow_dispatch'
     permissions:
       contents: write
 
@@ -209,7 +211,7 @@ jobs:
           4. 如果没有用户可感知的变更，只写一句"本次版本包含内部优化与稳定性改进"
           5. 分类使用：✨ 新功能、🐛 问题修复、⚡ 体验优化（没有某类就不写该分类）
           6. 每条描述一句话，简洁自然，无需提及 commit hash
-          7. 只输出正文内容，使用 Markdown 格式，末尾加一行：> Commits: `{prev}` → `{version}`
+          7. 只输出正文内容，使用 Markdown 格式
           """
 
           payload = {
