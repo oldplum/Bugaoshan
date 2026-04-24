@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
+import 'package:path/path.dart' as p;
 
 class UpdateService {
   static const _pubspecUrl =
@@ -56,29 +57,49 @@ class UpdateService {
     String version,
     String downloadUrl, {
     void Function(String status)? onStatus,
+    void Function(int received, int total)? onProgress,
   }) async {
     onStatus?.call('Downloading update...');
 
-    final response = await http.get(Uri.parse(downloadUrl));
-    if (response.statusCode != 200) {
-      throw Exception('Download failed: ${response.statusCode}');
+    final client = http.Client();
+    List<int> chunks;
+    try {
+      final request = http.Request('GET', Uri.parse(downloadUrl));
+      final response = await client.send(request);
+
+      if (response.statusCode != 200) {
+        throw Exception('Download failed: ${response.statusCode}');
+      }
+
+      final contentLength = response.contentLength ?? 0;
+      chunks = [];
+      int received = 0;
+
+      await for (final chunk in response.stream) {
+        chunks.addAll(chunk);
+        received += chunk.length;
+        onProgress?.call(received, contentLength);
+      }
+    } finally {
+      client.close();
     }
 
     onStatus?.call('Extracting...');
 
     // Save to temp directory
     final tempDir = await getTemporaryDirectory();
-    final extractDir = '${tempDir.path}/bugaoshan_update';
+    final extractDir = p.join(tempDir.path, 'bugaoshan_update');
 
     // Extract the zip
-    final archive = ZipDecoder().decodeBytes(response.bodyBytes);
+    final archive = ZipDecoder().decodeBytes(chunks);
     final extractDirObj = Directory(extractDir);
     if (extractDirObj.existsSync()) {
       extractDirObj.deleteSync(recursive: true);
     }
     extractDirObj.createSync(recursive: true);
     for (final file in archive) {
-      final filename = '$extractDir/${file.name}';
+      final sanitizedName = file.name.replaceAll('/', Platform.pathSeparator);
+      final filename = p.join(extractDir, sanitizedName);
       if (file.isFile) {
         final outFile = File(filename);
         outFile.parent.createSync(recursive: true);
@@ -91,7 +112,7 @@ class UpdateService {
     // Load update script from assets
     final currentExe = Platform.resolvedExecutable;
     final currentExeDir = File(currentExe).parent.path;
-    final scriptPath = '$extractDir/update.bat';
+    final scriptPath = p.join(extractDir, 'update.bat');
     final scriptBytes =
         await rootBundle.load('assets/scripts/update.bat');
     final script = utf8.decode(scriptBytes.buffer.asUint8List())
@@ -100,8 +121,13 @@ class UpdateService {
     File(scriptPath).writeAsStringSync(script);
 
     // Run update script and exit
-    await Process.start('cmd.exe', ['/c', 'start', '', '/min', 'update.bat'],
-        workingDirectory: extractDir, runInShell: true);
+    final batchPath = p.join(extractDir, 'update.bat');
+    await Process.start(
+      'cmd.exe',
+      ['/c', 'call', batchPath],
+      workingDirectory: extractDir,
+      mode: ProcessStartMode.detached,
+    );
     exit(0);
   }
 

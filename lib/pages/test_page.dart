@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
@@ -170,21 +171,37 @@ class _TestPageState extends State<TestPage> {
   }
 
   void _startUpdate(String latestVersion, String downloadUrl) async {
-    final dialogContext = context;
     final updateService = getIt<UpdateService>();
 
-    // Show downloading dialog
+    final downloadProgress = ValueNotifier<(int, int)>((0, 0));
+
     showDialog(
-      context: dialogContext,
+      context: context,
+      useRootNavigator: true,
       barrierDismissible: false,
-      builder: (dialogContext) => const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('Downloading update...'),
-          ],
-        ),
+      builder: (context) => ValueListenableBuilder<(int, int)>(
+        valueListenable: downloadProgress,
+        builder: (context, progress, _) {
+          final percent = progress.$2 > 0
+              ? ((progress.$1 / progress.$2) * 100).toInt()
+              : 0;
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text('Downloading update... $percent%'),
+                if (progress.$2 > 0) ...[
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: progress.$1 / progress.$2,
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
 
@@ -192,16 +209,18 @@ class _TestPageState extends State<TestPage> {
       await updateService.downloadAndInstall(
         latestVersion,
         downloadUrl,
-        onStatus: (status) {
-          // Could update dialog text here if needed
+        onStatus: (status) {},
+        onProgress: (received, total) {
+          downloadProgress.value = (received, total);
         },
       );
     } catch (e) {
-      if (!dialogContext.mounted) return;
-      Navigator.pop(dialogContext);
-      ScaffoldMessenger.of(dialogContext).showSnackBar(
-        SnackBar(content: Text('Update failed: $e')),
-      );
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Update failed: $e')),
+        );
+      }
     }
   }
 
