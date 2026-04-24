@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:updat/updat.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/utils/open_link.dart';
 
 class TestPage extends StatefulWidget {
   const TestPage({super.key});
@@ -52,24 +52,67 @@ class _TestPageState extends State<TestPage> {
       headers: {'Accept': 'application/vnd.github+json'},
     );
     if (response.statusCode == 200) {
-      final tagName = RegExp(r'"tag_name":\s*"([^"]+)"').firstMatch(response.body)?.group(1);
+      if (response.body.isEmpty) {
+        throw Exception('GitHub API returned empty response');
+      }
+      final tagName = RegExp(
+        r'"tag_name":\s*"([^"]+)"',
+      ).firstMatch(response.body)?.group(1);
       if (tagName != null) {
         return tagName.replaceFirst('v', '');
       }
+      throw Exception('Could not parse release tag from response');
     }
-    throw Exception('Failed to fetch latest version');
+    throw Exception('GitHub API error: ${response.statusCode}');
   }
 
-  Future<String> _getBinaryUrl(String version) async {
-    const repo = 'The-Brotherhood-of-SCU/Bugaoshan';
+  String _getBinaryUrl(String version) {
     final platform = Platform.isWindows ? 'windows' : 'linux';
-    return 'https://github.com/$repo/releases/download/v$version/bugaoshan_${version}_${platform}_x64.zip';
+    return 'https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v$version/bugaoshan_${version}_${platform}_x64.zip';
+  }
+
+  Future<void> _downloadAndInstall(String version) async {
+    final url = _getBinaryUrl(version);
+    await openLink(url);
+  }
+
+  void _showUpdateDialog(String latestVersion) {
+    final localizations = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.system_update_alt),
+            const SizedBox(width: 8),
+            Text(localizations.newVersionAvailable),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [Text('${localizations.version}: $latestVersion')],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(localizations.neverMind),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _downloadAndInstall(latestVersion);
+            },
+            child: Text(localizations.goToReleases),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(localizations.testPage)),
@@ -80,7 +123,9 @@ class _TestPageState extends State<TestPage> {
           children: [
             _SectionTitle(title: localizations.environmentInfo),
             const SizedBox(height: 12),
-            _EnvironmentInfoCard(versionInfoProvider: _versionInfoProvider),
+            _EnvironmentInfoButton(
+              onPressed: () => _showEnvironmentInfoDialog(context),
+            ),
             const SizedBox(height: 32),
             if (_isWindowsOrLinux) ...[
               _SectionTitle(title: localizations.forceUpdate),
@@ -91,11 +136,43 @@ class _TestPageState extends State<TestPage> {
                 updateError: _updateError,
                 currentVersion: _versionInfoProvider.currentVersion,
                 onCheck: _checkForUpdates,
-                getBinaryUrl: _getBinaryUrl,
+                onUpdate: () {
+                  if (_latestVersion != null) {
+                    _showUpdateDialog(_latestVersion!);
+                  }
+                },
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEnvironmentInfoDialog(BuildContext context) async {
+    final localizations = AppLocalizations.of(context)!;
+    final versionInfo = await _versionInfoProvider.getVersionInfo();
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.info_outline),
+            const SizedBox(width: 8),
+            Text(localizations.environmentInfo),
+          ],
+        ),
+        content: SelectableText(
+          versionInfo,
+          style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(localizations.confirm),
+          ),
+        ],
       ),
     );
   }
@@ -109,41 +186,27 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 }
 
-class _EnvironmentInfoCard extends StatelessWidget {
-  final AppInfoProvider versionInfoProvider;
-  const _EnvironmentInfoCard({required this.versionInfoProvider});
+class _EnvironmentInfoButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _EnvironmentInfoButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: FutureBuilder<String>(
-          future: versionInfoProvider.getVersionInfo(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            }
-            return SelectableText(
-              snapshot.data ?? '',
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 12,
-              ),
-            );
-          },
-        ),
+      child: ListTile(
+        leading: const Icon(Icons.info_outline),
+        title: Text(AppLocalizations.of(context)!.environmentInfo),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onPressed,
       ),
     );
   }
@@ -155,7 +218,7 @@ class _UpdateCard extends StatelessWidget {
   final String? updateError;
   final String currentVersion;
   final VoidCallback onCheck;
-  final Future<String> Function(String version) getBinaryUrl;
+  final VoidCallback onUpdate;
 
   const _UpdateCard({
     required this.latestVersion,
@@ -163,8 +226,19 @@ class _UpdateCard extends StatelessWidget {
     required this.updateError,
     required this.currentVersion,
     required this.onCheck,
-    required this.getBinaryUrl,
+    required this.onUpdate,
   });
+
+  bool get _hasNewVersion {
+    if (latestVersion == null) return false;
+    try {
+      final current = Version.parse(currentVersion);
+      final latest = Version.parse(latestVersion!);
+      return latest > current;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -211,19 +285,27 @@ class _UpdateCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 12),
-              Builder(
-                builder: (context) {
-                  final latest = latestVersion!;
-                  return UpdatWidget(
-                    currentVersion: currentVersion,
-                    getLatestVersion: () async => latest,
-                    getBinaryUrl: (v) => getBinaryUrl(v ?? latest),
-                    appName: 'bugaoshan',
-                    openOnDownload: true,
-                    closeOnInstall: false,
-                  );
-                },
-              ),
+              if (_hasNewVersion)
+                ElevatedButton.icon(
+                  onPressed: onUpdate,
+                  icon: const Icon(Icons.system_update_alt),
+                  label: Text(localizations.newVersionAvailable),
+                )
+              else
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green[600],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      localizations.noUpdateAvailable,
+                      style: TextStyle(color: Colors.green[600]),
+                    ),
+                  ],
+                ),
             ],
           ],
         ),
