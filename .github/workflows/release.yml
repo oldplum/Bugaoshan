@@ -37,6 +37,7 @@ jobs:
 
       - name: Generate localizations
         run: flutter gen-l10n
+
       - name: Decode Keystore
         run: |
           mkdir -p android/keystore
@@ -48,6 +49,7 @@ jobs:
           echo 'keyPassword=${{ secrets.KEY_PASSWORD }}' >> android/key.properties
           echo 'keyAlias=${{ secrets.KEY_ALIAS }}' >> android/key.properties
           echo 'storeFile=../keystore/upload-keystore.jks' >> android/key.properties
+
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
@@ -82,8 +84,7 @@ jobs:
         run: flutter build windows --release
 
       - name: Archive Windows Release
-        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
-          windows-release.zip
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath windows-release.zip
 
       - name: Upload Windows
         uses: actions/upload-artifact@v4
@@ -131,11 +132,9 @@ jobs:
 
   release:
     name: Release
-    needs: [ build-android, build-windows, build-linux ]
+    needs: [build-android, build-windows, build-linux]
     runs-on: ubuntu-latest
-    # 仅在推送 tag 或手动触发时运行
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
-      'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
 
@@ -143,7 +142,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 必须设置为 0 才能获取所有历史用于生成日志
+          fetch-depth: 0
 
       - name: Download APK
         uses: actions/download-artifact@v4
@@ -166,14 +165,12 @@ jobs:
       - name: Get version and tags
         id: vars
         run: |
-          # 确定当前版本号（优先使用输入的 version，其次是 tag 名）
           CURRENT_TAG="${{ github.event.inputs.version }}"
           if [ -z "$CURRENT_TAG" ]; then
             CURRENT_TAG="${GITHUB_REF_NAME}"
           fi
           echo "tag=${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
 
-          # 获取上一个 tag 用于对比
           PREV_TAG=$(git tag --sort=-version:refname \
             | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
             | grep -v "^${CURRENT_TAG}$" \
@@ -188,17 +185,73 @@ jobs:
             echo "prev=${PREV_TAG}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Generate changelog
+      - name: Generate changelog with AI
         id: changelog
         run: |
-          RANGE="${{ steps.vars.outputs.range }}"
+          COMMITS=$(git log "${{ steps.vars.outputs.range }}" --pretty="%h %s" 2>/dev/null || echo "No commits found")
+
+          python3 - <<'PYEOF'
+          import os, json, urllib.request, sys
+
+          commits = os.environ.get('COMMITS', '')
+          version = os.environ.get('VERSION', '')
+          prev = os.environ.get('PREV', '')
+
+          prompt = f"""你是一个专业的软件发布文档撰写者。请根据以下 git commit 列表，为版本 {version} 写一份面向用户的更新说明。
+
+          Commit 列表（格式：hash 提交信息）：
+          {commits}
+
+          要求：
+          1. 从用户视角出发，归纳总结这次版本带来了哪些实质性变化，而不是逐条列出 commit
+          2. 合并同类项：多个相关 commit 合并成一条用户可感知的变更描述
+          3. 完全忽略：构建、CI/CD、依赖升级、代码重构、格式调整、typo 修复等对用户无感知的提交
+          4. 如果没有用户可感知的变更，只写一句"本次版本包含内部优化与稳定性改进"
+          5. 分类使用：✨ 新功能、🐛 问题修复、⚡ 体验优化（没有某类就不写该分类）
+          6. 每条描述一句话，简洁自然，无需提及 commit hash
+          7. 只输出正文内容，使用 Markdown 格式，末尾加一行：> Commits: `{prev}` → `{version}`
+          """
+
+          payload = {
+              "model": "deepseek-chat",
+              "max_tokens": 1024,
+              "messages": [{"role": "user", "content": prompt}]
+          }
+
+          req = urllib.request.Request(
+              "https://api.deepseek.com/v1/chat/completions",
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Authorization": f"Bearer {os.environ['DEEPSEEK_API_KEY']}",
+                  "Content-Type": "application/json",
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(req, timeout=60) as resp:
+                  result = json.loads(resp.read())
+                  changelog = result["choices"][0]["message"]["content"].strip()
+          except Exception as e:
+              changelog = f"## What's Changed\n\n{commits}\n\n> Commits: `{prev}` → `{version}`"
+              print(f"Warning: DeepSeek API failed ({e}), using raw commits", file=sys.stderr)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("ai_changelog<<CHANGELOG_EOF\n")
+              f.write(changelog + "\n")
+              f.write("CHANGELOG_EOF\n")
+          PYEOF
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          COMMITS: ${{ env.COMMITS }}
+          VERSION: ${{ steps.vars.outputs.tag }}
+          PREV: ${{ steps.vars.outputs.prev }}
+
+      - name: Build release body
+        id: release_body
+        run: |
           VERSION="${{ steps.vars.outputs.tag }}"
           REPO="https://github.com/${{ github.repository }}"
-
-          # 提取不同类型的提交记录
-          FEATURES=$(git log "$RANGE" --pretty="- %s (%h)" | grep -E '^- feat(\(.+\))?!?:' || true)
-          FIXES=$(git log "$RANGE" --pretty="- %s (%h)" | grep -E '^- fix(\(.+\))?!?:' || true)
-          OTHERS=$(git log "$RANGE" --pretty="- %s (%h)" | grep -vE '^- (feat|fix)(\(.+\))?!?:' || true)
 
           {
             echo "body<<EOF"
@@ -209,44 +262,20 @@ jobs:
             echo ""
             echo "> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。Windows 和 Linux 版本可能存在部分兼容性或体验问题。"
             echo ""
-            echo "## What's Changed"
+            echo "${{ steps.changelog.outputs.ai_changelog }}"
             echo ""
-            echo "> Commits from \`${{ steps.vars.outputs.prev }}\` → \`${{ steps.vars.outputs.tag }}\`"
-            echo ""
-
-            if [ -n "$FEATURES" ]; then
-              echo "### ✨ Features"
-              echo "$FEATURES"
-              echo ""
-            fi
-
-            if [ -n "$FIXES" ]; then
-              echo "### 🐛 Bug Fixes"
-              echo "$FIXES"
-              echo ""
-            fi
-
-            if [ -n "$OTHERS" ]; then
-              echo "### 🔧 Other Changes"
-              echo "$OTHERS"
-              echo ""
-            fi
-
-            echo "**Full diff:** https://github.com/${{ github.repository }}/compare/${{ steps.vars.outputs.prev }}...${{ steps.vars.outputs.tag }}"
+            echo "**Full diff:** $REPO/compare/${{ steps.vars.outputs.prev }}...${{ steps.vars.outputs.tag }}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Prepare APK file
+      - name: Prepare release files
         run: |
           VERSION="${{ steps.vars.outputs.tag }}"
-          # 将下载的 APK 重命名
           for file in android-apk/*.apk; do
             filename=$(basename -- "$file")
             arch=$(echo $filename | sed 's/app-//' | sed 's/-release.apk//')
             cp "$file" "bugaoshan_${VERSION}_${arch}.apk"
           done
-
-          # 移动并重命名 Windows 和 Linux 压缩包
           cp windows-release/windows-release.zip "bugaoshan_${VERSION}_windows_x64.zip"
           cp linux-release/linux-release.tar.gz "bugaoshan_${VERSION}_linux_x64.tar.gz"
 
@@ -255,7 +284,7 @@ jobs:
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           name: Release ${{ steps.vars.outputs.tag }}
-          body: ${{ steps.changelog.outputs.body }}
+          body: ${{ steps.release_body.outputs.body }}
           files: |
             bugaoshan_*.apk
             bugaoshan_*.zip
