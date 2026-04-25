@@ -395,6 +395,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get back => 'Back';
+
+  @override
+  String get next => 'Next';
+
+  @override
   String get delete => 'Delete';
 
   @override
@@ -1043,4 +1049,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkOfflineFailed => 'Failed to offline device';
+
+  @override
+  String get balanceQuery => 'Balance Query';
+
+  @override
+  String get balanceQueryDesc => 'Query electricity and AC fee balance';
+
+  @override
+  String get electricityFee => 'Electricity';
+
+  @override
+  String get acFee => 'AC Fee';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get bindRoom => 'Bind Room';
+
+  @override
+  String get bindNewRoom => 'Bind New Room';
+
+  @override
+  String get switchRoom => 'Switch Room';
+
+  @override
+  String get selectUnit => 'Select Unit';
+
+  @override
+  String get inputInfo => 'Input Info';
+
+  @override
+  String get inputBindingInfo => 'Input Binding Info';
+
+  @override
+  String get cusName => 'Name';
+
+  @override
+  String get cusNameHint => 'Enter name';
+
+  @override
+  String get roomNumber => 'Room Number';
+
+  @override
+  String get roomNumberHint => 'Enter room number, e.g. 301C、301K(suite)';
+
+  @override
+  String get pricePerUnit => 'Price per unit';
+
+  @override
+  String get balanceQueryLoginRequired =>
+      'Please login via unified authentication in Profile page first';
+
+  @override
+  String get balanceQueryNoBinding =>
+      'You haven\'t bound any room yet, please bind first';
 }
