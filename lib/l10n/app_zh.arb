@@ -126,6 +126,7 @@
     "showTeacher":"显示教师",
     "showLocation":"显示教室",
     "showWeekend":"显示周末",
+    "showNonCurrentWeekCourses":"显示非本周课程",
     "save":"保存",
     "cancel":"取消",
     "delete":"删除",

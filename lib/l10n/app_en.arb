@@ -127,6 +127,7 @@
     "showTeacher":"Show Teacher",
     "showLocation":"Show Location",
     "showWeekend":"Show Weekend",
+    "showNonCurrentWeekCourses":"Show Non-Current Week Courses",
     "save":"Save",
     "cancel":"Cancel",
     "delete":"Delete",

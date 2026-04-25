@@ -386,6 +386,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showWeekend => 'Show Weekend';
 
   @override
+  String get showNonCurrentWeekCourses => 'Show Non-Current Week Courses';
+
+  @override
   String get save => 'Save';
 
   @override

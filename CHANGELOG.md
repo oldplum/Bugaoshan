@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - 成绩单功能：支持查看和导出学时
+- 课程表非本周显示功能开关：支持开关显示非本周课程
 
 ### Changed
 

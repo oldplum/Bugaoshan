@@ -823,6 +823,12 @@ abstract class AppLocalizations {
   /// **'Show Weekend'**
   String get showWeekend;
 
+  /// No description provided for @showNonCurrentWeekCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Non-Current Week Courses'**
+  String get showNonCurrentWeekCourses;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:
