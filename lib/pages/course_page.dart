@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -432,6 +433,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       case null:
         debugPrint("[_onExport] cancel null");
         break;
+      // copy
       case ExportAction.copy:
         debugPrint("[_onExport] copy");
         final result = await exportProvider.copyToClipBoard();
@@ -445,12 +447,47 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           );
         }
         break;
+      // ics
       case ExportAction.ics:
         debugPrint("[_onExport] ics");
-        //TODO: convert schedule to ics file
-        //  save as a tmp file
-        //  call file selector
-        //  move the file
+        final semesterName = await exportProvider.saveIcsToTempFile();
+        if (semesterName == null) {
+          if (mounted) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
+            );
+          }
+          return;
+        }
+
+        final destinationPath = await FilePicker.saveFile(
+          dialogTitle: l10n.exportScheduleAsIcsTo,
+          fileName: '${semesterName}.ics',
+        );
+        if (destinationPath == null) {
+          await exportProvider.cleanTempFile();
+          if (mounted) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text(l10n.exportScheduleAsIcsCanceled)),
+            );
+          }
+          return;
+        }
+
+        final result = await exportProvider.moveTempToDestination(
+          destinationPath,
+        );
+        if (result == ExportResult.success && mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(l10n.exportScheduleAsIcsSuccess)),
+          );
+        } else {
+          if (mounted) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
+            );
+          }
+        }
         break;
     }
   }

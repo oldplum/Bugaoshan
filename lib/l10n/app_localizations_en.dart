@@ -471,6 +471,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Copy failed, maybe you can try later';
 
   @override
+  String get exportScheduleAsIcsTo => 'Save Calendar File to...';
+
+  @override
+  String get exportScheduleAsIcsSuccess => 'File saved successfully';
+
+  @override
+  String get exportScheduleAsIcsFailed => 'File save failed';
+
+  @override
+  String get exportScheduleAsIcsCanceled => 'File save canceled';
+
+  @override
   String get copySuffix => ' (Copy)';
 
   @override

@@ -461,6 +461,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAsCopyFailed => '复制失败，您可以稍后再试';
 
   @override
+  String get exportScheduleAsIcsTo => '保存日历文件到...';
+
+  @override
+  String get exportScheduleAsIcsSuccess => '保存成功';
+
+  @override
+  String get exportScheduleAsIcsFailed => '保存失败';
+
+  @override
+  String get exportScheduleAsIcsCanceled => '取消保存';
+
+  @override
   String get copySuffix => ' (副本)';
 
   @override

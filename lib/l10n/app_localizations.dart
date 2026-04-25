@@ -979,6 +979,30 @@ abstract class AppLocalizations {
   /// **'Copy failed, maybe you can try later'**
   String get exportScheduleAsCopyFailed;
 
+  /// No description provided for @exportScheduleAsIcsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Calendar File to...'**
+  String get exportScheduleAsIcsTo;
+
+  /// No description provided for @exportScheduleAsIcsSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved successfully'**
+  String get exportScheduleAsIcsSuccess;
+
+  /// No description provided for @exportScheduleAsIcsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'File save failed'**
+  String get exportScheduleAsIcsFailed;
+
+  /// No description provided for @exportScheduleAsIcsCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'File save canceled'**
+  String get exportScheduleAsIcsCanceled;
+
   /// No description provided for @copySuffix.
   ///
   /// In en, this message translates to:
