@@ -94,6 +94,13 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
               icon: const Icon(Icons.swap_horiz),
               tooltip: l10n.switchRoom,
               onSelected: (index) {
+                final auth = getIt<ScuAuthProvider>();
+                if (!auth.isLoggedIn) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.balanceQueryLoginRequired)),
+                  );
+                  return;
+                }
                 if (index == -1) {
                   _showBindDialog();
                 } else if (index == -2) {
@@ -158,7 +165,16 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
       ),
       body: _buildBody(l10n),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showBindDialog,
+        onPressed: () {
+          final auth = getIt<ScuAuthProvider>();
+          if (!auth.isLoggedIn) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.balanceQueryLoginRequired)),
+            );
+            return;
+          }
+          _showBindDialog();
+        },
         tooltip: l10n.bindRoom,
         child: const Icon(Icons.add),
       ),
@@ -230,7 +246,16 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed: _showBindDialog,
+                onPressed: () {
+                  final auth = getIt<ScuAuthProvider>();
+                  if (!auth.isLoggedIn) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.balanceQueryLoginRequired)),
+                    );
+                    return;
+                  }
+                  _showBindDialog();
+                },
                 icon: const Icon(Icons.add),
                 label: Text(l10n.bindRoom),
               ),
