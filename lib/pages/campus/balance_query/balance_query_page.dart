@@ -378,7 +378,10 @@ class _ElectricityTabState extends State<_ElectricityTab> {
     }
 
     return _BalanceCard(
-      key: ValueKey(binding.cusNo),
+      key: ValueKey(
+        '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}',
+      ),
+      provider: widget.provider,
       balanceType: 2,
       icon: Icons.electric_bolt,
       iconColor: Colors.amber,
@@ -426,7 +429,10 @@ class _AcTabState extends State<_AcTab> {
     }
 
     return _BalanceCard(
-      key: ValueKey(binding.cusNo),
+      key: ValueKey(
+        '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}',
+      ),
+      provider: widget.provider,
       balanceType: 1,
       icon: Icons.ac_unit,
       iconColor: Colors.lightBlue,
@@ -439,6 +445,7 @@ class _AcTabState extends State<_AcTab> {
 }
 
 class _BalanceCard extends StatefulWidget {
+  final BalanceQueryProvider provider;
   final int balanceType;
   final IconData icon;
   final Color iconColor;
@@ -449,6 +456,7 @@ class _BalanceCard extends StatefulWidget {
 
   const _BalanceCard({
     super.key,
+    required this.provider,
     required this.balanceType,
     required this.icon,
     required this.iconColor,
@@ -470,21 +478,39 @@ class _BalanceCardState extends State<_BalanceCard> {
   @override
   void initState() {
     super.initState();
+    widget.provider.addListener(_onSwitchCompleted);
     _loadBalance();
   }
 
   @override
   void didUpdateWidget(_BalanceCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 切换房间时（cusNo 变了），清空本地数据并重新加载
-    if (oldWidget.binding.cusNo != widget.binding.cusNo) {
+    final oldKey =
+        '${oldWidget.binding.schoolCode}_${oldWidget.binding.regCode}_${oldWidget.binding.unitCode}_${oldWidget.binding.roomNo}';
+    final newKey =
+        '${widget.binding.schoolCode}_${widget.binding.regCode}_${widget.binding.unitCode}_${widget.binding.roomNo}';
+    if (oldKey != newKey) {
       _localInfo = null;
       _loadBalance();
     }
   }
 
+  void _onSwitchCompleted() {
+    if (_localInfo == null && !_isLoading && !widget.provider.isSwitching) {
+      _loadBalance();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.provider.removeListener(_onSwitchCompleted);
+    super.dispose();
+  }
+
   Future<void> _loadBalance() async {
     if (_localInfo != null) return;
+
+    if (widget.provider.isSwitching) return;
 
     setState(() {
       _isLoading = true;
