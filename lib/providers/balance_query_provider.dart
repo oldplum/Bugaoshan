@@ -80,26 +80,35 @@ class BalanceQueryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isSwitching = false;
+  bool get isSwitching => _isSwitching;
+
   Future<void> switchBinding(int index) async {
     if (index < 0 || index >= _bindings.length) return;
     _currentIndex = index;
     await _prefs.setInt(_keyCurrentRoomIndex, _currentIndex);
     _electricInfo = null;
     _acInfo = null;
-    notifyListeners();
+    _isSwitching = true;
+    notifyListeners(); // 先通知 UI 切换房间名、显示加载状态
 
-    final binding = currentBinding!;
-    final client = await _ensureClient();
-    await _service.verificationRoom(
-      client,
-      binding.cusNo,
-      1,
-      binding.cusName,
-      binding.schoolCode,
-      binding.regCode,
-      binding.unitCode,
-      binding.roomNo,
-    );
+    try {
+      final binding = currentBinding!;
+      final client = await _ensureClient();
+      await _service.verificationRoom(
+        client,
+        binding.cusNo,
+        1,
+        binding.cusName,
+        binding.schoolCode,
+        binding.regCode,
+        binding.unitCode,
+        binding.roomNo,
+      );
+    } finally {
+      _isSwitching = false;
+      notifyListeners(); // 验证完成，通知 BalanceCard 可以查询余额了
+    }
   }
 
   Future<List<CampusItem>> getCampusList() async {
