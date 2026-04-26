@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -19,7 +17,7 @@ class ExportScheduleProvider {
   final ScheduleConfig? _overrideConfig;
   final List<Course>? _overrideCourses;
 
-  File? _tempFile;
+  String? _icsContent;
 
   ExportScheduleProvider(
     this._courseProvider, {
@@ -64,34 +62,14 @@ class ExportScheduleProvider {
     return ExportResult.failed;
   }
 
-  // Return the semester name for ues by the file picker while writing a temporary file
-  // Return null if failed to write a temp file
-  Future<String?> saveIcsToTempFile(String teacherLabel) async {
-    Directory tempDir;
-    try {
-      tempDir = await getTemporaryDirectory();
-    } catch (e) {
-      debugPrint("[saveIcsToTempFile] failed find temp dir: $e");
-      return null;
-    }
-    final tempFileName =
-        'course_schedule_${DateTime.now().millisecondsSinceEpoch}.ics';
-    final tempFile = File('${tempDir.path}/$tempFileName');
-
-    final icsContent = IcsService.genIcs(
+  // Return the semester name for ues by the file picker after .ics generation
+  String genIcs(String teacherLabel) {
+    _icsContent = IcsService.genIcs(
       config: _config,
       courses: _courses,
       teacherLabel: teacherLabel,
     );
-
-    try {
-      await tempFile.writeAsString(icsContent);
-    } catch (e) {
-      debugPrint("[saveIcsToTempFile] failed to write temp file: $e");
-      return null;
-    }
-    _tempFile = tempFile;
-    debugPrint("[saveIcsToTempFile] temp file saved to ${tempFile.path}");
+    debugPrint("[genIcs] .ics generated successfully");
 
     final semesterName = _config.semesterName;
     // replace dangerous characters by _
@@ -102,26 +80,7 @@ class ExportScheduleProvider {
     return safeSemesterName;
   }
 
-  Future<ExportResult> moveTempToDestination(String destinationPath) async {
-    try {
-      await _tempFile!.copy(destinationPath);
-      debugPrint("[moveTempToDestination] temp moved to $destinationPath");
-      await cleanTempFile();
-    } catch (e) {
-      debugPrint("[moveTempToDestination] $e");
-      await cleanTempFile();
-      return ExportResult.failed;
-    }
-    return ExportResult.success;
-  }
-
-  Future<void> cleanTempFile() async {
-    try {
-      await _tempFile?.delete();
-      debugPrint("[cleanTempFile] temp cleaned");
-    } catch (e) {
-      debugPrint("[cleanTempFile] $e");
-    }
-    _tempFile = null;
+  Uint8List getIcsBytes() {
+    return Uint8List.fromList(utf8.encode(_icsContent!));
   }
 }
