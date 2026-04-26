@@ -31,7 +31,7 @@ class _AboutPageState extends State<AboutPage> {
           latest.tagName != null &&
           updateService.hasUpdate(
               versionProvider.currentVersion, latest.tagName!)) {
-        final shouldNavigate = await showDialog<bool>(
+        await showDialog(
           context: context,
           builder: (dialogContext) {
             return AlertDialog(
@@ -42,12 +42,18 @@ class _AboutPageState extends State<AboutPage> {
                   Text(localizations.newVersionAvailable),
                 ],
               ),
-              content: Text('${localizations.version}: ${latest.tagName}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${localizations.version}: ${latest.tagName}'),
+                ],
+              ),
               actions: [
                 if (latest.body != null && latest.body!.isNotEmpty)
                   TextButton(
                     onPressed: () {
-                      Navigator.of(dialogContext).pop(false);
+                      Navigator.of(dialogContext).pop();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -61,22 +67,23 @@ class _AboutPageState extends State<AboutPage> {
                     child: Text(localizations.releaseNotes),
                   ),
                 TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(localizations.neverMind),
                 ),
-                ElevatedButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: Text(localizations.goToReleases),
-                ),
+                if (latest.downloadUrl != null)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      _startUpdate(latest.tagName!, latest.downloadUrl!);
+                    },
+                    child: Text(localizations.startUpdate),
+                  ),
               ],
             );
           },
         );
 
         if (!mounted) return;
-        if (shouldNavigate == true) {
-          await openLink(UpdateService.releasesUrl);
-        }
       } else {
         showInfoDialog(
           title: localizations.checkForUpdates,
@@ -91,6 +98,86 @@ class _AboutPageState extends State<AboutPage> {
         );
       }
     }
+  }
+
+  String _proxyDownloadUrl(String url) =>
+      'https://gh-proxy.org/$url';
+
+  void _startUpdate(String latestVersion, String downloadUrl) async {
+    final localizations = AppLocalizations.of(context)!;
+    downloadUrl = _proxyDownloadUrl(downloadUrl);
+    final progressState = _DownloadProgressState();
+    final cancelToken = CancelToken();
+
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        content: ListenableBuilder(
+          listenable: progressState,
+          builder: (context, _) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text('${progressState.status} ${progressState.percent}%'),
+              if (progressState.total > 0) ...[
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: progressState.received / progressState.total,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${_formatBytes(progressState.received)} / ${_formatBytes(progressState.total)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              cancelToken.cancel();
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text(localizations.cancel),
+          ),
+        ],
+      ),
+    );
+
+    try {
+      await updateService.downloadAndInstall(
+        latestVersion,
+        downloadUrl,
+        cancelToken: cancelToken,
+        onStatus: (status) => progressState.setStatus(status),
+        onProgress: (received, total) =>
+            progressState.setProgress(received, total),
+      );
+    } on UpdateCancelledException {
+      return;
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).maybePop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${localizations.updateFailed}: $e')),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).maybePop();
+    }
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   @override
@@ -231,5 +318,27 @@ class _AboutPageState extends State<AboutPage> {
         ),
       ],
     );
+  }
+}
+
+class _DownloadProgressState extends ChangeNotifier {
+  String _status = 'Downloading...';
+  int _received = 0;
+  int _total = 0;
+
+  String get status => _status;
+  int get received => _received;
+  int get total => _total;
+  int get percent => _total > 0 ? ((_received / _total) * 100).toInt() : 0;
+
+  void setStatus(String status) {
+    _status = status;
+    notifyListeners();
+  }
+
+  void setProgress(int received, int total) {
+    _received = received;
+    _total = total;
+    notifyListeners();
   }
 }
