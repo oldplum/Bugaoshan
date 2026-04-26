@@ -64,6 +64,8 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 ### Internationalization
 ARB source files in `lib/l10n/app_*.arb`. Generated to `lib/l10n/app_localizations.dart` via `flutter gen-l10n`. No external l10n service.
 
+**Note on `app_zh_Hans_CN.arb`**: This file exists solely to ensure correct CJK locale resolution. It should contain only the minimal entries needed for locale fallback — specifically `bugaoshan` and `selfLanguage`. Do NOT add translation entries here; put them in `app_zh.arb` instead.
+
 ## Directory Structure
 
 ```
