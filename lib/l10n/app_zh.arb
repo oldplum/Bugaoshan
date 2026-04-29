@@ -129,7 +129,7 @@
     "backgroundImage":"背景图片",
     "setBackgroundImage":"设置背景图片",
     "removeBackgroundImage":"移除背景图片",
-    "backgroundImageOpacity":"背景图片透明度",
+    "backgroundImageOpacity":"背景图片不透明度",
     "showTeacher":"显示教师",
     "showLocation":"显示教室",
     "showWeekend":"显示周末",

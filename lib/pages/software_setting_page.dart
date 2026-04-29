@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -223,14 +223,9 @@ class SoftwareSettingPage extends StatelessWidget {
   }
 
   Future<void> _pickBackgroundImage(AppConfigProvider appConfig) async {
-    final result = await FilePicker.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-    if (result == null || result.files.isEmpty) return;
-
-    final file = result.files.first;
-    if (file.path == null) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
 
     final appDir = await getApplicationDocumentsDirectory();
     final bgDir = Directory('${appDir.path}/backgrounds');
@@ -238,7 +233,7 @@ class SoftwareSettingPage extends StatelessWidget {
       await bgDir.create(recursive: true);
     }
 
-    final ext = p.extension(file.path!);
+    final ext = p.extension(picked.path);
     final destPath = '${bgDir.path}/schedule_bg$ext';
 
     // Delete old background file if exists
@@ -250,7 +245,7 @@ class SoftwareSettingPage extends StatelessWidget {
       }
     }
 
-    await File(file.path!).copy(destPath);
+    await File(picked.path).copy(destPath);
     appConfig.backgroundImagePath.value = destPath;
   }
 }
