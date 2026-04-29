@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 课程表非本周显示功能开关：支持开关显示非本周课程
 - 余额查询功能：支持查询电费和空调余额
 - 课表导出功能：添加将课表导出为标准日历文件（iCalendar）功能
+- 添加课表背景图片功能：支持自定义课表背景图片
 
 ### Changed
 
