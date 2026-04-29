@@ -376,6 +376,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get courseRowHeight => '课表网格高度';
 
   @override
+  String get backgroundImage => '背景图片';
+
+  @override
+  String get setBackgroundImage => '设置背景图片';
+
+  @override
+  String get removeBackgroundImage => '移除背景图片';
+
+  @override
+  String get backgroundImageOpacity => '背景图片不透明度';
+
+  @override
   String get showTeacher => '显示教师';
 
   @override
@@ -630,6 +642,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get gradesLoadFailed => '成绩加载失败';
+
+  @override
+  String get gradesRefreshFailed => '刷新失败，显示的是缓存数据';
 
   @override
   String get gradesNoPassingData => '暂无及格成绩数据';

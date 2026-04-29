@@ -817,6 +817,30 @@ abstract class AppLocalizations {
   /// **'Course Row Height'**
   String get courseRowHeight;
 
+  /// No description provided for @backgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Image'**
+  String get backgroundImage;
+
+  /// No description provided for @setBackgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Background Image'**
+  String get setBackgroundImage;
+
+  /// No description provided for @removeBackgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Background Image'**
+  String get removeBackgroundImage;
+
+  /// No description provided for @backgroundImageOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Image Opacity'**
+  String get backgroundImageOpacity;
+
   /// No description provided for @showTeacher.
   ///
   /// In en, this message translates to:
@@ -1308,6 +1332,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load grades'**
   String get gradesLoadFailed;
+
+  /// No description provided for @gradesRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh failed, showing cached data'**
+  String get gradesRefreshFailed;
 
   /// No description provided for @gradesNoPassingData.
   ///

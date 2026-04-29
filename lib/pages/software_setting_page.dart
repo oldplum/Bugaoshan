@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -10,6 +13,8 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class SoftwareSettingPage extends StatelessWidget {
   const SoftwareSettingPage({super.key});
@@ -25,6 +30,8 @@ class SoftwareSettingPage extends StatelessWidget {
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
         appConfig.courseRowHeight,
+        appConfig.backgroundImagePath,
+        appConfig.backgroundImageOpacity,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -98,6 +105,56 @@ class SoftwareSettingPage extends StatelessWidget {
                   ],
                 ),
                 const Divider(),
+                // Background image
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ButtonWithMaxWidth(
+                      onPressed: () => _pickBackgroundImage(appConfig),
+                      icon: const Icon(Icons.wallpaper),
+                      child: Text(localizations.setBackgroundImage),
+                    ),
+                    if (appConfig.backgroundImagePath.value != null) ...[
+                      const SizedBox(height: 8),
+                      ButtonWithMaxWidth(
+                        onPressed: () {
+                          final oldPath = appConfig.backgroundImagePath.value;
+                          appConfig.backgroundImagePath.value = null;
+                          if (oldPath != null) {
+                            File(oldPath).delete().ignore();
+                          }
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                        child: Text(localizations.removeBackgroundImage),
+                      ),
+                      const SizedBox(height: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(localizations.backgroundImageOpacity),
+                              ),
+                              Text(
+                                '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
+                              ),
+                            ],
+                          ),
+                          Slider(
+                            value: appConfig.backgroundImageOpacity.value,
+                            min: 0.05,
+                            max: 0.8,
+                            divisions: 15,
+                            onChanged: (v) =>
+                                appConfig.backgroundImageOpacity.value = v,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+                const Divider(),
                 // Show course grid switch
                 SwitchListTile(
                   title: Text(localizations.showCourseGrid),
@@ -131,6 +188,7 @@ class SoftwareSettingPage extends StatelessWidget {
                     appConfig.courseCardFontSize.value = 14.0;
                     appConfig.showCourseGrid.value = true;
                     appConfig.courseRowHeight.value = 72.0;
+                    appConfig.backgroundImageOpacity.value = 0.3;
                   },
                   icon: const Icon(Icons.refresh),
                   child: Text(localizations.resetToDefault),
@@ -162,5 +220,32 @@ class SoftwareSettingPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _pickBackgroundImage(AppConfigProvider appConfig) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final bgDir = Directory('${appDir.path}/backgrounds');
+    if (!await bgDir.exists()) {
+      await bgDir.create(recursive: true);
+    }
+
+    final ext = p.extension(picked.path);
+    final destPath = '${bgDir.path}/schedule_bg$ext';
+
+    // Delete old background file if exists
+    final oldPath = appConfig.backgroundImagePath.value;
+    if (oldPath != null) {
+      final oldFile = File(oldPath);
+      if (await oldFile.exists()) {
+        await oldFile.delete();
+      }
+    }
+
+    await File(picked.path).copy(destPath);
+    appConfig.backgroundImagePath.value = destPath;
   }
 }

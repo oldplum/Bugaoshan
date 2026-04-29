@@ -383,6 +383,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get courseRowHeight => 'Course Row Height';
 
   @override
+  String get backgroundImage => 'Background Image';
+
+  @override
+  String get setBackgroundImage => 'Set Background Image';
+
+  @override
+  String get removeBackgroundImage => 'Remove Background Image';
+
+  @override
+  String get backgroundImageOpacity => 'Background Image Opacity';
+
+  @override
   String get showTeacher => 'Show Teacher';
 
   @override
@@ -645,6 +657,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gradesLoadFailed => 'Failed to load grades';
+
+  @override
+  String get gradesRefreshFailed => 'Refresh failed, showing cached data';
 
   @override
   String get gradesNoPassingData => 'No passing grade data';
