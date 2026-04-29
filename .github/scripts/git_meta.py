@@ -3,6 +3,7 @@
 import subprocess
 import datetime
 import os
+import shlex
 
 def run(cmd: list[str]) -> str:
     return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
@@ -28,8 +29,7 @@ def main():
         with open(output_path, "a", encoding="utf-8") as f:
             for k, v in outputs.items():
                 v = v.replace("\n", "\\n")
-                # Quote value to preserve spaces/special chars in workflow
-                f.write(f'{k}="{v}"\n')
+                f.write(f"{k}={shlex.quote(v)}\n")
     else:
         # Local fallback: print to stdout
         for k, v in outputs.items():
