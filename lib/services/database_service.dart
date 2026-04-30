@@ -388,11 +388,23 @@ class DatabaseService {
   // ==================== Clear ====================
 
   Future<void> clearAllCourseData() async {
-    await _db.delete(
-      'courses',
-      where: 'schedule_id = ?',
-      whereArgs: [_currentScheduleId],
-    );
+    await _db.delete('courses');
+    await _db.delete('schedules');
+    await _db.delete('metadata');
+
+    // Re-create default schedule
+    final defaultConfig = _defaultScheduleConfig();
+    await _db.insert('schedules', {
+      'id': defaultConfig.id,
+      'config_json': _encodeJson(defaultConfig.toJson()),
+    });
+    await _db.insert('metadata', {
+      'key': _keyCurrentScheduleId,
+      'value': 'default',
+    });
+    _currentScheduleId = 'default';
+
+    await _loadSchedulesCache();
     await _loadCoursesCache();
   }
 
