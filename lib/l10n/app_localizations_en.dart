@@ -1239,4 +1239,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scuLoginDisclaimerPrivacy =>
       'We do not collect any personal information';
+
+  @override
+  String get openSourceLicense => 'Open Source License';
 }

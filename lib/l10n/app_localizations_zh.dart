@@ -1207,6 +1207,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scuLoginDisclaimerPrivacy => '我们不会收集任何信息';
+
+  @override
+  String get openSourceLicense => '开源协议';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

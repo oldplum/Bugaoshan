@@ -2448,6 +2448,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We do not collect any personal information'**
   String get scuLoginDisclaimerPrivacy;
+
+  /// No description provided for @openSourceLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Source License'**
+  String get openSourceLicense;
 }
 
 class _AppLocalizationsDelegate
