@@ -2430,6 +2430,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You haven\'t bound any room yet, please bind first'**
   String get balanceQueryNoBinding;
+
+  /// No description provided for @scuLoginDisclaimerPwd.
+  ///
+  /// In en, this message translates to:
+  /// **'When \'Remember Password\' is enabled, your password is encrypted and stored locally using system-level encryption'**
+  String get scuLoginDisclaimerPwd;
+
+  /// No description provided for @scuLoginDisclaimerOcr.
+  ///
+  /// In en, this message translates to:
+  /// **'Captcha is recognized by a local OCR model'**
+  String get scuLoginDisclaimerOcr;
+
+  /// No description provided for @scuLoginDisclaimerPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not collect any personal information'**
+  String get scuLoginDisclaimerPrivacy;
 }
 
 class _AppLocalizationsDelegate

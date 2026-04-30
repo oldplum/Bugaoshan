@@ -1227,4 +1227,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get balanceQueryNoBinding =>
       'You haven\'t bound any room yet, please bind first';
+
+  @override
+  String get scuLoginDisclaimerPwd =>
+      'When \'Remember Password\' is enabled, your password is encrypted and stored locally using system-level encryption';
+
+  @override
+  String get scuLoginDisclaimerOcr =>
+      'Captcha is recognized by a local OCR model';
+
+  @override
+  String get scuLoginDisclaimerPrivacy =>
+      'We do not collect any personal information';
 }

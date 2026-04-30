@@ -1198,6 +1198,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get balanceQueryNoBinding => '您还没有绑定房间，请先绑定';
+
+  @override
+  String get scuLoginDisclaimerPwd => '当使用记住密码功能时，密码通过系统级加密仅存储在本机';
+
+  @override
+  String get scuLoginDisclaimerOcr => '验证码使用本地OCR模型识别';
+
+  @override
+  String get scuLoginDisclaimerPrivacy => '我们不会收集任何信息';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

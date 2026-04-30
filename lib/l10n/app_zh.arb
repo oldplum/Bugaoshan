@@ -405,5 +405,8 @@
     "roomNumberHint": "请输入房间号，如 301C",
     "pricePerUnit": "单价",
     "balanceQueryLoginRequired": "请先在「我的」页面完成统一身份认证登录",
-    "balanceQueryNoBinding": "您还没有绑定房间，请先绑定"
+    "balanceQueryNoBinding": "您还没有绑定房间，请先绑定",
+    "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
+    "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
+    "scuLoginDisclaimerPrivacy": "我们不会收集任何信息"
 }

@@ -405,5 +405,8 @@
     "roomNumberHint": "Enter room number, e.g. 301C",
     "pricePerUnit": "Price per unit",
     "balanceQueryLoginRequired": "Please login via unified authentication in Profile page first",
-    "balanceQueryNoBinding": "You haven't bound any room yet, please bind first"
+    "balanceQueryNoBinding": "You haven't bound any room yet, please bind first",
+    "scuLoginDisclaimerPwd": "When 'Remember Password' is enabled, your password is encrypted and stored locally using system-level encryption",
+    "scuLoginDisclaimerOcr": "Captcha is recognized by a local OCR model",
+    "scuLoginDisclaimerPrivacy": "We do not collect any personal information"
 }
