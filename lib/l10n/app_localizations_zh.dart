@@ -1495,6 +1495,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fitnessTestNoticeDetail => '通知详情';
 
   @override
+  String get fitnessTestCampusNetworkRequiredAtNight =>
+      '该时段（23:00-次日6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试';
+
+  @override
   String get dockLabelFitnessTest => '体测';
 
   @override

@@ -516,6 +516,7 @@
     "fitnessTestReadCount": "次阅读",
     "fitnessTestSticky": "置顶",
     "fitnessTestNoticeDetail": "通知详情",
+    "fitnessTestCampusNetworkRequiredAtNight": "该时段（23:00-次日6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
     "dockLabelFitnessTest": "体测",
     "eulaTitle": "用户协议",
     "eulaScrollToBottom": "请先阅读完协议内容",

@@ -3007,6 +3007,12 @@ abstract class AppLocalizations {
   /// **'Notice Detail'**
   String get fitnessTestNoticeDetail;
 
+  /// No description provided for @fitnessTestCampusNetworkRequiredAtNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.'**
+  String get fitnessTestCampusNetworkRequiredAtNight;
+
   /// No description provided for @dockLabelFitnessTest.
   ///
   /// In en, this message translates to:

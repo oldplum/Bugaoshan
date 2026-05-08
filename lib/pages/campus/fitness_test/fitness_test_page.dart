@@ -58,6 +58,19 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     super.dispose();
   }
 
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'networkError':
+        return l10n.networkError;
+      case 'campusNetworkRequiredAtNight':
+        return l10n.fitnessTestCampusNetworkRequiredAtNight;
+      case 'authFailed':
+        return l10n.loadFailed;
+      default:
+        return l10n.loadFailed;
+    }
+  }
+
   void _onAuthChanged() {
     final auth = getIt<ScuAuthProvider>();
     if (auth.isLoggedIn && mounted) {
@@ -132,9 +145,12 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     } catch (e) {
       debugPrint('Fitness test load error: $e');
       if (mounted) {
+        final hour = DateTime.now().hour;
         setState(() {
           _loading = false;
-          _error = 'networkError';
+          _error = (hour >= 23 || hour < 6)
+              ? 'campusNetworkRequiredAtNight'
+              : 'networkError';
         });
       }
     }
@@ -167,9 +183,12 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       });
     } catch (e) {
       debugPrint('Fitness test score error: $e');
+      final hour = DateTime.now().hour;
       setState(() {
         _scoreLoading = false;
-        _scoreError = 'networkError';
+        _scoreError = (hour >= 23 || hour < 6)
+            ? 'campusNetworkRequiredAtNight'
+            : 'networkError';
       });
     }
   }
@@ -259,7 +278,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         return const LoginRequiredWidget();
       }
       return TappableErrorWidget(
-        message: _error == 'networkError' ? l10n.networkError : l10n.loadFailed,
+        message: _getErrorMessage(l10n, _error!),
         onRetry: _loadData,
       );
     }
@@ -547,9 +566,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
               ),
               const SizedBox(height: 8),
               Text(
-                _scoreError == 'networkError'
-                    ? l10n.networkError
-                    : _scoreError!,
+                _getErrorMessage(l10n, _scoreError!),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,

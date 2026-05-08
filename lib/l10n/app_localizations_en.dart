@@ -1535,6 +1535,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fitnessTestNoticeDetail => 'Notice Detail';
 
   @override
+  String get fitnessTestCampusNetworkRequiredAtNight =>
+      'Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.';
+
+  @override
   String get dockLabelFitnessTest => 'Fitness';
 
   @override
