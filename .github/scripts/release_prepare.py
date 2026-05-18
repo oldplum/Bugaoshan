@@ -18,8 +18,14 @@ def main():
 
     # Copy zip and tar.gz
     shutil.copy("windows-release/windows-release.zip", f"bugaoshan_{version}_windows_x64.zip")
-    shutil.copy("linux-release/linux-release.tar.gz", f"bugaoshan_{version}_linux_x64.tar.gz")
-    print("Copied windows/linux artifacts")
+    print("Copied windows artifact")
+
+    linux_src = "linux-release/linux-release.tar.gz"
+    if os.path.exists(linux_src):
+        shutil.copy(linux_src, f"bugaoshan_{version}_linux_x64.tar.gz")
+        print("Copied linux artifact")
+    else:
+        print(f"Skipped linux artifact (not found: {linux_src})")
 
 if __name__ == "__main__":
     main()
