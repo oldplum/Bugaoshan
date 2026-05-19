@@ -37,6 +37,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 // ── Data loaded from SQLite for the widget ──────────────────────────
 
@@ -133,22 +135,24 @@ object WidgetDataLoader {
 
             var month = now.get(Calendar.MONTH) + 1
             var day = now.get(Calendar.DAY_OF_MONTH)
-            val dayNames = arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
-            var dayName = dayNames[dayOfWeek - 1]
-            var dateText = "$month/$day $dayName"
+            val locale = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                context.resources.configuration.locales.get(0)
+            } else {
+                context.resources.configuration.locale
+            }
+
+            val dayFormat = SimpleDateFormat("EEE", locale)
+            var dateText = "$month/$day ${dayFormat.format(now.time)}"
             if (showingTomorrow && tomorrowCal != null) {
                 month = tomorrowCal.get(Calendar.MONTH) + 1
                 day = tomorrowCal.get(Calendar.DAY_OF_MONTH)
-                val nextDayIndex = (tomorrowCal.get(Calendar.DAY_OF_WEEK) + 5) % 7
-                dayName = dayNames[nextDayIndex]
+                val dayName = dayFormat.format(tomorrowCal.time)
                 val tomorrowLabel = context.getString(R.string.tomorrow)
                 dateText = "$month/$day $dayName $tomorrowLabel"
             }
-            val weekText = if (showingTomorrow) {
-                "第${weekForTomorrow}周"
-            } else {
-                "第${currentWeek}周"
-            }
+
+            val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
+            val weekText = context.getString(R.string.widget_week_format, weekNumber)
 
             val themeColor = 0xFF2196F3.toInt()
 
@@ -157,7 +161,7 @@ object WidgetDataLoader {
                 dateText = dateText,
                 weekText = weekText,
                 headerTitle = "不高山上",
-                emptyText = "今天没有课程",
+                emptyText = context.getString(R.string.widget_empty_today),
                 sectionPrefix = "第",
                 sectionSuffix = "节",
                 themeColor = themeColor,
@@ -389,21 +393,21 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 val isLarge = widthDp >= 300 && heightDp >= 250
 
                 when {
-                    isSmall -> SmallWidget(data, launchIntent)
-                    isLarge -> LargeWidget(data, launchIntent)
-                    else -> MediumWidget(data, launchIntent)
+                    isSmall -> SmallWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
+                    isLarge -> LargeWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
+                    else -> MediumWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
                 }
             }
         }
     }
 
     @Composable
-    private fun SmallWidget(data: WidgetCourseData?, launchIntent: Intent) {
+    private fun SmallWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
         val courses = data?.courses ?: JSONArray()
         val title = data?.headerTitle ?: "不高山上"
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: "今天没有课程"
+        val emptyText = data?.emptyText ?: emptyTextParam
 
         // Pick courses to show: current + next if in class, otherwise next 2 upcoming
         val displayCourses = mutableListOf<JSONObject>()
@@ -485,12 +489,12 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun MediumWidget(data: WidgetCourseData?, launchIntent: Intent) {
+    private fun MediumWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
         val courses = data?.courses ?: JSONArray()
         val title = data?.headerTitle ?: "不高山上"
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: "今天没有课程"
+        val emptyText = data?.emptyText ?: emptyTextParam
 
         Column(
             modifier = GlanceModifier
@@ -555,12 +559,12 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun LargeWidget(data: WidgetCourseData?, launchIntent: Intent) {
+    private fun LargeWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
         val courses = data?.courses ?: JSONArray()
         val title = data?.headerTitle ?: "不高山上"
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: "今天没有课程"
+        val emptyText = data?.emptyText ?: emptyTextParam
 
         Column(
             modifier = GlanceModifier
