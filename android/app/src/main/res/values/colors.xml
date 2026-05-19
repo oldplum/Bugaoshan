@@ -9,4 +9,7 @@
     <color name="widget_text_on_primary">#FFFFFFFF</color>
     <color name="widget_card_background">#FFFFFFFF</color>
     <color name="widget_divider">#0F000000</color>
+    <color name="widget_gray_left">#BDBDBD</color>
+    <color name="widget_gray_name">#757575</color>
+    <color name="widget_gray_meta">#9E9E9E</color>
 </resources>

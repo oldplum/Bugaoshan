@@ -4,4 +4,5 @@
     <string name="widget_name_small">Schedule (Small)</string>
     <string name="widget_name_medium">Schedule (Medium)</string>
     <string name="widget_name_large">Schedule (Large)</string>
+    <string name="tomorrow">Tomorrow</string>
 </resources>
