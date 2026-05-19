@@ -337,7 +337,10 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                           color: Theme.of(
                             context,
                           ).colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.image_not_supported, size: 64),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 64,
+                          ),
                         ),
                       );
                     },
@@ -357,8 +360,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                 right: 8,
                 child: IconButton(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
-                  onPressed: () =>
-                      _showImageActions(context, imageUrl, l10n),
+                  onPressed: () => _showImageActions(context, imageUrl, l10n),
                 ),
               ),
             ],
@@ -411,9 +413,9 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       if (response.statusCode != 200) throw Exception('Download failed');
       await Gal.putImageBytes(response.bodyBytes);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.imageSavedToGallery)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
       }
     } catch (e) {
       debugPrint('Save image error: $e');
@@ -437,7 +439,9 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode != 200) throw Exception('Download failed');
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/ccyl_image_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final file = File(
+        '${dir.path}/ccyl_image_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
       await file.writeAsBytes(response.bodyBytes);
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {

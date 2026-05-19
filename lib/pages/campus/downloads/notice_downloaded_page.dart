@@ -314,7 +314,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
 
   void _openFile(File file) => OpenFilex.open(file.path);
 
-  void _shareFile(File file) => SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+  void _shareFile(File file) =>
+      SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
 
   void _shareSelected() {
     final files = _selected.map((p) => XFile(p)).toList();

@@ -212,7 +212,6 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-
 class ScoreCardWidget extends StatelessWidget {
   const ScoreCardWidget({super.key, required this.item});
   final SchemeScoreItem item;

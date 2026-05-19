@@ -2,6 +2,7 @@ import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:flutter_litert/flutter_litert.dart';
 import 'package:image/image.dart' as img;
+
 class OcrService {
   static Interpreter? _interpreter;
 

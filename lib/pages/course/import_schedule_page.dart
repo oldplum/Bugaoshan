@@ -393,18 +393,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
             final newStartDate = currentSunday.subtract(
               Duration(days: (week - 1) * 7),
             );
-            final currentConfig =
-                widget.courseProvider.scheduleConfig.value;
+            final currentConfig = widget.courseProvider.scheduleConfig.value;
             final updatedConfig = currentConfig.copyWith(
               semesterStartDate: newStartDate,
             );
-            await widget.courseProvider
-                .updateScheduleConfig(updatedConfig);
+            await widget.courseProvider.updateScheduleConfig(updatedConfig);
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.autoSetCurrentWeekSuccess),
-                ),
+                SnackBar(content: Text(l10n.autoSetCurrentWeekSuccess)),
               );
             }
           } catch (_) {

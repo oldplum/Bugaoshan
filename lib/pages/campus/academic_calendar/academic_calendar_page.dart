@@ -136,10 +136,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
 
   Widget _buildBody(AppLocalizations l10n) {
     if (_error != null && _entries.isEmpty) {
-      return RetryableErrorWidget(
-        message: l10n.loadFailed,
-        onRetry: _loadList,
-      );
+      return RetryableErrorWidget(message: l10n.loadFailed, onRetry: _loadList);
     }
 
     return Column(

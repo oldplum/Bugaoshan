@@ -175,7 +175,6 @@ class _OverallSummaryCard extends StatelessWidget {
   }
 }
 
-
 class _TermHeader extends StatelessWidget {
   const _TermHeader({required this.group});
   final PassingScoreGroup group;

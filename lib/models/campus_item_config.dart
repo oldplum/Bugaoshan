@@ -205,10 +205,7 @@ final campusSections = [
   ),
   CampusSection(
     title: (l10n) => l10n.noticeSection,
-    items: [
-      campusItemNotice,
-      campusItemDownloads,
-    ],
+    items: [campusItemNotice, campusItemDownloads],
   ),
 ];
 

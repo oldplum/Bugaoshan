@@ -27,9 +27,18 @@ void showAttachmentsSheet(
   for (final item in items) {
     checkDownloadedFile(dirName, item.name).then((path) {
       if (path != null) {
-        final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
+        final task = manager.enqueue(
+          item.url,
+          dirName,
+          item.name,
+          headers: downloadHeaders,
+        );
         if (task.status == DownloadStatus.pending) {
-          manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path);
+          manager.updateTask(
+            task,
+            status: DownloadStatus.done,
+            downloadedPath: path,
+          );
         }
       }
     });
@@ -126,15 +135,22 @@ class _SheetAttachmentTile extends StatelessWidget {
   IconData _fileIcon() {
     final lower = item.name.toLowerCase();
     if (lower.endsWith('.pdf')) return Icons.picture_as_pdf;
-    if (lower.endsWith('.doc') || lower.endsWith('.docx')) return Icons.description;
-    if (lower.endsWith('.xls') || lower.endsWith('.xlsx')) return Icons.table_chart;
-    if (lower.endsWith('.ppt') || lower.endsWith('.pptx')) return Icons.slideshow;
-    if (lower.endsWith('.zip') || lower.endsWith('.rar') || lower.endsWith('.7z')) return Icons.folder_zip;
+    if (lower.endsWith('.doc') || lower.endsWith('.docx'))
+      return Icons.description;
+    if (lower.endsWith('.xls') || lower.endsWith('.xlsx'))
+      return Icons.table_chart;
+    if (lower.endsWith('.ppt') || lower.endsWith('.pptx'))
+      return Icons.slideshow;
+    if (lower.endsWith('.zip') ||
+        lower.endsWith('.rar') ||
+        lower.endsWith('.7z'))
+      return Icons.folder_zip;
     return Icons.insert_drive_file;
   }
 
   void _open(String path) => OpenFilex.open(path);
-  void _share(String path) => SharePlus.instance.share(ShareParams(files: [XFile(path)]));
+  void _share(String path) =>
+      SharePlus.instance.share(ShareParams(files: [XFile(path)]));
 
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {
@@ -144,7 +160,12 @@ class _SheetAttachmentTile extends StatelessWidget {
       onWebViewDownload!(item.url);
       return;
     }
-    await manager.download(item.url, dirName, item.name, headers: downloadHeaders);
+    await manager.download(
+      item.url,
+      dirName,
+      item.name,
+      headers: downloadHeaders,
+    );
   }
 
   @override
@@ -156,16 +177,26 @@ class _SheetAttachmentTile extends StatelessWidget {
         final task = manager.taskFor(dirName, item.name);
 
         // Show done state if task completed or file already known.
-        if (task != null && task.status == DownloadStatus.done && task.downloadedPath != null) {
+        if (task != null &&
+            task.status == DownloadStatus.done &&
+            task.downloadedPath != null) {
           return _buildDoneTile(context, task.downloadedPath!);
         }
 
         // Show downloading state.
         if (task != null &&
-            (task.status == DownloadStatus.downloading || task.status == DownloadStatus.pending)) {
+            (task.status == DownloadStatus.downloading ||
+                task.status == DownloadStatus.pending)) {
           return ListTile(
-            leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
-            title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+            leading: Icon(
+              _fileIcon(),
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(
+              item.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             trailing: const SizedBox(
               width: 24,
               height: 24,
@@ -177,12 +208,23 @@ class _SheetAttachmentTile extends StatelessWidget {
         // Show error state with retry.
         if (task != null && task.status == DownloadStatus.error) {
           return ListTile(
-            leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
-            title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+            leading: Icon(
+              _fileIcon(),
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(
+              item.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error, color: Theme.of(context).colorScheme.error, size: 20),
+                Icon(
+                  Icons.error,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 20,
+                ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: () => _startDownload(manager),
@@ -214,9 +256,18 @@ class _SheetAttachmentTile extends StatelessWidget {
           }
           if (snapshot.data != null) {
             // Already on disk — register in manager.
-            final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
+            final task = manager.enqueue(
+              item.url,
+              dirName,
+              item.name,
+              headers: downloadHeaders,
+            );
             if (task.status == DownloadStatus.pending) {
-              manager.updateTask(task, status: DownloadStatus.done, downloadedPath: snapshot.data);
+              manager.updateTask(
+                task,
+                status: DownloadStatus.done,
+                downloadedPath: snapshot.data,
+              );
             }
             return _doneTrailing(snapshot.data!);
           }

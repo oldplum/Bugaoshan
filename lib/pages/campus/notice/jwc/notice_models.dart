@@ -6,11 +6,8 @@ class NoticeEntry {
   final DateTime date;
   final String normalizedTitle;
 
-  NoticeEntry({
-    required this.title,
-    required this.url,
-    required this.date,
-  }) : normalizedTitle = title.toLowerCase().replaceAll(_filterSpaceReg, '');
+  NoticeEntry({required this.title, required this.url, required this.date})
+    : normalizedTitle = title.toLowerCase().replaceAll(_filterSpaceReg, '');
 }
 
 enum _ElementType { paragraph, image, table }

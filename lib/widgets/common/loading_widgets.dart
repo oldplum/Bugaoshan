@@ -30,9 +30,7 @@ class EmptyStateWidget extends StatelessWidget {
     return Center(
       child: Text(
         message,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
     );
   }

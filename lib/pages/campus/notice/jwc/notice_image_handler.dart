@@ -21,7 +21,7 @@ Widget _buildNoticeImage(BuildContext context, String imageUrl) {
             child: CircularProgressIndicator(
               value: progress.expectedTotalBytes != null
                   ? progress.cumulativeBytesLoaded /
-                      progress.expectedTotalBytes!
+                        progress.expectedTotalBytes!
                   : null,
             ),
           );
@@ -157,9 +157,9 @@ Future<void> _saveImageToGallery(
     if (response.statusCode != 200) throw Exception('Download failed');
     await Gal.putImageBytes(response.bodyBytes);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.imageSavedToGallery)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
     }
   } catch (e) {
     debugPrint('Save image error: $e');

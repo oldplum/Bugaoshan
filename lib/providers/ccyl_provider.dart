@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/ccyl_oauth_service.dart';
@@ -9,15 +8,14 @@ const _keyCcylToken = 'ccyl_token';
 const _keyCcylUserId = 'ccyl_user_id';
 
 class CcylProvider extends ChangeNotifier {
-  final SharedPreferences _prefs;
   final FlutterSecureStorage _secure;
   final CcylService _service = CcylService();
 
-  CcylProvider._(this._prefs, this._secure);
+  CcylProvider._(this._secure);
 
-  static Future<CcylProvider> create(SharedPreferences prefs) async {
+  static Future<CcylProvider> create() async {
     final secure = SecureStorageProvider.instance;
-    final provider = CcylProvider._(prefs, secure);
+    final provider = CcylProvider._(secure);
     await provider._initFromSecureStorage();
     return provider;
   }

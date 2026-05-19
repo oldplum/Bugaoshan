@@ -109,7 +109,11 @@ class DownloadManager extends ChangeNotifier {
       updateTask(task, status: DownloadStatus.done, downloadedPath: path);
       return path;
     } catch (e) {
-      updateTask(task, status: DownloadStatus.error, errorMessage: e.toString());
+      updateTask(
+        task,
+        status: DownloadStatus.error,
+        errorMessage: e.toString(),
+      );
       rethrow;
     }
   }
@@ -127,7 +131,10 @@ class DownloadManager extends ChangeNotifier {
   }
 
   void clearCompleted() {
-    _tasks.removeWhere((_, t) => t.status == DownloadStatus.done || t.status == DownloadStatus.error);
+    _tasks.removeWhere(
+      (_, t) =>
+          t.status == DownloadStatus.done || t.status == DownloadStatus.error,
+    );
     notifyListeners();
   }
 }

@@ -18,10 +18,7 @@ class EulaPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          Text(
-            l10n.eulaTitle,
-            style: colorScheme.textTheme.headlineMedium,
-          ),
+          Text(l10n.eulaTitle, style: colorScheme.textTheme.headlineMedium),
           const SizedBox(height: 8),
           Text(
             l10n.wizardWelcomeDesc,
@@ -30,9 +27,7 @@ class EulaPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: EulaContent(onAgreedChanged: onAgreedChanged),
-          ),
+          Expanded(child: EulaContent(onAgreedChanged: onAgreedChanged)),
         ],
       ),
     );

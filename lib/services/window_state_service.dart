@@ -31,7 +31,8 @@ class WindowStateService with WindowListener {
     // Validate saved position against current screen layout.
     // If the display configuration changed (resolution lowered, monitor
     // unplugged), the window could appear off-screen.
-    final validPosition = position != null &&
+    final validPosition =
+        position != null &&
         size != null &&
         await _isPositionOnScreen(position, size);
 

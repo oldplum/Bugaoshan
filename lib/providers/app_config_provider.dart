@@ -86,7 +86,8 @@ class AppConfigProvider {
       _keyBackgroundImagePath,
     );
     firstLaunchWizardCompleted.value =
-        _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? kDebugMode;
+        _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ??
+        kDebugMode;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
     visibleDockIds.value =

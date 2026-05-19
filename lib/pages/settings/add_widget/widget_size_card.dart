@@ -63,10 +63,7 @@ class WidgetSizeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            FilledButton.tonal(
-              onPressed: onPressed,
-              child: Text(pinLabel),
-            ),
+            FilledButton.tonal(onPressed: onPressed, child: Text(pinLabel)),
           ],
         ),
       ),

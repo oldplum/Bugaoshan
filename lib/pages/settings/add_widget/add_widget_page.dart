@@ -17,9 +17,7 @@ class AddWidgetPage extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.addWidgetPageTitle),
-      ),
+      appBar: AppBar(title: Text(localizations.addWidgetPageTitle)),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: AddWidgetContent(),
@@ -37,7 +35,8 @@ class AddWidgetContent extends StatefulWidget {
   State<AddWidgetContent> createState() => _AddWidgetContentState();
 }
 
-class _AddWidgetContentState extends State<AddWidgetContent> with WidgetsBindingObserver {
+class _AddWidgetContentState extends State<AddWidgetContent>
+    with WidgetsBindingObserver {
   BatteryOptimizationStatus _status = BatteryOptimizationStatus.checking;
 
   @override
@@ -69,7 +68,9 @@ class _AddWidgetContentState extends State<AddWidgetContent> with WidgetsBinding
     final isIgnoring = await service.isIgnoringBatteryOptimizations();
     if (mounted) {
       setState(() {
-        _status = isIgnoring ? BatteryOptimizationStatus.disabled : BatteryOptimizationStatus.enabled;
+        _status = isIgnoring
+            ? BatteryOptimizationStatus.disabled
+            : BatteryOptimizationStatus.enabled;
       });
     }
   }

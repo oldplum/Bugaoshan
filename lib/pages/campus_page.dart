@@ -70,10 +70,8 @@ class _CampusPageState extends State<CampusPage>
                           icon: item.icon,
                           title: item.dockFullLabel(l10n),
                           desc: item.desc(l10n),
-                          onTap: () => popupOrNavigate(
-                            logicRootContext,
-                            item.page(),
-                          ),
+                          onTap: () =>
+                              popupOrNavigate(logicRootContext, item.page()),
                         ),
                         const SizedBox(height: 8),
                       ],

@@ -352,5 +352,4 @@ class SoftwareSettingPage extends StatelessWidget {
       );
     }
   }
-
 }

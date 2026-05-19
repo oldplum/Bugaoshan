@@ -318,7 +318,11 @@ class DatabaseService {
 
   Future<void> deleteSchedule(String scheduleId) async {
     await _db.transaction((txn) async {
-      await txn.delete('courses', where: 'schedule_id = ?', whereArgs: [scheduleId]);
+      await txn.delete(
+        'courses',
+        where: 'schedule_id = ?',
+        whereArgs: [scheduleId],
+      );
       await txn.delete('schedules', where: 'id = ?', whereArgs: [scheduleId]);
     });
 

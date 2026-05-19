@@ -17,14 +17,15 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).colorScheme.primaryContainer,
+        color:
+            backgroundColor ?? Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: textColor,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: textColor),
       ),
     );
   }

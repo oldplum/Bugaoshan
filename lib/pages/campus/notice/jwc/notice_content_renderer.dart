@@ -77,12 +77,14 @@ final _attachmentExtReg = RegExp(
     final href = match.group(1)!;
     final label = _stripTags(match.group(2)!);
     if (label.isEmpty) continue;
-    attachments.add(_NoticeAttachment(
-      url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
-      text: label.trim(),
-      fileName: label.trim(),
-      noticeUrl: baseUrl ?? '',
-    ));
+    attachments.add(
+      _NoticeAttachment(
+        url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
+        text: label.trim(),
+        fileName: label.trim(),
+        noticeUrl: baseUrl ?? '',
+      ),
+    );
   }
   // Remove matched attachment paragraphs.
   html = html.replaceAll(attachmentParaReg, '');
@@ -96,16 +98,19 @@ final _attachmentExtReg = RegExp(
     final normalized = _normalizeNoticeUrl(href, baseUrl: baseUrl);
     // Skip if already collected.
     if (attachments.any((a) => a.url == normalized)) continue;
-    final isDownload = href.contains('download.jsp') ||
+    final isDownload =
+        href.contains('download.jsp') ||
         href.contains('downloadAttach') ||
         _attachmentExtReg.hasMatch(label);
     if (!isDownload) continue;
-    attachments.add(_NoticeAttachment(
-      url: normalized,
-      text: label.trim(),
-      fileName: label.trim(),
-      noticeUrl: baseUrl ?? '',
-    ));
+    attachments.add(
+      _NoticeAttachment(
+        url: normalized,
+        text: label.trim(),
+        fileName: label.trim(),
+        noticeUrl: baseUrl ?? '',
+      ),
+    );
   }
 
   return (html, attachments);
@@ -113,7 +118,10 @@ final _attachmentExtReg = RegExp(
 
 /// Extracts attachment links from the `<div class="fjxz">` (附件下载) section
 /// that lives outside `vsb_content` on SCU notice pages.
-List<_NoticeAttachment> _extractFjxzAttachments(String html, {String? baseUrl}) {
+List<_NoticeAttachment> _extractFjxzAttachments(
+  String html, {
+  String? baseUrl,
+}) {
   final attachments = <_NoticeAttachment>[];
   final fjxzReg = RegExp(
     r"""<div[^>]+class=["']fjxz["'][^>]*>""",
@@ -135,12 +143,14 @@ List<_NoticeAttachment> _extractFjxzAttachments(String html, {String? baseUrl}) 
     final href = match.group(1) ?? '';
     final label = _stripTags(match.group(2)!);
     if (label.isEmpty) continue;
-    attachments.add(_NoticeAttachment(
-      url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
-      text: label.trim(),
-      fileName: label.trim(),
-      noticeUrl: baseUrl ?? '',
-    ));
+    attachments.add(
+      _NoticeAttachment(
+        url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
+        text: label.trim(),
+        fileName: label.trim(),
+        noticeUrl: baseUrl ?? '',
+      ),
+    );
   }
   return attachments;
 }
@@ -173,8 +183,11 @@ String? _extractNestedDivContent(String html, int start) {
   return null;
 }
 
-List<Widget> _buildContentWidgets(BuildContext context, String html,
-    {String? baseUrl}) {
+List<Widget> _buildContentWidgets(
+  BuildContext context,
+  String html, {
+  String? baseUrl,
+}) {
   html = html.replaceAll(_clickCountReg, '');
   html = html.replaceAll(_prevNextReg, '');
 
@@ -188,8 +201,9 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
   final tableElements = <_ContentElement>[];
   for (final match in _tableReg.allMatches(html)) {
     tableRanges.add(_Range(match.start, match.end));
-    tableElements
-        .add(_ContentElement(match.start, match.group(0)!, _ElementType.table));
+    tableElements.add(
+      _ContentElement(match.start, match.group(0)!, _ElementType.table),
+    );
   }
 
   bool insideTable(int offset) =>
@@ -198,8 +212,9 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
   final elements = <_ContentElement>[];
   for (final match in _paragraphReg.allMatches(html)) {
     if (!insideTable(match.start)) {
-      elements.add(_ContentElement(
-          match.start, match.group(0)!, _ElementType.paragraph));
+      elements.add(
+        _ContentElement(match.start, match.group(0)!, _ElementType.paragraph),
+      );
     }
   }
   // Some old pages use <div> instead of <p> for content paragraphs.
@@ -208,15 +223,17 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
     final divReg = RegExp(r'<div[^>]*>([\s\S]*?)</div>', caseSensitive: false);
     for (final match in divReg.allMatches(html)) {
       if (!insideTable(match.start)) {
-        elements.add(_ContentElement(
-            match.start, match.group(0)!, _ElementType.paragraph));
+        elements.add(
+          _ContentElement(match.start, match.group(0)!, _ElementType.paragraph),
+        );
       }
     }
   }
   for (final match in _imgReg.allMatches(html)) {
     if (!insideTable(match.start)) {
-      elements
-          .add(_ContentElement(match.start, match.group(0)!, _ElementType.image));
+      elements.add(
+        _ContentElement(match.start, match.group(0)!, _ElementType.image),
+      );
     }
   }
   elements.addAll(tableElements);
@@ -270,9 +287,11 @@ List<Widget> _parseParagraphContent(
   final pMatch = _paragraphReg.firstMatch(paragraphHtml);
   var innerHtml = pMatch?.group(1);
   // Fall back to <div> content for old pages that use <div> instead of <p>.
-  innerHtml ??= RegExp(r'<div[^>]*>([\s\S]*?)</div>', caseSensitive: false)
-          .firstMatch(paragraphHtml)
-          ?.group(1) ??
+  innerHtml ??=
+      RegExp(
+        r'<div[^>]*>([\s\S]*?)</div>',
+        caseSensitive: false,
+      ).firstMatch(paragraphHtml)?.group(1) ??
       paragraphHtml;
 
   innerHtml = innerHtml.replaceAll(
@@ -335,11 +354,7 @@ List<Widget> _parseParagraphContent(
   final text = parts.map((p) => p.text).join();
   if (text.trim().isEmpty) return [];
 
-  return [
-    SelectableText.rich(
-      TextSpan(children: spans, style: bodyStyle),
-    ),
-  ];
+  return [SelectableText.rich(TextSpan(children: spans, style: bodyStyle))];
 }
 
 Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
@@ -455,9 +470,9 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: DefaultTextStyle(
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold),
               child: cell,
             ),
           );
@@ -469,7 +484,10 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
   if (rows.isEmpty) return null;
 
   // Pad rows so every row has the same number of cells (Table requires it).
-  final maxCells = rows.fold<int>(0, (m, r) => r.children.length > m ? r.children.length : m);
+  final maxCells = rows.fold<int>(
+    0,
+    (m, r) => r.children.length > m ? r.children.length : m,
+  );
   for (var i = 0; i < rows.length; i++) {
     final row = rows[i];
     if (row.children.length < maxCells) {
@@ -488,9 +506,7 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
     scrollDirection: Axis.horizontal,
     child: Container(
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Table(

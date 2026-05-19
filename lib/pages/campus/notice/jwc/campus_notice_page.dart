@@ -331,9 +331,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
             tooltip: l10n.downloadedAttachments,
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const NoticeDownloadedPage(),
-              ),
+              MaterialPageRoute(builder: (_) => const NoticeDownloadedPage()),
             ),
           ),
           IconButton(

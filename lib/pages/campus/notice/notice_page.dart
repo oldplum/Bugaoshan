@@ -21,30 +21,24 @@ class NoticePage extends StatelessWidget {
             icon: Icons.campaign,
             title: l10n.campusNotices,
             desc: l10n.campusNoticesDesc,
-            onTap: () => popupOrNavigate(
-              logicRootContext,
-              const CampusNoticePage(),
-            ),
+            onTap: () =>
+                popupOrNavigate(logicRootContext, const CampusNoticePage()),
           ),
           const SizedBox(height: 8),
           _NoticeCard(
             icon: Icons.flag,
             title: l10n.partyNotice,
             desc: l10n.partyNoticeDesc,
-            onTap: () => popupOrNavigate(
-              logicRootContext,
-              const PartyNoticePage(),
-            ),
+            onTap: () =>
+                popupOrNavigate(logicRootContext, const PartyNoticePage()),
           ),
           const SizedBox(height: 8),
           _NoticeCard(
             icon: Icons.volunteer_activism,
             title: l10n.tuanweiNotice,
             desc: l10n.tuanweiNoticeDesc,
-            onTap: () => popupOrNavigate(
-              logicRootContext,
-              const TuanweiNoticePage(),
-            ),
+            onTap: () =>
+                popupOrNavigate(logicRootContext, const TuanweiNoticePage()),
           ),
         ],
       ),

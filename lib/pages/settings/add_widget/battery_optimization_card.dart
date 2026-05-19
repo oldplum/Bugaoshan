@@ -3,11 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 
-enum BatteryOptimizationStatus {
-  checking,
-  enabled,
-  disabled,
-}
+enum BatteryOptimizationStatus { checking, enabled, disabled }
 
 class BatteryOptimizationCard extends StatelessWidget {
   final BatteryOptimizationStatus status;
@@ -28,16 +24,18 @@ class BatteryOptimizationCard extends StatelessWidget {
     return AnimatedSize(
       duration: duration,
       child: switch (status) {
-        BatteryOptimizationStatus.checking => _LoadingCard(localizations: localizations),
+        BatteryOptimizationStatus.checking => _LoadingCard(
+          localizations: localizations,
+        ),
         BatteryOptimizationStatus.enabled => _OptimizationEnabledCard(
-            localizations: localizations,
-            colorScheme: colorScheme,
-            onRequestIgnore: onRequestIgnore,
-          ),
+          localizations: localizations,
+          colorScheme: colorScheme,
+          onRequestIgnore: onRequestIgnore,
+        ),
         BatteryOptimizationStatus.disabled => _OptimizationDisabledCard(
-            localizations: localizations,
-            colorScheme: colorScheme,
-          ),
+          localizations: localizations,
+          colorScheme: colorScheme,
+        ),
       },
     );
   }
@@ -156,11 +154,7 @@ class _OptimizationDisabledCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              size: 20,
-              color: colorScheme.primary,
-            ),
+            Icon(Icons.check_circle, size: 20, color: colorScheme.primary),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

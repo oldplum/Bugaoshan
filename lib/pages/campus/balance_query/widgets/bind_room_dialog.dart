@@ -410,7 +410,10 @@ class BindRoomDialogState extends State<BindRoomDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.selectCampus, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            l10n.selectCampus,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 12),
           ..._campuses.map(
             (campus) => RadioListTile<CampusItem>(
@@ -479,10 +482,8 @@ class BindRoomDialogState extends State<BindRoomDialog> {
           Text(l10n.selectUnit, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           ..._units.map(
-            (unit) => RadioListTile<UnitItem>(
-              title: Text(unit.name),
-              value: unit,
-            ),
+            (unit) =>
+                RadioListTile<UnitItem>(title: Text(unit.name), value: unit),
           ),
         ],
       ),

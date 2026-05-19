@@ -42,11 +42,16 @@ class BalanceQueryService {
       headers: _headers,
       body: '{}',
     );
-    final json = parseJson(resp.body, 'getCampus', (msg) => BalanceQueryException(msg));
+    final json = parseJson(
+      resp.body,
+      'getCampus',
+      (msg) => BalanceQueryException(msg),
+    );
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取校区失败');
     }
-    final datas = (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
+    final datas =
+        (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
     return datas
         .map((e) => CampusItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -61,11 +66,16 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'schoolCode': schoolCode}),
     );
-    final json = parseJson(resp.body, 'getArchitecture', (msg) => BalanceQueryException(msg));
+    final json = parseJson(
+      resp.body,
+      'getArchitecture',
+      (msg) => BalanceQueryException(msg),
+    );
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取楼栋失败');
     }
-    final datas = (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
+    final datas =
+        (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
     return datas
         .map((e) => BuildingItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -81,11 +91,16 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'schoolCode': schoolCode, 'regCode': regCode}),
     );
-    final json = parseJson(resp.body, 'getUnit', (msg) => BalanceQueryException(msg));
+    final json = parseJson(
+      resp.body,
+      'getUnit',
+      (msg) => BalanceQueryException(msg),
+    );
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取单元失败');
     }
-    final datas = (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
+    final datas =
+        (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
     return datas
         .map((e) => UnitItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -114,7 +129,11 @@ class BalanceQueryService {
         'roomNo': roomNo,
       }),
     );
-    final json = parseJson(resp.body, 'verificationRoom', (msg) => BalanceQueryException(msg));
+    final json = parseJson(
+      resp.body,
+      'verificationRoom',
+      (msg) => BalanceQueryException(msg),
+    );
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '验证房间失败');
     }
@@ -132,7 +151,11 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'cusNo': cusNo, 'type': type, 'cusName': cusName}),
     );
-    final json = parseJson(resp.body, 'queryRoomInfo', (msg) => BalanceQueryException(msg));
+    final json = parseJson(
+      resp.body,
+      'queryRoomInfo',
+      (msg) => BalanceQueryException(msg),
+    );
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '查询失败');
     }

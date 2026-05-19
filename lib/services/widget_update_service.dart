@@ -34,7 +34,9 @@ class WidgetUpdateService {
   Future<bool> isIgnoringBatteryOptimizations() async {
     if (kIsWeb || !Platform.isAndroid) return false;
     try {
-      final result = await _channel.invokeMethod<bool>('isIgnoringBatteryOptimizations');
+      final result = await _channel.invokeMethod<bool>(
+        'isIgnoringBatteryOptimizations',
+      );
       return result ?? false;
     } catch (e) {
       debugPrint('WidgetUpdate: isIgnoringBatteryOptimizations FAILED: $e');
@@ -45,7 +47,9 @@ class WidgetUpdateService {
   Future<bool> requestIgnoreBatteryOptimizations() async {
     if (kIsWeb || !Platform.isAndroid) return false;
     try {
-      final result = await _channel.invokeMethod<bool>('requestIgnoreBatteryOptimizations');
+      final result = await _channel.invokeMethod<bool>(
+        'requestIgnoreBatteryOptimizations',
+      );
       return result ?? false;
     } catch (e) {
       debugPrint('WidgetUpdate: requestIgnoreBatteryOptimizations FAILED: $e');

@@ -300,10 +300,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
 
     return TabBarView(
       controller: _tabController,
-      children: [
-        _buildScoresTab(l10n),
-        _buildNoticesTab(l10n),
-      ],
+      children: [_buildScoresTab(l10n), _buildNoticesTab(l10n)],
     );
   }
 
@@ -326,7 +323,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _notices.length,
-        itemBuilder: (context, index) => _buildNoticeCard(_notices[index], l10n),
+        itemBuilder: (context, index) =>
+            _buildNoticeCard(_notices[index], l10n),
       ),
     );
   }
@@ -359,8 +357,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                       child: Text(
                         l10n.fitnessTestSticky,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),
@@ -533,10 +532,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                     underline: const SizedBox(),
                     items: years
                         .map(
-                          (y) => DropdownMenuItem(
-                            value: y,
-                            child: Text('$y'),
-                          ),
+                          (y) => DropdownMenuItem(value: y, child: Text('$y')),
                         )
                         .toList(),
                     onChanged: (value) {

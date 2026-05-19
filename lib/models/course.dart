@@ -77,8 +77,12 @@ class ScheduleConfig {
     if (json.containsKey('totalWeeks')) {
       totalWeeks = json['totalWeeks'] as int;
     } else if (json.containsKey('semesterEndDate')) {
-      final startDate = DateTime.tryParse(json['semesterStartDate'] as String? ?? '') ?? DateTime.now();
-      final endDate = DateTime.tryParse(json['semesterEndDate'] as String? ?? '') ?? DateTime.now();
+      final startDate =
+          DateTime.tryParse(json['semesterStartDate'] as String? ?? '') ??
+          DateTime.now();
+      final endDate =
+          DateTime.tryParse(json['semesterEndDate'] as String? ?? '') ??
+          DateTime.now();
       totalWeeks = (endDate.difference(startDate).inDays / 7).ceil();
     } else {
       totalWeeks = 20;
@@ -103,7 +107,9 @@ class ScheduleConfig {
     return ScheduleConfig(
       id: json['id'] as String? ?? 'default',
       semesterName: json['semesterName'] as String? ?? '',
-      semesterStartDate: DateTime.tryParse(json['semesterStartDate'] as String? ?? '') ?? DateTime.now(),
+      semesterStartDate:
+          DateTime.tryParse(json['semesterStartDate'] as String? ?? '') ??
+          DateTime.now(),
       totalWeeks: totalWeeks,
       morningSections: morning,
       afternoonSections: afternoon,
@@ -422,18 +428,15 @@ class Course {
       return false;
     }
     // Week overlap check considering WeekType (O(1))
-    final overlapStart = startWeek > other.startWeek ? startWeek : other.startWeek;
+    final overlapStart = startWeek > other.startWeek
+        ? startWeek
+        : other.startWeek;
     final overlapEnd = endWeek < other.endWeek ? endWeek : other.endWeek;
     if (overlapStart > overlapEnd) return false;
     return _hasSharedWeek(overlapStart, overlapEnd, weekType, other.weekType);
   }
 
-  static bool _hasSharedWeek(
-    int start,
-    int end,
-    WeekType a,
-    WeekType b,
-  ) {
+  static bool _hasSharedWeek(int start, int end, WeekType a, WeekType b) {
     if (a == WeekType.even && b == WeekType.odd) return false;
     if (a == WeekType.odd && b == WeekType.even) return false;
     if (a == WeekType.every && b == WeekType.every) return true;

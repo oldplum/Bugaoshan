@@ -48,10 +48,7 @@ class WizardCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(child: content),
-              if (trailing != null) ...[
-                const SizedBox(width: 12),
-                trailing!,
-              ],
+              if (trailing != null) ...[const SizedBox(width: 12), trailing!],
               if (onTap != null && trailing == null)
                 Padding(
                   padding: const EdgeInsets.only(left: 12, top: 4),
