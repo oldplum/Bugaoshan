@@ -360,10 +360,10 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       );
     }
 
-    return Column(
+    return Stack(
       children: [
-        _buildFilters(l10n),
-        Expanded(child: _buildList(l10n)),
+        _buildList(l10n),
+        Positioned(left: 0, right: 0, top: 0, child: _buildFilters(l10n)),
       ],
     );
   }
@@ -435,7 +435,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       onRefresh: () => _searchMode ? _searchNotices() : _loadNotices(),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 76, 16, 24),
         itemCount: entries.length + (showFooter ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= entries.length) {
