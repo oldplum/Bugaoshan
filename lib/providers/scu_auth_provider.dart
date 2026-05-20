@@ -199,6 +199,7 @@ class ScuAuthProvider extends ChangeNotifier {
             return false;
           }
 
+          _isAutoLoggingIn = false;
           await login(
             username: username,
             password: password,
