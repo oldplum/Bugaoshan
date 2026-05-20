@@ -2,11 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 
+enum LoginStatus {
+  autoLoggingIn,
+  loggedIn,
+  sessionExpired,
+  notLoggedIn;
+
+  static LoginStatus from(ScuAuthProvider provider) {
+    if (provider.isAutoLoggingIn) return LoginStatus.autoLoggingIn;
+    if (provider.isLoggedIn) return LoginStatus.loggedIn;
+    if (provider.isExpired && provider.accessToken != null) {
+      return LoginStatus.sessionExpired;
+    }
+    return LoginStatus.notLoggedIn;
+  }
+
+  String displayText(AppLocalizations l10n) => switch (this) {
+    LoginStatus.autoLoggingIn => l10n.autoLoggingIn,
+    LoginStatus.loggedIn => l10n.loggedIn,
+    LoginStatus.sessionExpired => l10n.loginSessionExpired,
+    LoginStatus.notLoggedIn => l10n.notLoggedIn,
+  };
+
+  bool get isLoggedIn => this == LoginStatus.loggedIn;
+  bool get isSessionExpired => this == LoginStatus.sessionExpired;
+  bool get isAutoLoggingIn => this == LoginStatus.autoLoggingIn;
+}
+
 class LoginStatusCard extends StatelessWidget {
-  final bool isLoggedIn;
-  final bool isExpired;
-  final bool isAutoLoggingIn;
-  final String loginStatusText;
+  final LoginStatus status;
   final String? username;
   final ScuAuthProvider authProvider;
   final VoidCallback onLogin;
@@ -14,10 +38,7 @@ class LoginStatusCard extends StatelessWidget {
 
   const LoginStatusCard({
     super.key,
-    required this.isLoggedIn,
-    required this.isExpired,
-    required this.isAutoLoggingIn,
-    required this.loginStatusText,
+    required this.status,
     this.username,
     required this.authProvider,
     required this.onLogin,
@@ -49,19 +70,19 @@ class LoginStatusCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        loginStatusText,
+                        status.displayText(localizations),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (isLoggedIn)
+                      if (status.isLoggedIn)
                         Text(
                           '${localizations.scuLogin}${username != null ? ' ($username)' : ''}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                      if (isExpired)
+                      if (status.isSessionExpired)
                         Text(
                           localizations.loginSessionExpiredDesc,
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -86,16 +107,16 @@ class LoginStatusCard extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: isAutoLoggingIn
+        color: status.isAutoLoggingIn
             ? primaryColor.withValues(alpha: 0.08)
-            : isLoggedIn
+            : status.isLoggedIn
             ? primaryColor.withValues(alpha: 0.1)
-            : isExpired
+            : status.isSessionExpired
             ? theme.colorScheme.tertiaryContainer
             : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: isAutoLoggingIn
+      child: status.isAutoLoggingIn
           ? SizedBox(
               width: 24,
               height: 24,
@@ -105,14 +126,14 @@ class LoginStatusCard extends StatelessWidget {
               ),
             )
           : Icon(
-              isLoggedIn
+              status.isLoggedIn
                   ? Icons.person
-                  : isExpired
+                  : status.isSessionExpired
                   ? Icons.access_time_filled
                   : Icons.person_outline,
-              color: isLoggedIn
+              color: status.isLoggedIn
                   ? primaryColor
-                  : isExpired
+                  : status.isSessionExpired
                   ? theme.colorScheme.onTertiaryContainer
                   : theme.colorScheme.onSurfaceVariant,
               size: 24,
@@ -126,9 +147,9 @@ class LoginStatusCard extends StatelessWidget {
     Color primaryColor,
   ) {
     return InkWell(
-      onTap: isAutoLoggingIn
+      onTap: status.isAutoLoggingIn
           ? null
-          : isLoggedIn
+          : status.isLoggedIn
           ? onLogout
           : onLogin,
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
@@ -136,7 +157,7 @@ class LoginStatusCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
-            if (isAutoLoggingIn)
+            if (status.isAutoLoggingIn)
               SizedBox(
                 width: 20,
                 height: 20,
@@ -147,22 +168,24 @@ class LoginStatusCard extends StatelessWidget {
               )
             else
               Icon(
-                isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
-                color: isLoggedIn ? theme.colorScheme.error : primaryColor,
+                status.isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
+                color: status.isLoggedIn
+                    ? theme.colorScheme.error
+                    : primaryColor,
                 size: 20,
               ),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                isAutoLoggingIn
+                status.isAutoLoggingIn
                     ? localizations.autoLoggingIn
-                    : isLoggedIn
+                    : status.isLoggedIn
                     ? localizations.logout
                     : localizations.scuLogin,
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: isAutoLoggingIn
+                  color: status.isAutoLoggingIn
                       ? theme.colorScheme.onSurfaceVariant
-                      : isLoggedIn
+                      : status.isLoggedIn
                       ? theme.colorScheme.error
                       : primaryColor,
                 ),

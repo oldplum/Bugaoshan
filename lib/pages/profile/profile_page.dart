@@ -151,30 +151,18 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListenableBuilder(
       listenable: authProvider,
       builder: (context, _) {
-        final isLoggedIn = authProvider.isLoggedIn;
-        final isExpired = authProvider.isExpired;
-        final isAutoLoggingIn = authProvider.isAutoLoggingIn;
+        final status = LoginStatus.from(authProvider);
 
-        if (isLoggedIn &&
+        if (status.isLoggedIn &&
             !_labelsNotifier.hasData &&
             !_labelsNotifier.loading) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _tryFetchLabels(),
           );
         }
-        final loginStatusText = isAutoLoggingIn
-            ? localizations.autoLoggingIn
-            : isLoggedIn
-            ? localizations.loggedIn
-            : isExpired
-            ? localizations.loginSessionExpired
-            : localizations.notLoggedIn;
 
         final loginStatusCard = LoginStatusCard(
-          isLoggedIn: isLoggedIn,
-          isExpired: isExpired,
-          isAutoLoggingIn: isAutoLoggingIn,
-          loginStatusText: loginStatusText,
+          status: status,
           username: _username,
           authProvider: authProvider,
           onLogin: () => _openLogin(context),
@@ -191,7 +179,7 @@ class _ProfilePageState extends State<ProfilePage> {
               duration: appConfigService.cardSizeAnimationDuration.value,
               curve: appCurve,
               child: UserInfoCard(
-                isLoggedIn: isLoggedIn,
+                isLoggedIn: status.isLoggedIn,
                 labelsNotifier: _labelsNotifier,
                 onRetry: _fetchUserLabels,
               ),
