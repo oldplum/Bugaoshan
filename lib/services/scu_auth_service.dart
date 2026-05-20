@@ -5,6 +5,9 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
 
+/// 教务系统 base URL（该服务器不支持 HTTPS）
+const kZhjwBase = 'http://zhjw.scu.edu.cn';
+
 /// 四川大学统一身份认证 Service
 class ScuAuthService {
   static const _base = 'https://id.scu.edu.cn';
@@ -229,10 +232,10 @@ class ScuAuthService {
   Future<int> fetchCurrentWeek() async {
     final client = await bindSession();
     final resp = await client.get(
-      Uri.parse('http://zhjw.scu.edu.cn/'),
+      Uri.parse('$kZhjwBase/'),
       headers: {
         'Accept': 'text/html,*/*',
-        'Referer': 'http://zhjw.scu.edu.cn/',
+        'Referer': '$kZhjwBase/',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -251,12 +254,12 @@ class ScuAuthService {
     final client = await bindSession();
     final resp = await client.get(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/courseSelect'
+        '$kZhjwBase/student/courseSelect'
         '/calendarSemesterCurriculum/index',
       ),
       headers: {
         'Accept': 'text/html,*/*',
-        'Referer': 'http://zhjw.scu.edu.cn/',
+        'Referer': '$kZhjwBase/',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -285,14 +288,14 @@ class ScuAuthService {
     final client = await bindSession();
     final resp = await client.post(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/courseSelect'
+        '$kZhjwBase/student/courseSelect'
         '/thisSemesterCurriculum/ajaxStudentSchedule/callback',
       ),
       headers: {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Referer':
-            'http://zhjw.scu.edu.cn/student/courseSelect/calendarSemesterCurriculum/index',
+            '$kZhjwBase/student/courseSelect/calendarSemesterCurriculum/index',
         'User-Agent': _headers['User-Agent']!,
         'X-Requested-With': 'XMLHttpRequest',
       },
@@ -308,12 +311,12 @@ class ScuAuthService {
     final client = await bindSession();
     final indexResp = await client.get(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
+        '$kZhjwBase/student/integratedQuery/scoreQuery/allPassingScores/index',
       ),
       headers: {
         'Accept':
             'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Referer': 'http://zhjw.scu.edu.cn/',
+        'Referer': '$kZhjwBase/',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -331,11 +334,11 @@ class ScuAuthService {
     final callbackPath = urlMatch.group(1)!;
 
     final callbackResp = await client.get(
-      Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
+      Uri.parse('$kZhjwBase$callbackPath'),
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Referer':
-            'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
+            '$kZhjwBase/student/integratedQuery/scoreQuery/allPassingScores/index',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -353,12 +356,12 @@ class ScuAuthService {
     final client = await bindSession();
     final indexResp = await client.get(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
+        '$kZhjwBase/student/integratedQuery/scoreQuery/schemeScores/index',
       ),
       headers: {
         'Accept':
             'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Referer': 'http://zhjw.scu.edu.cn/',
+        'Referer': '$kZhjwBase/',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -377,11 +380,11 @@ class ScuAuthService {
     }
     final callbackPath = urlMatch.group(1)!;
     final callbackResp = await client.get(
-      Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
+      Uri.parse('$kZhjwBase$callbackPath'),
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Referer':
-            'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
+            '$kZhjwBase/student/integratedQuery/scoreQuery/schemeScores/index',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -401,11 +404,11 @@ class ScuAuthService {
     final client = await bindSession();
     final resp = await client.get(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
+        '$kZhjwBase/student/teachingResources/classroomUseStatus/index',
       ),
       headers: {
         'Accept': 'text/html,*/*',
-        'Referer': 'http://zhjw.scu.edu.cn/',
+        'Referer': '$kZhjwBase/',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -444,13 +447,13 @@ class ScuAuthService {
     final client = await bindSession();
     final resp = await client.get(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus'
+        '$kZhjwBase/student/teachingResources/classroomUseStatus'
         '/$campusNumber/$buildingNumber'
         '/${Uri.encodeComponent(campusName)}/${Uri.encodeComponent(buildingName)}',
       ),
       headers: {
         'Accept': 'text/html,*/*',
-        'Referer': 'http://zhjw.scu.edu.cn/',
+        'Referer': '$kZhjwBase/',
         'User-Agent': _headers['User-Agent']!,
       },
     );
@@ -478,13 +481,13 @@ class ScuAuthService {
     final client = await bindSession();
     final resp = await client.post(
       Uri.parse(
-        'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/jasInfo',
+        '$kZhjwBase/student/teachingResources/classroomUseStatus/jasInfo',
       ),
       headers: {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Referer':
-            'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
+            '$kZhjwBase/student/teachingResources/classroomUseStatus/index',
         'User-Agent': _headers['User-Agent']!,
         'X-Requested-With': 'XMLHttpRequest',
       },

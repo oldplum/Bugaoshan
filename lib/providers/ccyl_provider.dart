@@ -48,11 +48,11 @@ class CcylProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() {
+  Future<void> logout() async {
     _service.logout();
     _token = null;
-    _secure.delete(key: _keyCcylToken);
-    _secure.delete(key: _keyCcylUserId);
+    await _secure.delete(key: _keyCcylToken);
+    await _secure.delete(key: _keyCcylUserId);
     notifyListeners();
   }
 

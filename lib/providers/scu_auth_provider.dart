@@ -99,7 +99,7 @@ class ScuAuthProvider extends ChangeNotifier {
     await _prefs.remove(_keyLoginTimestamp);
     await _prefs.remove(_keyUserRealname);
     await _prefs.remove(_keyUserNumber);
-    getIt<CcylProvider>().logout();
+    await getIt<CcylProvider>().logout();
     getIt<PlanCompletionProvider>().clearCache();
     getIt<ProfileLabelsProvider>().clear();
     notifyListeners();

@@ -61,12 +61,10 @@ class PlanCompletionProvider extends ChangeNotifier {
       final client = await _authProvider.service.bindSession();
       try {
         final resp = await client.get(
-          Uri.parse(
-            'http://zhjw.scu.edu.cn/student/integratedQuery/planCompletion/index',
-          ),
+          Uri.parse('$kZhjwBase/student/integratedQuery/planCompletion/index'),
           headers: {
             'Accept': 'text/html,*/*',
-            'Referer': 'http://zhjw.scu.edu.cn/',
+            'Referer': '$kZhjwBase/',
             'User-Agent': kDefaultUserAgent,
           },
         );

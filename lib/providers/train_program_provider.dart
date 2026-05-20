@@ -88,11 +88,11 @@ class TrainProgramProvider extends ChangeNotifier {
       try {
         final resp = await client.get(
           Uri.parse(
-            'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
+            '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/index',
           ),
           headers: {
             'Accept': 'text/html,*/*',
-            'Referer': 'http://zhjw.scu.edu.cn/',
+            'Referer': '$kZhjwBase/',
             'User-Agent': kDefaultUserAgent,
           },
         );
@@ -178,13 +178,13 @@ class TrainProgramProvider extends ChangeNotifier {
       try {
         final resp = await client.post(
           Uri.parse(
-            'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/load',
+            '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/load',
           ),
           headers: {
             'Accept': 'application/json, */*',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'Referer':
-                'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
+                '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/index',
             'User-Agent': kDefaultUserAgent,
           },
           body:
@@ -229,13 +229,13 @@ class TrainProgramProvider extends ChangeNotifier {
       try {
         final resp = await client.post(
           Uri.parse(
-            'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/detail',
+            '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/detail',
           ),
           headers: {
             'Accept': 'application/json, */*',
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'Referer':
-                'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
+                '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/index',
             'User-Agent': kDefaultUserAgent,
           },
           body: 'fajhh=$fajhh&lx=1',
@@ -280,13 +280,13 @@ class TrainProgramProvider extends ChangeNotifier {
     try {
       final client = await _authProvider.service.bindSession();
       try {
-        final fullUrl = 'http://zhjw.scu.edu.cn$urlPath';
+        final fullUrl = '$kZhjwBase$urlPath';
         final resp = await client.get(
           Uri.parse(fullUrl),
           headers: {
             'Accept': 'application/json, */*',
             'Referer':
-                'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
+                '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/index',
             'User-Agent': kDefaultUserAgent,
           },
         );
