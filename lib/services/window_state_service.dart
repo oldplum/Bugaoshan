@@ -31,21 +31,21 @@ class WindowStateService with WindowListener {
     // Validate saved position against current screen layout.
     // If the display configuration changed (resolution lowered, monitor
     // unplugged), the window could appear off-screen.
-    final validPosition =
-        position != null &&
-        size != null &&
-        await _isPositionOnScreen(position, size);
+    Offset? clampedPosition;
+    if (position != null && size != null) {
+      clampedPosition = await _clampToScreen(position, size);
+    }
 
     await windowManager.waitUntilReadyToShow(
       WindowOptions(
         size: size,
-        center: !validPosition,
+        center: clampedPosition == null,
         minimumSize: const Size(400, 400),
       ),
     );
 
-    if (validPosition) {
-      await windowManager.setPosition(position);
+    if (clampedPosition != null) {
+      await windowManager.setPosition(clampedPosition);
     }
 
     windowManager.addListener(service);
@@ -53,45 +53,106 @@ class WindowStateService with WindowListener {
     return service;
   }
 
-  /// Returns true if at least a significant portion of the window is visible
-  /// on any connected display. Uses [screenRetriever] to get per-display
-  /// positions from native APIs, correctly handling multi-monitor setups
-  /// and resolution changes.
-  static Future<bool> _isPositionOnScreen(Offset pos, Size size) async {
+  /// Returns the original [pos] if the window is already on-screen, or a
+  /// clamped position that keeps the window inside the nearest display.
+  /// Returns `null` if screen info is unavailable (caller should center).
+  static Future<Offset?> _clampToScreen(Offset pos, Size size) async {
     try {
       final displays = await screenRetriever.getAllDisplays();
-      if (displays.isEmpty) return true;
+      if (displays.isEmpty) return pos;
 
       final windowRect = Rect.fromLTWH(pos.dx, pos.dy, size.width, size.height);
+
+      // Already mostly visible on any display — keep as-is.
       for (final display in displays) {
-        final screenRect = Rect.fromLTWH(
-          display.visiblePosition?.dx ?? 0,
-          display.visiblePosition?.dy ?? 0,
-          display.visibleSize?.width ?? display.size.width,
-          display.visibleSize?.height ?? display.size.height,
-        );
+        final screenRect = _displayRect(display);
         final intersection = screenRect.intersect(windowRect);
         if (intersection.width > 100 && intersection.height > 50) {
-          return true;
+          return pos;
         }
       }
-      return false;
+
+      // Off-screen or barely visible: pick the best target display.
+      // Prefer the display with the largest overlap (handles the case where
+      // the window slid slightly off the edge of its original display).
+      // Fall back to the display whose center is closest.
+      final windowCenter = windowRect.center;
+      Display? best;
+      double bestArea = 0;
+      Display? fallback;
+      double fallbackDist = double.infinity;
+      for (final display in displays) {
+        final screenRect = _displayRect(display);
+        final intersection = screenRect.intersect(windowRect);
+        final area = intersection.isEmpty
+            ? 0.0
+            : intersection.width * intersection.height;
+        if (area > bestArea) {
+          bestArea = area;
+          best = display;
+        }
+        final dist = (screenRect.center - windowCenter).distance;
+        if (dist < fallbackDist) {
+          fallbackDist = dist;
+          fallback = display;
+        }
+      }
+      final target = best ?? fallback;
+      if (target == null) return pos;
+
+      final screen = _displayRect(target);
+      // If the window is larger than the screen, pin to screen origin.
+      final maxX = screen.right - size.width;
+      final maxY = screen.bottom - size.height;
+      final clampedX = maxX >= screen.left
+          ? pos.dx.clamp(screen.left, maxX)
+          : screen.left;
+      final clampedY = maxY >= screen.top
+          ? pos.dy.clamp(screen.top, maxY)
+          : screen.top;
+      return Offset(clampedX, clampedY);
     } catch (_) {
       // If screen_retriever fails, accept the saved position.
-      return true;
+      return pos;
     }
+  }
+
+  static Rect _displayRect(Display display) {
+    return Rect.fromLTWH(
+      display.visiblePosition?.dx ?? 0,
+      display.visiblePosition?.dy ?? 0,
+      display.visibleSize?.width ?? display.size.width,
+      display.visibleSize?.height ?? display.size.height,
+    );
   }
 
   void _save() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () async {
+    _debounce = Timer(const Duration(milliseconds: 300), _saveNow);
+  }
+
+  Future<void> _saveNow() async {
+    try {
       final pos = await windowManager.getPosition();
       final size = await windowManager.getSize();
       await _prefs.setDouble(_keyX, pos.dx);
       await _prefs.setDouble(_keyY, pos.dy);
       await _prefs.setDouble(_keyW, size.width);
       await _prefs.setDouble(_keyH, size.height);
-    });
+    } catch (_) {
+      // Best-effort save.
+    }
+  }
+
+  @override
+  void onWindowClose() {
+    _debounce?.cancel();
+    _saveNow();
+  }
+
+  void dispose() {
+    _debounce?.cancel();
+    _debounce = null;
   }
 
   @override
