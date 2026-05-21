@@ -140,17 +140,23 @@ class _SheetAttachmentTile extends StatelessWidget {
 
   IconData _fileIcon() {
     final lower = item.name.toLowerCase();
-    if (lower.endsWith('.pdf')) return Icons.picture_as_pdf;
-    if (lower.endsWith('.doc') || lower.endsWith('.docx'))
+    if (lower.endsWith('.pdf')) {
+      return Icons.picture_as_pdf;
+    }
+    if (lower.endsWith('.doc') || lower.endsWith('.docx')) {
       return Icons.description;
-    if (lower.endsWith('.xls') || lower.endsWith('.xlsx'))
+    }
+    if (lower.endsWith('.xls') || lower.endsWith('.xlsx')) {
       return Icons.table_chart;
-    if (lower.endsWith('.ppt') || lower.endsWith('.pptx'))
+    }
+    if (lower.endsWith('.ppt') || lower.endsWith('.pptx')) {
       return Icons.slideshow;
+    }
     if (lower.endsWith('.zip') ||
         lower.endsWith('.rar') ||
-        lower.endsWith('.7z'))
+        lower.endsWith('.7z')) {
       return Icons.folder_zip;
+    }
     return Icons.insert_drive_file;
   }
 
