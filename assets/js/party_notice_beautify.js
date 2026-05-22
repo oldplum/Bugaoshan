@@ -263,65 +263,6 @@
   `;
   document.head.appendChild(css);
 
-  // ── Search bar (list page) ──
-  var noticeList = document.querySelector('.main-box > ul');
-  if (noticeList) {
-    var searchWrap = document.createElement('div');
-    searchWrap.style.cssText = 'max-width:640px;margin:12px auto;padding:0 16px;display:flex;gap:8px;';
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = '搜索通知...';
-    input.style.cssText = 'flex:1;box-sizing:border-box;padding:10px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;background:#fff;color:#333;';
-    var btn = document.createElement('button');
-    btn.textContent = '搜索';
-    btn.style.cssText = 'padding:10px 20px;border:none;border-radius:10px;background:#d32f2f;color:#fff;font-size:15px;cursor:pointer;white-space:nowrap;';
-    searchWrap.appendChild(input);
-    searchWrap.appendChild(btn);
-    noticeList.parentNode.insertBefore(searchWrap, noticeList);
-
-    function doSearch() {
-      var keyword = input.value.trim();
-      if (!keyword) return;
-      var encodedKey = btoa(unescape(encodeURIComponent(keyword)));
-      var form = document.querySelector('form[name="au2a"]');
-      if (form) {
-        var showKeyInput = form.querySelector('input[name="showkeycode"]');
-        var luceneInput = form.querySelector('input[name="lucenenewssearchkey"]');
-        if (showKeyInput) showKeyInput.value = keyword;
-        if (luceneInput) luceneInput.value = encodedKey;
-        form.submit();
-      } else {
-        var f = document.createElement('form');
-        f.method = 'POST';
-        f.action = '/search_list.jsp?wbtreeid=1003';
-        var params = {
-          lucenenewssearchkey: encodedKey,
-          _lucenesearchtype: '1',
-          searchScope: '0',
-          showkeycode: keyword,
-        };
-        for (var k in params) {
-          var h = document.createElement('input');
-          h.type = 'hidden'; h.name = k; h.value = params[k];
-          f.appendChild(h);
-        }
-        document.body.appendChild(f);
-        f.submit();
-      }
-    }
-
-    btn.addEventListener('click', doSearch);
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') doSearch();
-    });
-
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      input.style.background = '#1e1e1e';
-      input.style.borderColor = '#444';
-      input.style.color = '#e0e0e0';
-    }
-  }
-
   // Handle links: external links → ask Flutter to open in browser.
   var host = location.hostname;
   document.querySelectorAll('a').forEach(function (a) {
@@ -340,37 +281,6 @@
       } catch (err) { }
     }, true);
   });
-
-  // Rewrite search results to match news-list structure.
-  // Search results page may use a .list or different structure.
-  var listDiv = document.querySelector('.list');
-  if (listDiv) {
-    var sUl = listDiv.querySelector('ul');
-    if (sUl) {
-      var sLis = sUl.querySelectorAll('li');
-      sLis.forEach(function (li) {
-        var a = li.querySelector('a');
-        var span = li.querySelector('span:not([class])');
-        if (!a) return;
-        var title = a.textContent.trim();
-        var href = a.getAttribute('href') || '';
-        var date = span ? span.textContent.trim() : '';
-        var dateParts = date.split('-');
-        var mmdd = dateParts.length === 3 ? dateParts[1] + '/' + dateParts[2] : date;
-        var year = dateParts.length === 3 ? dateParts[0] : '';
-        li.className = 'news-list';
-        li.innerHTML = '<a href="' + href + '" class="clearfix" style="display:flex;align-items:flex-start;padding:14px 16px;text-decoration:none;color:#222;">' +
-          '<div class="date-box" style="flex-shrink:0;text-align:center;padding:6px 10px;margin-right:14px;background:#f5f5f5;border-radius:8px;line-height:1.3;">' +
-          '<p class="date" style="display:block;margin:0;font-size:16px;font-weight:bold;color:#d32f2f;">' + mmdd + '</p>' +
-          '<p class="year-month" style="display:block;margin:0;font-size:12px;color:#999;">' + year + '</p>' +
-          '</div>' +
-          '<div class="news-box" style="flex:1;min-width:0;">' +
-          '<p class="title" style="margin:0;font-size:16px;line-height:1.6;font-weight:500;color:#333;">' + title + '</p>' +
-          '</div>' +
-          '</a>';
-      });
-    }
-  }
 
   // Clean up attachment list: remove "附件【" prefix, "】已下载X次" suffix, add .fjxz class.
   var vsb = document.querySelector('.detail-content');
