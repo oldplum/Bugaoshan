@@ -27,14 +27,15 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       overflow: hidden !important;
     }
-    .tz-list li { padding: 0 !important; }
+    .tz-list li { padding: 0 !important; height: auto !important; }
     .tz-list li + li { border-top: 1px solid #eee !important; }
     .tz-list li a {
       display: flex !important;
-      align-items: center !important;
+      align-items: flex-start !important;
       padding: 14px 16px !important;
       text-decoration: none !important;
       color: #222 !important;
+      height: auto !important;
     }
     .tz-list .date {
       flex-shrink: 0 !important;
@@ -68,6 +69,9 @@
       line-height: 1.6 !important;
       font-weight: 500 !important;
       color: #333 !important;
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
     }
     .tz-list .more { display: none !important; }
 
