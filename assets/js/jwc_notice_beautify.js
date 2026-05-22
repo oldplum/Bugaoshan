@@ -253,7 +253,6 @@
       .p_pages .p_next a, .p_pages .p_last a { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
       .p_t, .p_dot { color: #666 !important; }
       .fjxz { background: #1e1e1e !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
-      a[href*="download.jsp"], a[href*="downloadAttach"] { background: #ef5350 !important; }
     }
   `;
   document.head.appendChild(css);
@@ -328,4 +327,18 @@
   if (items.length > 0) {
     window.flutter_inappwebview.callHandler('AttachmentsChannel', JSON.stringify(items));
   }
+
+  // Intercept attachment link clicks → hand off to Flutter download.
+  document.querySelectorAll('a[href*="download.jsp"], a[href*="downloadAttach"], .fjxz a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var href = a.getAttribute('href');
+      if (!href) return;
+      href = href.replace(/&amp;/g, '&');
+      if (href.startsWith('/')) href = window.location.origin + href;
+      var name = a.textContent.trim();
+      window.flutter_inappwebview.callHandler('DownloadAttachment', href, name);
+    }, true);
+  });
 })();

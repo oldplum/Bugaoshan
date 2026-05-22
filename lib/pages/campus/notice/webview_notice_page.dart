@@ -74,6 +74,10 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       handlerName: 'DOMReady',
       callback: (_) => _onDomReady(),
     );
+    controller.addJavaScriptHandler(
+      handlerName: 'DownloadAttachment',
+      callback: _onDownloadAttachment,
+    );
   }
 
   void _onAttachmentsMessage(List<dynamic> args) {
@@ -137,6 +141,41 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
 
   Future<void> _onDomReady() async {
     await _finishLoading();
+  }
+
+  Future<void> _onDownloadAttachment(List<dynamic> args) async {
+    if (args.length < 2) return;
+    final url = args[0] as String;
+    final name = args[1] as String;
+    try {
+      final cookies = await CookieManager.instance().getCookies(
+        url: WebUri(url),
+      );
+      final headers = <String, String>{
+        if (widget.downloadHeaders != null) ...widget.downloadHeaders!,
+        if (cookies.isNotEmpty)
+          'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
+      };
+      await getIt<DownloadManager>().download(
+        url,
+        widget.attachmentDir,
+        name,
+        headers: headers,
+      );
+      if (mounted) {
+        showAttachmentsSheet(
+          context,
+          items: _pageAttachments,
+          dirName: widget.attachmentDir,
+          downloadHeaders: widget.downloadHeaders,
+          onWebViewDownload: widget.useWebViewDownload
+              ? _onWebViewDownload
+              : null,
+        );
+      }
+    } catch (e) {
+      debugPrint('${widget.debugLabel} download attachment error: $e');
+    }
   }
 
   @override
