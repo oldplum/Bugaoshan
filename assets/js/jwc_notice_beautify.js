@@ -261,6 +261,65 @@
   `;
   document.head.appendChild(css);
 
+  // ── Search bar (list page & search results page) ──
+  var tzList = document.querySelector('.tz-list');
+  var searchList = document.querySelector('.list');
+  var anchor = tzList || searchList;
+  if (anchor) {
+    var searchWrap = document.createElement('div');
+    searchWrap.style.cssText = 'max-width:640px;margin:12px auto;padding:0 16px;display:flex;gap:8px;';
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = '搜索通知...';
+    input.style.cssText = 'flex:1;box-sizing:border-box;padding:10px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;background:#fff;color:#333;';
+    var btn = document.createElement('button');
+    btn.textContent = '搜索';
+    btn.style.cssText = 'padding:10px 20px;border:none;border-radius:10px;background:#d32f2f;color:#fff;font-size:15px;cursor:pointer;white-space:nowrap;';
+    searchWrap.appendChild(input);
+    searchWrap.appendChild(btn);
+    anchor.parentNode.insertBefore(searchWrap, anchor);
+
+    function doSearch() {
+      var keyword = input.value.trim();
+      if (!keyword) return;
+      var encodedKey = btoa(unescape(encodeURIComponent(keyword)));
+      var form = document.getElementById('au0a');
+      if (form) {
+        document.getElementById('showkeycode1091752').value = keyword;
+        document.getElementById('lucenenewssearchkey1091752').value = encodedKey;
+        form.submit();
+      } else {
+        var f = document.createElement('form');
+        f.method = 'POST';
+        f.action = 'ssjgy.jsp?wbtreeid=1069';
+        var params = {
+          lucenenewssearchkey: encodedKey,
+          _lucenesearchtype: '1',
+          searchScope: '0',
+          showkeycode: keyword,
+        };
+        for (var k in params) {
+          var h = document.createElement('input');
+          h.type = 'hidden'; h.name = k; h.value = params[k];
+          f.appendChild(h);
+        }
+        document.body.appendChild(f);
+        f.submit();
+      }
+    }
+
+    btn.addEventListener('click', doSearch);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      input.style.background = '#1e1e1e';
+      input.style.borderColor = '#444';
+      input.style.color = '#e0e0e0';
+    }
+  }
+
   // Remove target="_blank" so links navigate inside the WebView.
   document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
     a.removeAttribute('target');
@@ -274,6 +333,38 @@
       s.remove();
     }
   });
+
+  // Rewrite search results (.list) to match .tz-list structure.
+  var listDiv = document.querySelector('.list');
+  if (listDiv) {
+    var sUl = listDiv.querySelector('ul');
+    if (sUl) {
+      var sLis = sUl.querySelectorAll('li');
+      sLis.forEach(function (li) {
+        var a = li.querySelector('a');
+        var span = li.querySelector('span:not([class])');
+        if (!a) return;
+        var title = a.textContent.trim();
+        var href = a.getAttribute('href') || '';
+        var date = span ? span.textContent.trim() : '';
+        // Parse date (yyyy-mm-dd → mm/dd + yyyy)
+        var dateParts = date.split('-');
+        var mmdd = dateParts.length === 3 ? dateParts[1] + '/' + dateParts[2] : date;
+        var year = dateParts.length === 3 ? dateParts[0] : '';
+        li.innerHTML = '<a href="' + href + '" style="display:flex;align-items:flex-start;padding:14px 16px;text-decoration:none;color:#222;">' +
+          '<span class="date" style="flex-shrink:0;text-align:center;padding:6px 10px;margin-right:14px;background:#f5f5f5;border-radius:8px;line-height:1.3;">' +
+            '<p style="display:block;margin:0;font-size:16px;font-weight:bold;color:#d32f2f;">' + mmdd + '</p>' +
+            '<span style="display:block;margin:0;font-size:12px;color:#999;">' + year + '</span>' +
+          '</span>' +
+          '<span class="text" style="flex:1;min-width:0;">' +
+            '<p style="margin:0;font-size:16px;line-height:1.6;font-weight:500;color:#333;">' + title + '</p>' +
+          '</span>' +
+        '</a>';
+      });
+      // Rename class so .tz-list CSS applies
+      listDiv.className = 'tz-list';
+    }
+  }
 
   // Clean up .fjxz: remove "附件【" prefix and "】" suffix, keep <a> tags intact.
   document.querySelectorAll('.fjxz').forEach(function (el) {
