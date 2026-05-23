@@ -48,7 +48,7 @@
 
 ## 📥 下载
 
-**前往 [Release 页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases) 下载最新版本**
+**前往 [Release 页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/latest) 下载最新版本**
 
 ---
 
