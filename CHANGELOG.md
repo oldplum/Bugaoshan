@@ -5,43 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+注意：本页的更新日志应当存放一些通俗显著的更新内容，而非技术更新或者内部优化，请勿搬运git log记录。
+
 ## [Unreleased]
 
 ### Added
 - 添加体测页面夜间访问限制提示
 - 添加小组件夜间显示主题
 - 添加二课页面海报图片保存和分享功能
-- 在软件设置、向导页面添加安卓小组件功能
 - 添加教务系统通知、青春川大、党委学工部公告与附件下载功能
-- 通知公告统一入口页面，合并三个通知源为一个菜单页
-- WebView 加载失败时显示自定义错误页面，支持深色模式
-- 登录后自动恢复子系统（二课、培养方案）登录状态
-
-### Changed
-- 迁移 Share.shareXFiles 到 SharePlus.instance.share
-- 通知页面标题简化（教务处公告、党委学工部、青春川大）
-- conflictsWith 冲突检测从 O(n) 优化到 O(1)
-- 错放的 Provider 文件（TrainProgram、PlanCompletion）移到 lib/providers/
-- 提取重复的 session 过期检查、_parseJson 和 User-Agent 常量
-- 教务处通知页面拆分为多文件（HTTP 客户端、模型、渲染器、图片处理）
 
 ### Fixed
-- CCYL Token 从 SharedPreferences 迁移到 FlutterSecureStorage
-- 添加 15 秒 HTTP 超时，防止请求永久挂起
-- WebView 控制器在 dispose 时正确释放
-- bindSession 并发调用保护，避免重复 SSO 握手
-- POST 请求重试时正确复制 body 内容
-- 数据库删除操作添加事务包装
-- Course.fromJson / copyWith / _rowToCourse 添加 null safety
-- ScheduleConfig.fromJson 日期解析添加容错
-- showWeekend 默认值与构造函数一致
-- copyWith 中 timeSlots 防止引用别名
-- ScuAuthProvider.isExpired 在 timestamp 为 null 时正确返回 true
-- 登出时不再删除 auto-login 用户偏好设置
-- ThemeColorMode 枚举索引越界检查
-- BalanceQueryService json['data'] null 检查
-- CourseDetailSheet 在 Navigator.pop 前捕获 root context
-- CcylService 日志中移除 token 敏感信息
 - 桌面端分辨率变化后窗口出现在屏幕外的问题
 - 教务处通知表格渲染、链接解析、附件提取等多个问题
 
