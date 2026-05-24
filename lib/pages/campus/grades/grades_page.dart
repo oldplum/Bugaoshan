@@ -39,44 +39,51 @@ class _GradesPageState extends State<GradesPage> {
             (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
         final gradesProvider = getIt<GradesProvider>();
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(l10n.gradesStats),
-            actions: [
-              if (isDesktop && auth.isLoggedIn)
-                IconButton(
-                  onPressed: _currentIndex == 0
-                      ? gradesProvider.refreshSchemeScores
-                      : gradesProvider.refreshPassingScores,
-                  icon: const Icon(Icons.refresh),
-                ),
-            ],
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(l10n.gradesStats),
+              actions: [
+                if (isDesktop && auth.isLoggedIn)
+                  IconButton(
+                    onPressed: _currentIndex == 0
+                        ? gradesProvider.refreshSchemeScores
+                        : gradesProvider.refreshPassingScores,
+                    icon: const Icon(Icons.refresh),
+                  ),
+              ],
+              bottom: auth.isLoggedIn
+                  ? TabBar(
+                      onTap: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      dividerHeight: 0,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      indicatorWeight: 3,
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontWeight: FontWeight.normal,
+                        fontSize: 15,
+                      ),
+                      tabs: [
+                        Tab(text: l10n.schemeScores),
+                        Tab(text: l10n.passingScores),
+                      ],
+                    )
+                  : null,
+            ),
+            body: !auth.isLoggedIn
+                ? auth.isAutoLoggingIn
+                      ? const AutoLoginLoadingWidget()
+                      : const LoginRequiredWidget()
+                : _pages[_currentIndex],
           ),
-          body: !auth.isLoggedIn
-              ? auth.isAutoLoggingIn
-                    ? const AutoLoginLoadingWidget()
-                    : const LoginRequiredWidget()
-              : _pages[_currentIndex],
-          bottomNavigationBar: auth.isLoggedIn
-              ? BottomNavigationBar(
-                  currentIndex: _currentIndex,
-                  onTap: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.list_alt),
-                      label: l10n.schemeScores,
-                    ),
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: l10n.passingScores,
-                    ),
-                  ],
-                )
-              : null, // 未登录时不显示底部栏
         );
       },
     );
