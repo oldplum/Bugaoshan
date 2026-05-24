@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 注意：本页的更新日志应当存放一些通俗显著的更新内容，而非技术更新或者内部优化，请勿搬运git log记录。
 
+本项目版本号规则：
+一般升级第二个版本号，紧急修复bug则升级第三个版本号。小更新自由发布预览版，版本号不变，git tag为 `Version-PreviewName` ，如 `1.0.0-preview`
+
+## [Unreleased]
+
+### Changed
+- 美化了一些页面
+- 部分查询页隐藏隐私信息
+
 ## [1.1.0] - 2026-05-23
 
 ### Added
