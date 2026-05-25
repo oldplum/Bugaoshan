@@ -57,11 +57,11 @@ class _MyAppState extends State<MyApp> {
         final widthPx = (mq.size.width * dpr).round();
         final heightPx = (mq.size.height * dpr).round();
 
-        final provider = ResizeImage(
-          FileImage(file),
-          width: widthPx,
-          height: heightPx,
-        );
+        // 为避免强制拉伸，仅指定屏幕的长边作为目标尺寸，保持原始宽高比
+        final longSide = widthPx >= heightPx ? widthPx : heightPx;
+        final provider = (widthPx >= heightPx)
+            ? ResizeImage(FileImage(file), width: longSide)
+            : ResizeImage(FileImage(file), height: longSide);
         // 通过 ImageStream 监听完成并在 dispose 中移除监听，避免与 Widget 生命周期脱钩造成内存泄漏
         _bgImageStream = provider.resolve(
           ImageConfiguration(devicePixelRatio: dpr),
