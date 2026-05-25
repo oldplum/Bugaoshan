@@ -108,15 +108,17 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                   // Fixed background image (doesn't swipe with pages)
                   if (appConfig.backgroundImagePath.value != null)
                     Positioned.fill(
-                      child: Opacity(
-                        opacity: appConfig.backgroundImageOpacity.value,
-                        child: Image(
-                          image: FileImage(
-                            File(appConfig.backgroundImagePath.value!),
-                          ),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      child: Image(
+                        image: FileImage(
+                          File(appConfig.backgroundImagePath.value!),
                         ),
+                        fit: BoxFit.cover,
+                        color: Colors.white.withAlpha(
+                          (appConfig.backgroundImageOpacity.value * 255)
+                              .round(),
+                        ),
+                        colorBlendMode: BlendMode.modulate,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),
                     ),
                   _SwipePageView(
