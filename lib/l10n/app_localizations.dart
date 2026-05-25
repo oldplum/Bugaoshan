@@ -127,19 +127,19 @@ abstract class AppLocalizations {
   /// **'Your campus assistant: schedules, grades and campus services in one place'**
   String get wizardWelcomeDesc;
 
-  /// No description provided for @wizard.
+  /// Section title for the onboarding wizard (short). Shown in the Test page and headings.
   ///
   /// In en, this message translates to:
   /// **'Wizard'**
   String get wizard;
 
-  /// No description provided for @resetWizardTitle.
+  /// Title for the action that resets the onboarding/wizard status so the wizard runs again.
   ///
   /// In en, this message translates to:
   /// **'Reset Wizard Status'**
   String get resetWizardTitle;
 
-  /// No description provided for @resetWizardSubtitle.
+  /// Short description explaining that the action sets firstLaunchWizardCompleted to false so the wizard will re-run on next launch.
   ///
   /// In en, this message translates to:
   /// **'Set firstLaunchWizardCompleted to false'**
