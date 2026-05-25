@@ -54,7 +54,6 @@ class AppConfigProvider {
   final ValueNotifier<String?> backgroundImagePath = ValueNotifier<String?>(
     null,
   );
-  final ValueNotifier<int> backgroundImageVersion = ValueNotifier<int>(0);
   final ValueNotifier<bool> firstLaunchWizardCompleted = ValueNotifier<bool>(
     false,
   );

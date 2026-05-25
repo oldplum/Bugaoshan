@@ -350,7 +350,6 @@ class SoftwareSettingPage extends StatelessWidget {
     }
 
     await File(picked.path).copy(destPath);
-    appConfig.backgroundImageVersion.value++;
     appConfig.backgroundImagePath.value = destPath;
 
     if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
