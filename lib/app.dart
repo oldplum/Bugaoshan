@@ -39,6 +39,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
+  ImageStream? _bgImageStream;
+  ImageStreamListener? _bgImageListener;
 
   @override
   void initState() {
@@ -47,20 +49,56 @@ class _MyAppState extends State<MyApp> {
       final path = _appConfig.backgroundImagePath.value;
       if (path == null) return;
       try {
+        if (!mounted) return;
         final file = File(path);
-        file.exists().then((exists) {
-          if (!exists) return;
-          if (!mounted) return;
-          try {
-            precacheImage(FileImage(file), context);
-          } catch (_) {
-            // ignore precache errors
-          }
-        }).ignore();
+        // 使用屏幕逻辑像素与 devicePixelRatio 计算目标解码尺寸，避免缓存全分辨率大图
+        final mq = MediaQuery.of(context);
+        final dpr = mq.devicePixelRatio;
+        final widthPx = (mq.size.width * dpr).round();
+        final heightPx = (mq.size.height * dpr).round();
+
+        final provider = ResizeImage(
+          FileImage(file),
+          width: widthPx,
+          height: heightPx,
+        );
+        // 通过 ImageStream 监听完成并在 dispose 中移除监听，避免与 Widget 生命周期脱钩造成内存泄漏
+        _bgImageStream = provider.resolve(
+          ImageConfiguration(devicePixelRatio: dpr),
+        );
+        _bgImageListener = ImageStreamListener(
+          (_, __) {
+            try {
+              _bgImageStream?.removeListener(_bgImageListener!);
+            } catch (_) {}
+            _bgImageStream = null;
+            _bgImageListener = null;
+          },
+          onError: (_, __) {
+            try {
+              _bgImageStream?.removeListener(_bgImageListener!);
+            } catch (_) {}
+            _bgImageStream = null;
+            _bgImageListener = null;
+          },
+        );
+        _bgImageStream?.addListener(_bgImageListener!);
       } catch (_) {
-        // ignore
+        // ignore precache/resolve errors
       }
     });
+  }
+
+  @override
+  void dispose() {
+    if (_bgImageStream != null && _bgImageListener != null) {
+      try {
+        _bgImageStream!.removeListener(_bgImageListener!);
+      } catch (_) {}
+      _bgImageStream = null;
+      _bgImageListener = null;
+    }
+    super.dispose();
   }
 
   @override
