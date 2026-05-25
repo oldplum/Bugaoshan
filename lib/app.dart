@@ -1,6 +1,8 @@
 // 这个库是为了在iOS上使用CupertinoPageTransitionsBuilder，flutter新版已经分离出来了，不要删
 import 'package:flutter/cupertino.dart';
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -28,10 +30,38 @@ const _appBarTheme = AppBarTheme(
 
 const _navigationBarTheme = NavigationBarThemeData(height: 64);
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final path = _appConfig.backgroundImagePath.value;
+      if (path == null) return;
+      try {
+        final file = File(path);
+        file.exists().then((exists) {
+          if (!exists) return;
+          if (!mounted) return;
+          try {
+            precacheImage(FileImage(file), context);
+          } catch (_) {
+            // ignore precache errors
+          }
+        }).ignore();
+      } catch (_) {
+        // ignore
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
