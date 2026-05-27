@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 本项目版本号规则：
 添加功能一般升级第二个版本号，小修改或者紧急修复bug则升级第三个版本号。小更新自由发布预览版，版本号不变，git tag为 `v{LatestVersion}-{PreviewName}` ，如 1.0.0 版本的预览版为： `v1.0.0-preview`
 
+## [unreleased]
+
+### Added
+- 添加更多国际化文本
+- 添加首次打开或更新后自动清理下载的 APK 安装包功能
+- 课表背景图渐变显示
+
+### Fixed
+- 修复小组件课程之间没有间隔的问题
+
+### Changed
+- 余额查询卡片刷新时避免高度弹动
+- 优化自动更新功能
+- 性能优化
+
 ## [1.1.1] - 2026-05-24
 
 ### Changed
