@@ -18,7 +18,7 @@ const _pageTransitionsTheme = PageTransitionsTheme(
   builders: {
     TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
     TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-    //desctop use FadeForwardsPageTransitionsBuilder
+    //desktop use FadeForwardsPageTransitionsBuilder
     TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
     TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
     TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
