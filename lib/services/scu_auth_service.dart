@@ -183,7 +183,7 @@ class ScuAuthService {
   Future<CookieClient> _doBindSession() async {
     final client = CookieClient();
 
-    // ── Step 1: 保存 token 到服务端 session ──────────────────────────────────
+    // ── Step 1: 保存 token 到服务端 session（必须成功）──────────────────────
     final sessionResp = await client.post(
       Uri.parse('$_base/api/bff/v1.2/commons/session/save'),
       headers: {..._headers, 'Authorization': 'Bearer $_accessToken'},
@@ -198,35 +198,44 @@ class ScuAuthService {
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
     }
 
-    // ── Step 2: 预热 JWT SSO（教务系统用）───────────────────────────────────
-    await client.followRedirects(
-      Uri.parse(
-        '$_base/enduser/sp/sso/scdxplugin_jwt23'
-        '?enterpriseId=scdx&target_url=index',
-      ),
-      headers: {
-        'Accept': 'text/html,application/xhtml+xml,*/*',
-        'User-Agent': _headers['User-Agent']!,
-        'Authorization': 'Bearer $_accessToken',
-      },
-    );
+    // ── Step 2: 预热 JWT SSO（教务系统 zhjw.scu.edu.cn 用）──────────────────
+    // 教务系统在非校园网环境（尤其是夜间）可能不可达，失败不应阻断其他服务。
+    try {
+      await client.followRedirects(
+        Uri.parse(
+          '$_base/enduser/sp/sso/scdxplugin_jwt23'
+          '?enterpriseId=scdx&target_url=index',
+        ),
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,*/*',
+          'User-Agent': _headers['User-Agent']!,
+          'Authorization': 'Bearer $_accessToken',
+        },
+      );
+    } catch (_) {
+      // JWT SSO 预热失败不影响电费查询等非教务功能
+    }
 
     // ── Step 3: 预热 CAS Apereo SSO（CCYL 团委系统用）──────────────────────
     // 必须在这里先走一次 sp_logged，让服务端在当前 session 里记录
     // scdxplugin_cas_apereo17 这个 SP 已被授权。
     // 此处 sp_code 使用固定值（与 CcylOAuthService 保持一致）。
-    await client.followRedirects(
-      Uri.parse(
-        '$_base/api/bff/v1.2/commons/sp_logged'
-        '?access_token=$_accessToken'
-        '&sp_code=$kCcylSpCode'
-        '&application_key=scdxplugin_cas_apereo17',
-      ),
-      headers: {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
-        'User-Agent': _headers['User-Agent']!,
-      },
-    );
+    try {
+      await client.followRedirects(
+        Uri.parse(
+          '$_base/api/bff/v1.2/commons/sp_logged'
+          '?access_token=$_accessToken'
+          '&sp_code=$kCcylSpCode'
+          '&application_key=scdxplugin_cas_apereo17',
+        ),
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+    } catch (_) {
+      // CAS SSO 预热失败不影响教务等非 CCYL 功能
+    }
 
     client._reusable = true;
     _cachedClient = client;
