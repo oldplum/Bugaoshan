@@ -278,7 +278,10 @@ class BalanceCardState extends State<BalanceCard> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        _infoRow(l10n.roomNumber, _localInfo!.roomNo),
+                        _infoRow(
+                          l10n.roomNumber,
+                          _privacyHidden ? '***' : _localInfo!.roomNo,
+                        ),
                         _infoRow(l10n.pricePerUnit, '${_localInfo!.price} 元/度'),
                       ],
                     ),
