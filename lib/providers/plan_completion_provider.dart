@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
@@ -13,9 +13,9 @@ enum PlanCompletionLoadState { idle, loading, loaded, error }
 
 class PlanCompletionProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
-  final AuthManager _authManager;
+  final ScuAuthProvider _authProvider;
 
-  PlanCompletionProvider(this._prefs, this._authManager) {
+  PlanCompletionProvider(this._prefs, this._authProvider) {
     final cached = _prefs.getString(_keyPlanCompletion);
     if (cached != null) {
       try {
@@ -57,7 +57,7 @@ class PlanCompletionProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final body = await _authManager.scu.request((client) async {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.get(
           Uri.parse('$kZhjwBase/student/integratedQuery/planCompletion/index'),
           headers: {

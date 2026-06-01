@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 
 class ProfileLabelsProvider extends ChangeNotifier {
   List<Map<String, dynamic>>? _labels;
@@ -42,7 +42,9 @@ class ProfileLabelsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final json = await getIt<AuthManager>().scu.request((client) async {
+      final json = await getIt<ScuAuthProvider>().service.request((
+        client,
+      ) async {
         final resp = await client.get(
           Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
           headers: {

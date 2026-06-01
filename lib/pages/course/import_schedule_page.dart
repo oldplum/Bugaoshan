@@ -5,7 +5,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -236,10 +235,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     // 1. 获取学期列表
     List<({String value, String label})> semesters;
     try {
-      final authManager = getIt<AuthManager>();
-      semesters = await authManager.scu.request(
-        (client) => authProvider.service.fetchSemesters(client: client),
-      );
+      semesters = await authProvider.service.fetchSemesters();
     } on ScuLoginException catch (e) {
       if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
       if (mounted) setState(() => _loading = false);
@@ -312,12 +308,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     try {
       for (final semester in toImport) {
         setState(() => _currentProgress++);
-        final authManager = getIt<AuthManager>();
-        final data = await authManager.scu.request(
-          (client) => authProvider.service.fetchJwxtSchedule(
-            planCode: semester.value,
-            client: client,
-          ),
+        final data = await authProvider.service.fetchJwxtSchedule(
+          planCode: semester.value,
         );
         if (!mounted) return;
 
@@ -398,10 +390,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         );
         if (setWeek == true && mounted) {
           try {
-            final authManager = getIt<AuthManager>();
-            final week = await authManager.scu.request(
-              (client) => authProvider.service.fetchCurrentWeek(client: client),
-            );
+            final week = await authProvider.service.fetchCurrentWeek();
             if (!mounted) return;
             final now = DateTime.now();
             final today = DateTime(now.year, now.month, now.day);

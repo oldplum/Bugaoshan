@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 enum TrainProgramLoadState { idle, loading, loaded, error }
 
 class TrainProgramProvider extends ChangeNotifier {
-  final AuthManager _authManager;
+  final ScuAuthProvider _authProvider;
 
-  TrainProgramProvider(this._authManager);
+  TrainProgramProvider(this._authProvider);
 
   List<College> _colleges = [];
   List<Grade> _grades = [];
@@ -83,7 +83,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final body = await _authManager.scu.request((client) async {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.get(
           Uri.parse(
             '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/index',
@@ -162,7 +162,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final body = await _authManager.scu.request((client) async {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.post(
           Uri.parse(
             '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/load',
@@ -204,7 +204,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final body = await _authManager.scu.request((client) async {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.post(
           Uri.parse(
             '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/detail',
@@ -248,7 +248,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final body = await _authManager.scu.request((client) async {
+      final body = await _authProvider.service.request((client) async {
         final fullUrl = '$kZhjwBase$urlPath';
         final resp = await client.get(
           Uri.parse(fullUrl),

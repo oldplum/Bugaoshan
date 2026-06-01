@@ -84,23 +84,21 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<ScuAuthProvider>();
-    await getIt.isReady<AuthManager>();
     final prefs = getIt<SharedPreferences>();
     final auth = getIt<ScuAuthProvider>();
-    final authManager = getIt<AuthManager>();
-    return GradesProvider(prefs, auth, authManager);
+    return GradesProvider(prefs, auth);
   });
   getIt.registerSingletonAsync<TrainProgramProvider>(() async {
-    await getIt.isReady<AuthManager>();
-    final authManager = getIt<AuthManager>();
-    return TrainProgramProvider(authManager);
+    await getIt.isReady<ScuAuthProvider>();
+    final auth = getIt<ScuAuthProvider>();
+    return TrainProgramProvider(auth);
   });
   getIt.registerSingletonAsync<PlanCompletionProvider>(() async {
     await getIt.isReady<SharedPreferences>();
-    await getIt.isReady<AuthManager>();
+    await getIt.isReady<ScuAuthProvider>();
     final prefs = getIt<SharedPreferences>();
-    final authManager = getIt<AuthManager>();
-    return PlanCompletionProvider(prefs, authManager);
+    final auth = getIt<ScuAuthProvider>();
+    return PlanCompletionProvider(prefs, auth);
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
     await getIt.isReady<SharedPreferences>();

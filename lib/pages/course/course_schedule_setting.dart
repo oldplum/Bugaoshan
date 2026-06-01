@@ -6,7 +6,6 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/time_slot_setting_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
@@ -63,10 +62,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     if (!authProvider.isLoggedIn) return;
     setState(() => _fetchingCurrentWeek = true);
     try {
-      final authManager = getIt<AuthManager>();
-      final week = await authManager.scu.request(
-        (client) => authProvider.service.fetchCurrentWeek(client: client),
-      );
+      final week = await authProvider.service.fetchCurrentWeek();
       if (!mounted) return;
       // 根据获取到的周数反推学期开始日期（教务系统以周日为每周第一天）
       final now = DateTime.now();

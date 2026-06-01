@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 
 const _keySchemeScores = 'grades_scheme_scores';
@@ -14,9 +13,8 @@ enum GradesLoadState { idle, loading, loaded, error }
 class GradesProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   final ScuAuthProvider _authProvider;
-  final AuthManager _authManager;
 
-  GradesProvider(this._prefs, this._authProvider, this._authManager) {
+  GradesProvider(this._prefs, this._authProvider) {
     final cachedScheme = _prefs.getString(_keySchemeScores);
     if (cachedScheme != null) {
       try {
@@ -52,9 +50,7 @@ class GradesProvider extends ChangeNotifier {
     _schemeError = null;
     notifyListeners();
     try {
-      final data = await _authManager.scu.request(
-        (client) => _authProvider.service.fetchSchemeScores(client: client),
-      );
+      final data = await _authProvider.service.fetchSchemeScores();
       _schemeScores = SchemeScoreSummary.fromJson(data);
       _schemeState = GradesLoadState.loaded;
       await _prefs.setString(_keySchemeScores, jsonEncode(data));
@@ -98,9 +94,7 @@ class GradesProvider extends ChangeNotifier {
     _passingError = null;
     notifyListeners();
     try {
-      final data = await _authManager.scu.request(
-        (client) => _authProvider.service.fetchPassingScores(client: client),
-      );
+      final data = await _authProvider.service.fetchPassingScores();
       _passingScores = PassingScoreResult.fromJson(data);
       _passingState = GradesLoadState.loaded;
       await _prefs.setString(_keyPassingScores, jsonEncode(data));

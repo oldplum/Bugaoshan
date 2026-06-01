@@ -4,7 +4,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -75,10 +74,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
       _error = null;
     });
     try {
-      final authManager = getIt<AuthManager>();
-      final result = await authManager.scu.request(
-        (client) => _authService.fetchClassroomIndex(client: client),
-      );
+      final result = await _authService.fetchClassroomIndex();
       if (!mounted) return;
       setState(() {
         _campuses = result.campuses;
@@ -122,16 +118,12 @@ class _ClassroomPageState extends State<ClassroomPage> {
       _error = null;
     });
     try {
-      final authManager = getIt<AuthManager>();
       final dateStr =
           '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-      _queryResult = await authManager.scu.request(
-        (client) => _authService.fetchClassroomAvailability(
-          campusNumber: building.campusNumber,
-          buildingNumber: building.teachingBuildingNumber,
-          searchDate: dateStr,
-          client: client,
-        ),
+      _queryResult = await _authService.fetchClassroomAvailability(
+        campusNumber: building.campusNumber,
+        buildingNumber: building.teachingBuildingNumber,
+        searchDate: dateStr,
       );
       if (!mounted) return;
       setState(() {
