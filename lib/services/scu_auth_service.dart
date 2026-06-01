@@ -252,8 +252,8 @@ class ScuAuthService {
   }
 
   /// 从教务系统首页获取当前教学周数
-  Future<int> fetchCurrentWeek() async {
-    final client = await bindSession();
+  Future<int> fetchCurrentWeek({CookieClient? client}) async {
+    client ??= await bindSession();
     final resp = await client.get(
       Uri.parse('$kZhjwBase/'),
       headers: {
@@ -273,8 +273,10 @@ class ScuAuthService {
   }
 
   /// 获取历年学期列表（需要先登录），返回 [{value: '2025-2026-2-1', label: '2025-2026学年春(当前)'}, ...]
-  Future<List<({String value, String label})>> fetchSemesters() async {
-    final client = await bindSession();
+  Future<List<({String value, String label})>> fetchSemesters({
+    CookieClient? client,
+  }) async {
+    client ??= await bindSession();
     final resp = await client.get(
       Uri.parse(
         '$kZhjwBase/student/courseSelect'
@@ -307,8 +309,9 @@ class ScuAuthService {
   /// 获取指定学期课表 JSON（需要先登录），[planCode] 如 '2025-2026-2-1'
   Future<Map<String, dynamic>> fetchJwxtSchedule({
     required String planCode,
+    CookieClient? client,
   }) async {
-    final client = await bindSession();
+    client ??= await bindSession();
     final resp = await client.post(
       Uri.parse(
         '$kZhjwBase/student/courseSelect'
@@ -330,8 +333,10 @@ class ScuAuthService {
   }
 
   /// 获取及格成绩（需要先登录）
-  Future<Map<String, dynamic>> fetchPassingScores() async {
-    final client = await bindSession();
+  Future<Map<String, dynamic>> fetchPassingScores({
+    CookieClient? client,
+  }) async {
+    client ??= await bindSession();
     final indexResp = await client.get(
       Uri.parse(
         '$kZhjwBase/student/integratedQuery/scoreQuery/allPassingScores/index',
@@ -375,8 +380,8 @@ class ScuAuthService {
   }
 
   /// 获取方案成绩（需要先登录）
-  Future<Map<String, dynamic>> fetchSchemeScores() async {
-    final client = await bindSession();
+  Future<Map<String, dynamic>> fetchSchemeScores({CookieClient? client}) async {
+    client ??= await bindSession();
     final indexResp = await client.get(
       Uri.parse(
         '$kZhjwBase/student/integratedQuery/scoreQuery/schemeScores/index',
@@ -423,8 +428,8 @@ class ScuAuthService {
 
   /// 获取教室查询页面的校区和教学楼列表
   Future<({List<ClassroomCampus> campuses, List<ClassroomBuilding> buildings})>
-  fetchClassroomIndex() async {
-    final client = await bindSession();
+  fetchClassroomIndex({CookieClient? client}) async {
+    client ??= await bindSession();
     final resp = await client.get(
       Uri.parse(
         '$kZhjwBase/student/teachingResources/classroomUseStatus/index',
@@ -466,8 +471,9 @@ class ScuAuthService {
     required String buildingNumber,
     required String campusName,
     required String buildingName,
+    CookieClient? client,
   }) async {
-    final client = await bindSession();
+    client ??= await bindSession();
     final resp = await client.get(
       Uri.parse(
         '$kZhjwBase/student/teachingResources/classroomUseStatus'
@@ -500,8 +506,9 @@ class ScuAuthService {
     String seatFrom = '',
     String seatTo = '',
     String searchDate = '',
+    CookieClient? client,
   }) async {
-    final client = await bindSession();
+    client ??= await bindSession();
     final resp = await client.post(
       Uri.parse(
         '$kZhjwBase/student/teachingResources/classroomUseStatus/jasInfo',

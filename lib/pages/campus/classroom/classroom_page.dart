@@ -4,8 +4,8 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
-import 'package:bugaoshan/utils/session_expiry_handler.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
@@ -75,7 +75,10 @@ class _ClassroomPageState extends State<ClassroomPage> {
       _error = null;
     });
     try {
-      final result = await _authService.fetchClassroomIndex();
+      final authManager = getIt<AuthManager>();
+      final result = await authManager.scu.request(
+        (client) => _authService.fetchClassroomIndex(client: client),
+      );
       if (!mounted) return;
       setState(() {
         _campuses = result.campuses;
@@ -85,9 +88,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
       });
     } on ScuLoginException catch (e) {
       if (!mounted) return;
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
-      }
       setState(() {
         _error = e.sessionExpired ? 'sessionExpired' : 'loadFailed';
         _isLoading = false;
@@ -122,12 +122,16 @@ class _ClassroomPageState extends State<ClassroomPage> {
       _error = null;
     });
     try {
+      final authManager = getIt<AuthManager>();
       final dateStr =
           '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-      _queryResult = await _authService.fetchClassroomAvailability(
-        campusNumber: building.campusNumber,
-        buildingNumber: building.teachingBuildingNumber,
-        searchDate: dateStr,
+      _queryResult = await authManager.scu.request(
+        (client) => _authService.fetchClassroomAvailability(
+          campusNumber: building.campusNumber,
+          buildingNumber: building.teachingBuildingNumber,
+          searchDate: dateStr,
+          client: client,
+        ),
       );
       if (!mounted) return;
       setState(() {
@@ -135,9 +139,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
       });
     } on ScuLoginException catch (e) {
       if (!mounted) return;
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
-      }
       setState(() {
         _error = e.sessionExpired ? 'sessionExpired' : 'loadFailed';
         _isLoading = false;

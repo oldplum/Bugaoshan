@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/utils/session_expiry_handler.dart';
 
 const _keyPlanCompletion = 'plan_completion_nodes';
 
@@ -14,9 +13,9 @@ enum PlanCompletionLoadState { idle, loading, loaded, error }
 
 class PlanCompletionProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
-  final ScuAuthProvider _authProvider;
+  final AuthManager _authManager;
 
-  PlanCompletionProvider(this._prefs, this._authProvider) {
+  PlanCompletionProvider(this._prefs, this._authManager) {
     final cached = _prefs.getString(_keyPlanCompletion);
     if (cached != null) {
       try {
@@ -58,8 +57,7 @@ class PlanCompletionProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final client = await _authProvider.service.bindSession();
-      try {
+      final body = await _authManager.scu.request((client) async {
         final resp = await client.get(
           Uri.parse('$kZhjwBase/student/integratedQuery/planCompletion/index'),
           headers: {
@@ -68,42 +66,29 @@ class PlanCompletionProvider extends ChangeNotifier {
             'User-Agent': kDefaultUserAgent,
           },
         );
+        return resp.body;
+      });
 
-        final body = resp.body;
-
-        // Check for rate limiting
-        if (body.contains('请勿频繁刷新')) {
-          if (_nodes.isNotEmpty) {
-            _state = PlanCompletionLoadState.loaded;
-            _error = 'rateLimited';
-          } else {
-            _state = PlanCompletionLoadState.error;
-            _error = 'rateLimited';
-          }
-          return;
+      // Check for rate limiting
+      if (body.contains('请勿频繁刷新')) {
+        if (_nodes.isNotEmpty) {
+          _state = PlanCompletionLoadState.loaded;
+          _error = 'rateLimited';
+        } else {
+          _state = PlanCompletionLoadState.error;
+          _error = 'rateLimited';
         }
+        return;
+      }
 
-        if (body.startsWith('<') && !body.contains('zNodes')) {
-          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-        }
+      if (body.startsWith('<') && !body.contains('zNodes')) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
 
-        _nodes = _parseZNodes(body);
-        _state = PlanCompletionLoadState.loaded;
-        _error = null;
-        await _saveToCache();
-      } finally {
-        client.close();
-      }
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
-      if (_nodes.isNotEmpty) {
-        _state = PlanCompletionLoadState.loaded;
-      } else {
-        _state = PlanCompletionLoadState.error;
-      }
-      _error = e.toString();
+      _nodes = _parseZNodes(body);
+      _state = PlanCompletionLoadState.loaded;
+      _error = null;
+      await _saveToCache();
     } catch (e) {
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
