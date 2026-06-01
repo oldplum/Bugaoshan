@@ -33,6 +33,11 @@ class ScuAuthService {
     _cachedClient = null;
   }
 
+  /// 清除缓存的 Client，下次 [bindSession] 会重新执行 SSO 握手。
+  void invalidateCachedClient() {
+    _cachedClient = null;
+  }
+
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
     final ts = DateTime.now().millisecondsSinceEpoch;
