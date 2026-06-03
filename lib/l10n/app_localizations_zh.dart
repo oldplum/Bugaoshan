@@ -441,7 +441,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String weekRange(int start, int end) {
-    return '第 $start - $end 周';
+    return '$start-$end 周';
   }
 
   @override
@@ -458,6 +458,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get section => '节';
+
+  @override
+  String sectionRange(int start, int end) {
+    return '第$start-$end节';
+  }
 
   @override
   String get sectionCount => '每天节数';

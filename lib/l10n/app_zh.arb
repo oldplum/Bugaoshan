@@ -164,7 +164,7 @@
     "sunday":"周日",
     "currentWeek":"第 {week} 周",
     "thisWeek":"本周",
-    "weekRange":"第 {start} - {end} 周",
+    "weekRange":"{start}-{end} 周",
     "@weekRange": {
         "placeholders": {
             "start": {"type": "int"},
@@ -176,6 +176,14 @@
     "oddWeek":"单周",
     "evenWeek":"双周",
     "section":"节",
+    "sectionRange": "第{start}-{end}节",
+    "@sectionRange": {
+        "description": "Section range display, e.g. '第1-2节'",
+        "placeholders": {
+            "start": {"type": "int"},
+            "end": {"type": "int"}
+        }
+    },
     "sectionCount":"每天节数",
     "timeSlot":"时间段",
     "startTime":"开始时间",

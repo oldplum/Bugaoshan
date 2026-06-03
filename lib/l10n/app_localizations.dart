@@ -940,7 +940,7 @@ abstract class AppLocalizations {
   /// No description provided for @weekRange.
   ///
   /// In en, this message translates to:
-  /// **'Week {start} - {end}'**
+  /// **'Week {start}-{end}'**
   String weekRange(int start, int end);
 
   /// No description provided for @weekType.
@@ -972,6 +972,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sec'**
   String get section;
+
+  /// Section range display, e.g. 'Sec 1-2'
+  ///
+  /// In en, this message translates to:
+  /// **'Sec {start}-{end}'**
+  String sectionRange(int start, int end);
 
   /// No description provided for @sectionCount.
   ///

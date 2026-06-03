@@ -48,8 +48,8 @@ class CourseCard extends StatelessWidget {
           if (config.showTeacherName && course.teacher.isNotEmpty)
             (text: course.teacher, preferredMaxLines: 1),
           (
-            text: '${l10n.week} ${course.startWeek}-${course.endWeek}',
-            preferredMaxLines: 1,
+            text: l10n.weekRange(course.startWeek, course.endWeek),
+            preferredMaxLines: 2,
           ),
         ];
 
@@ -61,8 +61,8 @@ class CourseCard extends StatelessWidget {
               final height = constraints.maxHeight;
               final detailLineBudget = switch (height) {
                 < 56 => 0,
-                < 100 => 2,
-                _ => 4,
+                < 100 => 3,
+                _ => 5,
               };
               final visibleDetails = <({String text, int preferredMaxLines})>[];
               var usedDetailLines = 0;
@@ -141,6 +141,7 @@ class CourseCard extends StatelessWidget {
       padding: const EdgeInsets.only(top: 2),
       child: Text(
         text,
+        maxLines: maxLines,
         softWrap: true,
         style: TextStyle(
           fontSize: fontSize,

@@ -165,7 +165,7 @@
     "sunday":"Sun",
     "currentWeek":"Week {week}",
     "thisWeek":"This week",
-    "weekRange":"Week {start} - {end}",
+    "weekRange":"Week {start}-{end}",
     "@weekRange": {
         "placeholders": {
             "start": {"type": "int"},
@@ -177,6 +177,14 @@
     "oddWeek":"Odd Week",
     "evenWeek":"Even Week",
     "section":"Sec",
+    "sectionRange": "Sec {start}-{end}",
+    "@sectionRange": {
+        "description": "Section range display, e.g. 'Sec 1-2'",
+        "placeholders": {
+            "start": {"type": "int"},
+            "end": {"type": "int"}
+        }
+    },
     "sectionCount":"Sections per Day",
     "timeSlot":"Time Slot",
     "startTime":"Start Time",

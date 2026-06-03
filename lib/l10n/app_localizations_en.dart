@@ -453,7 +453,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String weekRange(int start, int end) {
-    return 'Week $start - $end';
+    return 'Week $start-$end';
   }
 
   @override
@@ -470,6 +470,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get section => 'Sec';
+
+  @override
+  String sectionRange(int start, int end) {
+    return 'Sec $start-$end';
+  }
 
   @override
   String get sectionCount => 'Sections per Day';
