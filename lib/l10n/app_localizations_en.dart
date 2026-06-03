@@ -453,7 +453,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String weekRange(int start, int end) {
-    return 'Week $start - $end';
+    return 'Week $start-$end';
   }
 
   @override
@@ -470,6 +470,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get section => 'Sec';
+
+  @override
+  String sectionRange(int start, int end) {
+    return 'Sec $start-$end';
+  }
 
   @override
   String get sectionCount => 'Sections per Day';
@@ -1861,4 +1866,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tuanweiTabLabel => 'Youth SCU';
+
+  @override
+  String dateMonthDay(int month, int day) {
+    return '$month/$day';
+  }
+
+  @override
+  String get holidayLabel => 'Hol';
+
+  @override
+  String get festivalLabel => 'Fes';
+
+  @override
+  String get solarTermLabel => 'Term';
+
+  @override
+  String get holidayTypeLabel => 'Holiday';
+
+  @override
+  String get festivalTypeLabel => 'Festival';
+
+  @override
+  String get solarTermTypeLabel => 'Solar Term';
+
+  @override
+  String holidayTotalDays(int days) {
+    return '$days-day holiday';
+  }
 }

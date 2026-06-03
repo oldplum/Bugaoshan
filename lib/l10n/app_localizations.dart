@@ -940,7 +940,7 @@ abstract class AppLocalizations {
   /// No description provided for @weekRange.
   ///
   /// In en, this message translates to:
-  /// **'Week {start} - {end}'**
+  /// **'Week {start}-{end}'**
   String weekRange(int start, int end);
 
   /// No description provided for @weekType.
@@ -972,6 +972,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sec'**
   String get section;
+
+  /// Section range display, e.g. 'Sec 1-2'
+  ///
+  /// In en, this message translates to:
+  /// **'Sec {start}-{end}'**
+  String sectionRange(int start, int end);
 
   /// No description provided for @sectionCount.
   ///
@@ -3582,6 +3588,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Youth SCU'**
   String get tuanweiTabLabel;
+
+  /// No description provided for @dateMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{month}/{day}'**
+  String dateMonthDay(int month, int day);
+
+  /// Short label for statutory holiday displayed in course grid date header
+  ///
+  /// In en, this message translates to:
+  /// **'Hol'**
+  String get holidayLabel;
+
+  /// Short label for festival displayed in course grid date header
+  ///
+  /// In en, this message translates to:
+  /// **'Fes'**
+  String get festivalLabel;
+
+  /// Short label for solar term displayed in course grid date header
+  ///
+  /// In en, this message translates to:
+  /// **'Term'**
+  String get solarTermLabel;
+
+  /// Label for statutory holiday type shown in special day detail sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get holidayTypeLabel;
+
+  /// Label for festival type shown in special day detail sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Festival'**
+  String get festivalTypeLabel;
+
+  /// Label for solar term type shown in special day detail sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Solar Term'**
+  String get solarTermTypeLabel;
+
+  /// Shows total holiday days, e.g. '3-day holiday'
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day holiday'**
+  String holidayTotalDays(int days);
 }
 
 class _AppLocalizationsDelegate
