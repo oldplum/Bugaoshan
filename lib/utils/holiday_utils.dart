@@ -12,6 +12,16 @@ class SpecialDayInfo {
   SpecialDayInfo({required this.type, this.name, this.subtitle});
 }
 
+/// 兜底用固定日期节假日映射。
+///
+/// 当 tyme 无某年数据时，这些日期必定放假，可直接做降级显示。
+/// 其余依赖农历的法定假日（春节、清明、端午、中秋）天数不定，不在此列。
+const Map<int, Map<int, String>> _kFixedHolidays = {
+  1: {1: '元旦'},
+  5: {1: '劳动节'},
+  10: {1: '国庆节'},
+};
+
 /// 中国法定节假日检测工具
 ///
 /// 基于 [tyme](https://pub.dev/packages/tyme) 库计算：
@@ -24,6 +34,11 @@ class HolidayUtils {
   /// 缓存 {year: {holidayName: totalDays}}
   static final Map<int, Map<String, int>> _totalDaysCache = {};
 
+  /// tyme 无数据时降级：返回固定日期假日的名称
+  static String? _getFixedHolidayFallback(DateTime date) {
+    return _kFixedHolidays[date.month]?[date.day];
+  }
+
   /// 获取 [date] 对应的法定节假日名称，如 '国庆节'
   /// 调休上班日返回 null
   static String? getHolidayName(DateTime date) {
@@ -33,11 +48,12 @@ class HolidayUtils {
         date.month,
         date.day,
       ).getLegalHoliday();
-      if (legalHoliday != null && !legalHoliday.isWork()) {
-        return legalHoliday.getName();
+      if (legalHoliday != null) {
+        return legalHoliday.isWork() ? null : legalHoliday.getName();
       }
     } catch (_) {}
-    return null;
+    // tyme 无此日数据 → 固定日期放假兜底
+    return _getFixedHolidayFallback(date);
   }
 
   /// 判断 [date] 是否为法定节假日（放假）
@@ -144,25 +160,44 @@ class HolidayUtils {
   ///
   /// 优先级：假 > 节 > 气 > 普通日
   static SpecialDayInfo getSpecialDay(DateTime date) {
+    // 1. 法定假日（tyme）
+    try {
+      final solarDay = SolarDay(date.year, date.month, date.day);
+      final legalHoliday = solarDay.getLegalHoliday();
+      if (legalHoliday != null) {
+        if (!legalHoliday.isWork()) {
+          final totalDays = getHolidayTotalDays(
+            legalHoliday.getName(),
+            date.year,
+            near: date,
+          );
+          return SpecialDayInfo(
+            type: SpecialDayType.holiday,
+            name: legalHoliday.getName(),
+            subtitle: '共$totalDays天假',
+          );
+        }
+        // tyme 标记为上班 → 不放假，不继续降级
+      } else {
+        // 1b. 兜底：固定日期法定假日（tyme 无数据）
+        final fallback = _getFixedHolidayFallback(date);
+        if (fallback != null) {
+          return SpecialDayInfo(type: SpecialDayType.holiday, name: fallback);
+        }
+      }
+    } catch (_) {
+      // tyme 异常 → 尝试固定日期兜底
+      final fallback = _getFixedHolidayFallback(date);
+      if (fallback != null) {
+        return SpecialDayInfo(type: SpecialDayType.holiday, name: fallback);
+      }
+    }
+
+    // 2. 节日 + 节气
     try {
       final solarDay = SolarDay(date.year, date.month, date.day);
 
-      // 1. 法定假日（放假）
-      final legalHoliday = solarDay.getLegalHoliday();
-      if (legalHoliday != null && !legalHoliday.isWork()) {
-        final totalDays = getHolidayTotalDays(
-          legalHoliday.getName(),
-          date.year,
-          near: date,
-        );
-        return SpecialDayInfo(
-          type: SpecialDayType.holiday,
-          name: legalHoliday.getName(),
-          subtitle: '共$totalDays天假',
-        );
-      }
-
-      // 2. 节日（公历 + 农历，跳过春节清明）
+      // 2a. 节日（公历 + 农历，跳过春节清明）
       final sf = solarDay.getFestival();
       if (sf != null) {
         return SpecialDayInfo(
@@ -178,7 +213,7 @@ class HolidayUtils {
         }
       }
 
-      // 3. 节气（仅当天）
+      // 2b. 节气（仅当天）
       final termDay = solarDay.getTermDay();
       if (termDay.dayIndex == 0) {
         return SpecialDayInfo(
