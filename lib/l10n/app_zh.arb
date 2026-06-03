@@ -664,5 +664,12 @@
     "downloadedAttachmentsDesc": "管理已下载的通知附件",
     "jwcTabLabel": "教务处",
     "xgbTabLabel": "党委学工部",
-    "tuanweiTabLabel": "青春川大"
+    "tuanweiTabLabel": "青春川大",
+    "dateMonthDay": "{month}月{day}日",
+    "@dateMonthDay": {
+        "placeholders": {
+            "month": {"type": "int"},
+            "day": {"type": "int"}
+        }
+    }
 }

@@ -1808,6 +1808,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tuanweiTabLabel => '青春川大';
+
+  @override
+  String dateMonthDay(int month, int day) {
+    return '$month月$day日';
+  }
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

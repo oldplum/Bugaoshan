@@ -666,5 +666,12 @@
     "downloadedAttachmentsDesc": "Manage downloaded notice attachments",
     "jwcTabLabel": "Academic",
     "xgbTabLabel": "Party Affairs",
-    "tuanweiTabLabel": "Youth SCU"
+    "tuanweiTabLabel": "Youth SCU",
+    "dateMonthDay": "{month}/{day}",
+    "@dateMonthDay": {
+        "placeholders": {
+            "month": {"type": "int"},
+            "day": {"type": "int"}
+        }
+    }
 }

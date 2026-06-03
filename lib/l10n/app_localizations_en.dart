@@ -1861,4 +1861,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tuanweiTabLabel => 'Youth SCU';
+
+  @override
+  String dateMonthDay(int month, int day) {
+    return '$month/$day';
+  }
 }

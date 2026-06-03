@@ -3582,6 +3582,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Youth SCU'**
   String get tuanweiTabLabel;
+
+  /// No description provided for @dateMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{month}/{day}'**
+  String dateMonthDay(int month, int day);
 }
 
 class _AppLocalizationsDelegate

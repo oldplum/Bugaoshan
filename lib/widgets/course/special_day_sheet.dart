@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 
 /// 点击课表表头的特殊日（假/节/气）后弹出的信息悬浮窗
@@ -43,7 +44,10 @@ Future<void> _showSheet(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    info.name ?? '${date.month}月${date.day}日',
+                    info.name ??
+                        AppLocalizations.of(
+                          ctx,
+                        )!.dateMonthDay(date.month, date.day),
                     style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: color,
@@ -62,7 +66,9 @@ Future<void> _showSheet(
                       ),
                     ),
                   Text(
-                    '${date.month}月${date.day}日',
+                    AppLocalizations.of(
+                      ctx,
+                    )!.dateMonthDay(date.month, date.day),
                     style: TextStyle(
                       fontSize: 13,
                       color: Theme.of(ctx).colorScheme.onSurfaceVariant,
