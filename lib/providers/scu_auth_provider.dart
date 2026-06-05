@@ -64,8 +64,8 @@ class ScuAuthProvider extends ChangeNotifier {
       captchaText: captchaText,
     );
 
-    // 获取用户信息 与 绑定第二课堂 互相独立，并行执行
-    await Future.wait([fetchUserInfo(), getIt<CcylProvider>().reLogin()]);
+    // 获取用户信息 与 绑定第二课堂 互相独立，并行执行，无需等待
+    Future.wait([fetchUserInfo(), getIt<CcylProvider>().reLogin()]);
 
     notifyListeners();
   }
