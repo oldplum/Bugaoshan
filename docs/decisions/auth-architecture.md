@@ -2,136 +2,135 @@
 
 ## 概述
 
-统一管理 SCU 统一认证、电费查询、体测查询、第二课堂四个后端服务的认证生命周期。核心目标：
+三层分层架构，统一管理 SCU 统一认证、教务系统、微服务、缴费平台、体测、第二课堂六个后端服务的认证与数据访问。核心目标：
 
-1. 业务方一行调用，不碰认证细节
-2. Session 过期自动重试（静默续期 / OCR 自动登录）
-3. 刷新失败时全局提示（Snackbar + 前往登录）
-4. 并发请求不会触发多次刷新
+1. 三层清晰分离：API Service → 子系统认证 → 统一认证
+2. 每层自动重试，`UnauthenticatedException` 从下往上冒泡
+3. Session 过期自动续期（静默续期 / OCR 自动登录）
+4. 续期失败时全局提示（Snackbar + 前往登录）
+5. 并发请求不会触发多次刷新
 
-## 架构分层
+## 三层架构
 
 ```mermaid
 graph TD
-    subgraph Provider["Provider / Page"]
-        P1["调用 service.fetchXxx()"]
-        P2["管理 UI 状态（loading / loaded / error）"]
-        P3["缓存数据到 SharedPreferences"]
+    subgraph L1["第1层 · API Service"]
+        ZHJW["ZhjwApiService<br/>课表/成绩/教室/培养方案/计划完成度"]
+        WFW["WfwApiService<br/>用户标签/用户信息"]
+        PAYAPP["PayAppApiService<br/>电费/空调余额"]
+        CCYL["CcylApiService<br/>活动/学分/字典"]
     end
 
-    subgraph Service["ScuApiService + Extensions"]
-        S1["HTTP 请求 + HTML/JSON 解析"]
-        S2["_checkSessionExpiry() 检测 302 / 空 body / 登录页"]
-        S3["内部调 _authManager.scu.request()"]
-        S4["通用 request() 供非标准调用方使用"]
+    subgraph L2["第2层 · 子系统认证"]
+        ZA["ZhjwAuth<br/>代理 ScuAuth.getClient()"]
+        WA["WfwAuth<br/>Bearer token 注入"]
+        PA["PayAppAuth<br/>OAuth warrant 跳转"]
+        FA["FitnessAuth<br/>SSO 跳转"]
+        CA["CcylAuth<br/>独立 OAuth token"]
     end
 
-    subgraph Auth["ScuAuthService"]
-        A1["login / fetchCaptcha / bindSession / logout"]
-        A2["_accessToken / _cachedClient / _bindSessionFuture"]
-        A3["SM2 加密 + SSO 预热 (JWT + CAS Apereo)"]
+    subgraph L3["第3层 · 统一认证"]
+        SCU["ScuAuth<br/>login / bindSession / token 管理<br/>SSO 预热 / 自动续期 / 并发互斥"]
     end
 
-    subgraph Session["AuthSession<T> 框架"]
-        R1["request(fn): getClient → fn(client) → 过期重试"]
-        R2["_synchronizedRefresh(): Completer 互斥，N 并发 = 1 次刷新"]
-        R3["状态机：unknown → ready ↔ expired → error"]
-        R4["onSessionExpired(): 刷新失败触发全局回调"]
+    subgraph Exceptions["异常体系"]
+        UE["UnauthenticatedException<br/>认证失败，穿透到 Provider"]
+        SE["ServiceException<br/>业务错误"]
+        RLE["RateLimitedException<br/>频率限制"]
+        SLE["ScuLoginException<br/>登录过程错误"]
     end
 
-    subgraph Manager["AuthManager"]
-        M1["持有 4 个 Session 实例"]
-        M2["init(): scu.init() ‖ ccyl.init() 并行恢复"]
-        M3["refreshAll(): scu.refresh() ‖ ccyl.refresh() 并行"]
-        M4["addListener(): 代理到所有 Session"]
-        M5["onSessionExpired(): 注册全局过期回调"]
-    end
+    ZHJW --> ZA
+    WFW --> WA
+    PAYAPP --> PA
+    CCYL --> CA
+    ZA --> SCU
+    WA --> SCU
+    PA --> SCU
+    FA --> SCU
+    CA -.->|"OAuth code"| SCU
 
-    subgraph Sessions["具体 Session"]
-        SCU["ScuAuthSession<br/>token + 1h TTL + autoLogin"]
-        PAY["PayAppAuthSession<br/>identical() 判断 + OAuth warrant"]
-        FIT["FitnessAuthSession<br/>identical() 判断 + SSO redirect"]
-        CCYL["CcylAuthSession<br/>独立 OAuth token"]
-    end
-
-    subgraph UI["全局错误处理"]
-        U1["SessionExpiredListener"]
-        U2["SnackBar + 前往登录"]
-        U3["5 秒防抖"]
-    end
-
-    Provider --> Service
-    Service --> Session
-    Session --> Manager
-    Manager --> Sessions
-    Session -- "刷新失败" --> UI
-    Session -->|"login/bindSession"| Auth
-
-    SCU -. "依赖" .-> PAY
-    SCU -. "依赖" .-> FIT
+    L1 -- "catch → 重试一次" --> UE
+    L2 -- "getClient() 失败" --> UE
+    L3 -- "续期失败" --> UE
 ```
 
-### 各层详细职责
+### 各层职责
 
 | 层 | 关心什么 | 不关心什么 |
 |---|---|---|
-| **Provider / Page** | UI 状态流转（loading → loaded → error）、数据缓存、用户交互 | HTTP 细节、cookie 管理、token 过期、重试逻辑 |
-| **ScuApiService** | HTTP 数据请求 + HTML/JSON 解析、过期信号检测（302/空body/登录页） | 登录态管理、UI 状态、缓存策略 |
-| **ScuAuthService** | 认证：login / fetchCaptcha / bindSession / logout，SM2 加密、SSO 预热 | HTTP 业务请求、UI 状态、数据解析 |
-| **AuthSession 框架** | token 过期判断、自动刷新、并发互斥、重试一次、触发过期回调 | 具体 HTTP 怎么发、数据怎么解析、UI 怎么显示 |
-| **AuthManager** | 4 个 Session 的生命周期 + ScuApiService、并行初始化/刷新、全局回调注册 | 具体 token 格式、HTTP 细节、UI 状态 |
-| **具体 Session** | 自己的认证方式（token/OAuth/SSO）、过期判断、refresh 策略 | 其他 Session 的存在、UI 状态、业务数据格式 |
-| **SessionExpiredListener** | 全局 Snackbar 展示、防抖、导航到登录页 | 具体哪个 Session 过期、数据怎么恢复 |
+| **第1层 API Service** | HTTP 数据请求 + HTML/JSON 解析、过期信号检测、自动重试一次 | token 管理、SSO 流程、UI 状态 |
+| **第2层 子系统认证** | 获取已认证的 Client（SSO 跳转 / Bearer 注入 / OAuth token） | 具体 HTTP 业务请求、UI 状态 |
+| **第3层 ScuAuth** | 登录 / token 持久化 / SSO 预热 / 自动续期 / 并发互斥 | 业务数据格式、UI 状态 |
+| **Provider** | UI 状态流转（loading → loaded → error）、数据缓存 | HTTP 细节、cookie 管理、token 过期 |
+| **SessionExpiredListener** | 全局 Snackbar 展示、防抖、导航到登录页 | 具体哪个子系统过期 |
 
-## 4 个 Session 的依赖关系
+## 子系统认证依赖关系
 
 ```mermaid
 graph TD
-    SCU["ScuAuthSession<br/>根 · 独立 token · 1h TTL"]
-    PAY["PayAppAuthSession<br/>OAuth warrant"]
-    FIT["FitnessAuthSession<br/>SSO redirect"]
-    CCYL["CcylAuthSession<br/>独立 OAuth token"]
+    SCU["ScuAuth<br/>根 · 独立 token · 1h TTL"]
 
-    SCU -->|"getClient()"| PAY
-    SCU -->|"getClient()"| FIT
-    CCYL -.->|"仅首次登录拿 OAuth code"| SCU
+    ZHJW["ZhjwAuth<br/>zhjw.scu.edu.cn"]
+    WFW["WfwAuth<br/>wfw.scu.edu.cn"]
+    PAY["PayAppAuth<br/>payapp.scu.edu.cn"]
+    FIT["FitnessAuth<br/>pead.scu.edu.cn"]
+    CCYL["CcylAuth<br/>dekt.scu.edu.cn"]
+
+    SCU -->|"getClient() 共享 CookieClient"| ZHJW
+    SCU -->|"getAccessToken() → Bearer"| WFW
+    SCU -->|"getClient() + OAuth warrant"| PAY
+    SCU -->|"getClient() + SSO redirect"| FIT
+    CCYL -.->|"仅首次: OAuth code"| SCU
 ```
+
+- **ZhjwAuth**：教务系统 SSO 预热在 `ScuAuth.bindSession()` 中完成，直接共享 CookieClient
+- **WfwAuth**：微服务用 Bearer token，通过 `ScuAuth.getAccessToken()` 获取
+- **PayAppAuth / FitnessAuth**：继承 `SsoRelayAuth` 基类，在 SCU CookieClient 上做 SSO 跳转
+- **CcylAuth**：独立 token 体系，首次通过 SCU 获取 OAuth code，后续完全独立
 
 ## 关键调用链
 
 **业务调用**（Provider）：
 ```dart
-final data = await _authProvider.service.fetchSchemeScores();
+final data = await _zhjwApi.fetchSchemeScores();
 ```
 
 **展开**：
-1. `_authProvider.service` → `ScuApiService`
-2. `fetchSchemeScores()` 是 `extension ScuApiGrades` 的方法
-3. 内部调 `_authManager.scu.request((client) => ...)`
-4. `request()` 是 `AuthSession` 模板方法
+1. `ZhjwApiService.fetchSchemeScores()` 内部调 `_request(fn)`
+2. `_request` = `retryOnUnauthenticated(_auth.getClient, fn)`
+3. `ZhjwAuth.getClient()` → `ScuAuth.getClient()`
 
-**`request()` 内部**：
+**`ScuAuth.getClient()` 内部**：
 
 ```mermaid
 graph TD
     A["getClient()"] --> B{"isExpired?"}
     B -->|"否"| C["bindSession() → cached CookieClient"]
-    B -->|"是"| D["refresh()"]
+    B -->|"是"| D["_synchronizedRefresh()<br/>Completer 互斥"]
     D --> D1["Stage 1: bindSession() 续期"]
     D1 --> D1OK{"成功?"}
     D1OK -->|"是"| C
     D1OK -->|"否"| D2["Stage 2: autoLogin()<br/>OCR 验证码 + saved credentials"]
     D2 --> D2OK{"成功?"}
     D2OK -->|"是"| C
-    D2OK -->|"否"| ERR["throw ScuLoginException"]
+    D2OK -->|"否"| ERR["throw UnauthenticatedException"]
 
-    C --> E["fn(client) — 业务 HTTP"]
-    E --> F{"ScuLoginException<br/>sessionExpired?"}
-    F -->|"否"| G["返回结果"]
-    F -->|"是"| H["_synchronizedRefresh()<br/>Completer 互斥"]
-    H --> HOK{"刷新成功?"}
-    HOK -->|"是"| I["新 client 重试一次"]
-    HOK -->|"否"| J["state = error<br/>onSessionExpired() → Snackbar"]
+    C --> E["返回 CookieClient"]
+```
+
+**`retryOnUnauthenticated` 重试**：
+
+```mermaid
+graph TD
+    A["retryOnUnauthenticated(getClient, fn)"] --> B["getClient() → client"]
+    B --> C["fn(client) — 业务 HTTP"]
+    C --> D{"UnauthenticatedException?"}
+    D -->|"否"| E["返回结果"]
+    D -->|"是"| F["getClient() → 新 client<br/>内部触发 _synchronizedRefresh"]
+    F --> G["fn(client) — 重试一次"]
+    G --> H{"仍失败?"}
+    H -->|"是"| I["UnauthenticatedException 穿透到 Provider"]
 ```
 
 ## 状态机
@@ -139,8 +138,8 @@ graph TD
 ```mermaid
 stateDiagram-v2
     [*] --> unknown
-    unknown --> ready : init()
-    ready --> expired : TTL 过期
+    unknown --> ready : init() 恢复 token
+    ready --> expired : TTL 过期（1小时）
     expired --> ready : refresh() 成功
     expired --> error : refresh() 失败
     error --> Snackbar : onSessionExpired()
@@ -152,7 +151,7 @@ stateDiagram-v2
 
 ```mermaid
 graph TD
-    A["AuthSession.request() 失败"] --> B["state = AuthState.error"]
+    A["ScuAuth._synchronizedRefresh() 失败"] --> B["state = AuthState.error"]
     B --> C["onSessionExpired?.call()"]
     C --> D["SessionExpiredListener"]
     D --> D1["SnackBar<br/>正文: 登录会话已过期"]
@@ -162,95 +161,55 @@ graph TD
     D --> D5["5 秒防抖 → 冷却期内不重复弹出"]
 ```
 
+## 异常体系
+
+```dart
+sealed class ScuException implements Exception {
+  final String message;
+}
+
+class UnauthenticatedException extends ScuException  // 认证失败
+class ServiceException extends ScuException           // 业务错误
+class RateLimitedException extends ServiceException   // 频率限制
+class ScuLoginException extends ScuException          // 登录过程错误
+```
+
+异常冒泡路径：
+```
+ScuAuth.getClient() 抛 UnauthenticatedException
+  → ZhjwAuth.getClient() 穿透
+    → ZhjwApiService._request() catch → 重试一次
+      → 仍失败 → Provider catch → UI 显示错误
+```
+
 ## 关键设计决策
 
-### 1. 为什么用 `request()` 而非手动 try/catch
+### 1. 为什么分三层而非两层
 
-**问题**：原来每个 provider 都要写：
-```dart
-try {
-  final client = await authProvider.service.bindSession();
-  final resp = await client.get(...);
-  if (resp.statusCode == 302) throw ScuLoginException(sessionExpired: true);
-} on ScuLoginException catch (e) {
-  if (e.sessionExpired) await SessionExpiryHandler.handle(authProvider);
-  // setState error...
-}
-```
+**两层方案**：Provider → Service（Service 同时管认证和数据）
 
-**方案**：`request(fn)` 封装了 getClient → 执行 → 过期检测 → 互斥刷新 → 重试的完整流程。Provider 只需：
-```dart
-final data = await _authProvider.service.fetchSchemeScores();
-```
+**问题**：
+- Service 类职责过重（ScuApiService 572 行）
+- 认证逻辑（SSO 跳转、token 管理）和业务逻辑（HTML 解析）混在一起
+- 不同子系统的认证方式不同（Cookie vs Bearer vs OAuth token），难以统一
 
-`_checkSessionExpiry()` 抛的 `ScuLoginException(sessionExpired: true)` 会被 `request()` 自动捕获并走刷新路径。
+**三层方案**：
+- 第3层只管 SCU 统一认证（token、SSO 预热）
+- 第2层只管子系统认证（SSO 跳转、Bearer 注入）
+- 第1层只管数据请求（HTTP、解析）
 
-### 2. 为什么 `request()` 在 Service 层而非 Provider 层
+### 2. 为什么用 `retryOnUnauthenticated` 而非 `AuthSession.request()`
 
-**方案 A（旧）**：Provider 包 `request()`，传 client 给 service
-```dart
-final data = await authManager.scu.request(
-  (client) => service.fetchSchemeScores(client: client),
-);
-```
+旧方案用 `AuthSession<T>` 泛型基类 + `request(fn)` 模板方法。问题是：
+- 泛型 `T extends http.Client` 对不同 Client 类型（CookieClient / http.Client）不友好
+- `request()` 内置了重试逻辑，但重试应该是 API Service 的职责
 
-**方案 B（当前）**：Service 内部包 `request()`，Provider 直接调用
-```dart
-final data = await service.fetchSchemeScores();
-```
+新方案用顶层函数 `retryOnUnauthenticated<C>(getClient, fn)`：
+- 泛型参数 `C` 是 Client 类型，由调用方推断
+- 重试逻辑显式且可组合
+- 3 个 API Service 共用同一个函数，消除重复
 
-选择方案 B 的原因：
-- Provider 层完全不碰认证细节，职责更清晰
-- `fetchXxx` 方法签名更干净，不需要 `{CookieClient? client}` 参数
-- `request()` 的位置集中在 service 层，改起来只动一处
-- Provider 只依赖 `ScuAuthProvider`，不需要直接依赖 `AuthManager`
-
-### 3. 为什么用 `extension` + `part` 拆分 Service
-
-`ScuApiService`（数据层）只有 `bindAuthManager` + `request` + `_checkSessionExpiry` + 三个业务域的 fetch 方法。
-
-用 `extension on ScuApiService` + `part of` 拆分：
-- `part` 文件共享库作用域，可以访问 `_authManager`、`_checkSessionExpiry()` 等私有成员
-- 每个业务域独立一个文件，便于定位和维护
-- 静态配置（`requestHeaders`）放在 `ScuAuthService` 中，通过公开 getter 暴露给 extension
-
-### 4. 为什么 Auth 和 API 拆成两个 Service
-
-`ScuApiService` 原本同时承担认证（login/bindSession）和数据请求（fetchXxx）两种完全不同的职责——认证是"一次性的开关"，数据请求是"每次业务都要用"。混在一起导致：
-- 类名误导（先后叫 `ScuAuthService` 和 `ScuApiService` 都不准确）
-- 出现循环依赖的 `bindAuthManager(this)` 延迟绑定 hack
-- `ScuApiService` 无法独立单测（必须 mock AuthManager）
-
-拆分后：
-- `ScuAuthService` —— 仅认证，无任何依赖，可独立单测
-- `ScuApiService` —— 仅数据，依赖 AuthManager 用于 `request()` 转发
-- 单向依赖链：`ScuApiService → AuthManager → ScuAuthSession → ScuAuthService`
-
-`ScuApiService` 仍保留 `bindAuthManager(this)` 是因为它需要转发到 `_authManager.scu.request()`。这是 `request()` 模式的固有限制（数据层不知道如何拿已认证 client，必须由框架注入）。`ScuAuthService` 彻底摆脱了这个 hack。
-
-```dart
-// ScuApiService
-late AuthManager _authManager;
-void bindAuthManager(AuthManager mgr) => _authManager = mgr;
-
-// AuthManager 构造函数
-AuthManager(SharedPreferences prefs) {
-  scu = ScuAuthSession(prefs);
-  scu.service.bindAuthManager(this);  // 构造完成后绑定
-  ...
-}
-```
-
-### 5. 为什么用 `identical()` 判断 client 是否更换
-
-SCU refresh 后 `bindSession()` 返回新的 `CookieClient` 实例（cookie 已重置）。PayApp/Fitness 需要知道是否要重新走 OAuth/SSO。
-
-用 `identical(client, _cachedClient)`（引用相等）而非值比较：
-- `CookieClient` 没有实现 `==`，引用相等是唯一可靠的判断方式
-- 比 cookie 内容比较更高效
-- 语义明确："是不是同一个 client 实例"
-
-### 6. 为什么用 `Completer` 做并发互斥
+### 3. 为什么 ScuAuth 内置 `_synchronizedRefresh`
 
 100 个并发请求同时触发过期，不应该执行 100 次 `refresh()`。
 
@@ -261,7 +220,7 @@ Future<bool> _synchronizedRefresh() async {
   if (_refreshCompleter != null) return _refreshCompleter!.future;  // 排队等结果
   _refreshCompleter = Completer<bool>();
   try {
-    final result = await refresh();
+    final result = await _doRefresh();
     _refreshCompleter!.complete(result);
     return result;
   } finally {
@@ -270,85 +229,99 @@ Future<bool> _synchronizedRefresh() async {
 }
 ```
 
-第 1 个请求创建 `Completer` 并执行 `refresh()`。其余 99 个 `await` 同一个 `Completer.future`，共享结果。`finally` 清空 `Completer`，下一个过期周期可以重新开始。
+第 1 个请求创建 `Completer` 并执行刷新。其余 99 个 `await` 同一个 `Completer.future`，共享结果。
 
-### 7. 为什么用 Snackbar 而非 Dialog
+### 4. 为什么 PayAppAuth/FitnessAuth 继承 `SsoRelayAuth`
 
-旧方案用 `SessionExpiryHandler` 弹 `AlertDialog`（阻塞式，用户必须点击才能继续）。
+两个类的逻辑完全相同：获取 SCU CookieClient → 做 SSO 跳转 → 缓存结果。唯一差异是跳转 URL。
 
-新方案用 `SnackBar`（非阻塞式）：
-- 不打断用户当前操作
-- 5 秒自动消失
-- 带"前往登录"action 按钮
-- 全局单例（`SessionExpiredListener`），5 秒防抖避免重复弹出
+```dart
+abstract class SsoRelayAuth {
+  final ScuAuth _scuAuth;
+  final String _ssoUrl;
+  Future<CookieClient> getClient() async { /* 共享逻辑 */ }
+}
 
-`SessionExpiryHandler` 已删除，所有 session 过期统一走 Snackbar。
+class PayAppAuth extends SsoRelayAuth {
+  PayAppAuth(ScuAuth s) : super(s, 'https://payapp.scu.edu.cn/eleFees/oauth/airWarrant');
+}
+```
 
-### 8. 为什么 `_checkSessionExpiry()` 放在 Service 层
+新增第3个子系统只需 3 行代码。
 
-教务系统不会返回标准的 401 状态码。Session 过期的信号是：
+### 5. 为什么 `_checkSessionExpiry()` 放在 API Service 层
+
+教务系统不会返回标准的 401。Session 过期的信号是：
 - HTTP 302 重定向到登录页
 - 响应 body 为空
 - 响应 body 是 HTML 登录页面（`<` 开头且包含 `login`）
 
-这些启发式检测是教务系统的特定行为，放在 Service 层最合理。检测到过期后抛 `ScuLoginException(sessionExpired: true)`，`request()` 的 catch 块自动接管。
+这些启发式检测是教务系统的特定行为，放在第1层 API Service 最合理。检测到过期后抛 `UnauthenticatedException`，`retryOnUnauthenticated` 自动接管。
 
-### 9. 为什么 PayApp/Fitness 依赖 ScuAuthSession 而非独立
+### 6. 为什么 CCYL 独立于 SCU
 
-电费和体测系统没有独立的登录入口，它们通过 SCU 统一认证的 cookie 体系访问：
-- PayApp 需要 SCU cookie + OAuth warrant 跳转
-- Fitness 需要 SCU cookie + SSO 跳转
+第二课堂有自己的 OAuth token 体系，通过 SCU 的 CAS SSO 获取 OAuth code，然后用 code 换 token。一旦 token 获取成功，后续请求完全独立于 SCU。
 
-如果 SCU 的 token 过期，这两个系统也无法使用。所以它们的 `refresh()` 委托给 `_scuSession.refresh()`，不独立维护登录态。
+所以 `CcylAuth` 有独立的 token 存储（`FlutterSecureStorage`）和独立的 `reLogin()`（重新跑 OAuth 流程）。
 
-### 10. 为什么 CCYL 独立于 SCU
+### 7. 为什么用 Snackbar 而非 Dialog
 
-第二课堂（CCYL）有自己的 OAuth token 体系，通过 SCU 的 CAS SSO 获取 OAuth code，然后用 code 换 token。一旦 token 获取成功，后续请求完全独立于 SCU。
-
-所以 `CcylAuthSession` 有独立的 token 存储（`FlutterSecureStorage`）和独立的 `refresh()`（重新跑 OAuth 流程）。
+旧方案用 `SessionExpiryHandler` 弹 `AlertDialog`（阻塞式）。新方案用 `SnackBar`：
+- 不打断用户当前操作
+- 5 秒自动消失
+- 带"前往登录"action 按钮
+- 全局单例（`SessionExpiredListener`），5 秒防抖
 
 ## 文件结构
 
-```mermaid
-graph LR
-    subgraph auth["lib/services/auth/"]
-        A1["auth_session.dart<br/>抽象基类"]
-        A2["auth_state.dart<br/>AuthState 枚举"]
-        A3["auth_manager.dart<br/>4 个 Session + ScuApiService"]
-        A4["scu_auth_session.dart<br/>SCU 主认证"]
-        A5["payapp_auth_session.dart<br/>电费"]
-        A6["fitness_auth_session.dart<br/>体测"]
-        A7["ccyl_auth_session.dart<br/>二课"]
-    end
-
-    subgraph scu_auth["lib/services/scu_auth/"]
-        SA1["scu_auth_service.dart<br/>认证: login / fetchCaptcha / bindSession / logout<br/>+ ScuLoginException / CaptchaResult"]
-    end
-
-    subgraph scu_api["lib/services/scu_api/"]
-        S1["scu_api_service.dart<br/>主类: request() + bindAuthManager()"]
-        S2["scu_api_schedule.dart<br/>extension: 课表/学期"]
-        S3["scu_api_grades.dart<br/>extension: 成绩"]
-        S4["scu_api_classroom.dart<br/>extension: 教室"]
-        S6["cookie_client.dart<br/>按域隔离 cookie"]
-    end
-
-    subgraph widgets["lib/widgets/common/"]
-        W1["session_expired_listener.dart<br/>全局 Snackbar"]
-    end
+```
+lib/services/
+├── auth/                          # 第2+3层 · 认证
+│   ├── auth_state.dart            # AuthState 枚举
+│   ├── cookie_client.dart         # 按域隔离 cookie
+│   ├── scu_exceptions.dart        # 异常体系
+│   ├── scu_auth.dart              # 第3层 · 统一认证
+│   ├── sso_relay_auth.dart        # SSO 中继基类
+│   ├── zhjw_auth.dart             # 第2层 · 教务 SSO
+│   ├── wfw_auth.dart              # 第2层 · 微服务 Bearer
+│   ├── payapp_auth.dart           # 第2层 · 缴费平台
+│   ├── fitness_auth.dart          # 第2层 · 体测
+│   ├── ccyl_auth.dart             # 第2层 · 第二课堂
+│   └── ccyl_oauth_service.dart    # SCU→CCYL OAuth 桥接
+├── api/                           # 第1层 · API Service
+│   ├── api_request.dart           # retryOnUnauthenticated()
+│   ├── zhjw_api_service.dart      # 教务数据 API
+│   ├── wfw_api_service.dart       # 微服务数据 API
+│   ├── payapp_api_service.dart    # 缴费平台数据 API
+│   ├── balance_query_service.dart # 电费纯数据 API
+│   └── ccyl_api_service.dart      # 第二课堂数据 API
+├── ccyl/
+│   └── ccyl_service.dart          # 第二课堂纯数据 API（无状态静态方法）
+└── ...
 ```
 
 ## 依赖注入顺序
 
 ```mermaid
 graph TD
-    SP["SharedPreferences"] --> AM["AuthManager.init()"]
-    AM --> SAP["ScuAuthProvider.init()"]
-    SAP --> GP["GradesProvider"]
-    SAP --> TPP["TrainProgramProvider"]
-    SAP --> PCP["PlanCompletionProvider"]
-    SAP --> CP["CcylProvider"]
-    SAP -->|"暴露 isLoggedIn / service"| UI["UI 层"]
+    SP["SharedPreferences"] --> SCU["ScuAuth.init()"]
+    SCU --> ZA["ZhjwAuth"]
+    SCU --> WA["WfwAuth"]
+    SCU --> PA["PayAppAuth"]
+    SCU --> FA["FitnessAuth"]
+    SCU --> CA["CcylAuth.init()"]
+    ZA --> ZHJW["ZhjwApiService"]
+    WA --> WFW["WfwApiService"]
+    PA --> PAYAPP["PayAppApiService"]
+    CA --> CCYL["CcylApiService"]
+    SCU --> SAP["ScuAuthProvider"]
+    CA --> SAP
+    WFW --> SAP
+    SAP -->|"isLoggedIn / accessToken"| UI["UI 层"]
+    ZHJW --> GP["GradesProvider"]
+    ZHJW --> TPP["TrainProgramProvider"]
+    ZHJW --> PCP["PlanCompletionProvider"]
+    CCYL --> CP["CcylProvider"]
+    PAYAPP --> BQP["BalanceQueryProvider"]
+    WFW --> PLP["ProfileLabelsProvider"]
 ```
-
-`AuthManager` 是认证层的根。`ScuAuthProvider` 是 UI 层的入口（暴露 `isLoggedIn`、`service` getter）。业务 Provider 只依赖 `ScuAuthProvider`，不直接依赖 `AuthManager`。
