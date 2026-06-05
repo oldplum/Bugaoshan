@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 /// 微服务 API Service（第1层）
@@ -12,7 +12,7 @@ class WfwApiService {
   final WfwAuth _auth;
   WfwApiService(this._auth);
 
-  Future<T> _request<T>(Future<T> Function(http.Client client) fn) {
+  Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
     return retryOnUnauthenticated(_auth.getClient, fn);
   }
 
@@ -21,11 +21,6 @@ class WfwApiService {
     final json = await _request((client) async {
       final resp = await client.get(
         Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'X-Requested-With': 'XMLHttpRequest',
-          'Referer': 'https://wfw.scu.edu.cn',
-        },
       );
       return jsonDecode(resp.body) as Map<String, dynamic>;
     });
