@@ -16,6 +16,15 @@ class WfwApiService {
     return retryOnUnauthenticated(_auth.getClient, fn);
   }
 
+  void _checkSessionExpiry(String body, int statusCode) {
+    if (statusCode == 302 || body.trim().isEmpty) {
+      throw const UnauthenticatedException();
+    }
+    if (body.startsWith('<') && body.contains('login')) {
+      throw const UnauthenticatedException();
+    }
+  }
+
   /// 获取用户信息标签
   Future<List<Map<String, dynamic>>> fetchProfileLabels() async {
     final json = await _request((client) async {
@@ -27,6 +36,7 @@ class WfwApiService {
           'Referer': 'https://wfw.scu.edu.cn',
         },
       );
+      _checkSessionExpiry(resp.body, resp.statusCode);
       return jsonDecode(resp.body) as Map<String, dynamic>;
     });
 
@@ -44,6 +54,7 @@ class WfwApiService {
       final resp = await client.get(
         Uri.parse('https://wfw.scu.edu.cn/uc/wap/user/get-info'),
       );
+      _checkSessionExpiry(resp.body, resp.statusCode);
       return jsonDecode(resp.body) as Map<String, dynamic>;
     });
 

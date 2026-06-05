@@ -12,9 +12,9 @@ class CcylApiService {
   /// 获取 token，未登录时自动尝试 reLogin，失败抛 [UnauthenticatedException]。
   Future<String> _ensureToken() async {
     if (_auth.isLoggedIn) return _auth.token!;
-    // 尝试通过 CcylProvider.reLogin 触发，但这里直接检查
-    // 如果未登录，调用方会通过 CcylAuth.getService() 触发 reLogin
-    throw const UnauthenticatedException('第二课堂未登录');
+    final ok = await _auth.reLogin();
+    if (!ok) throw const UnauthenticatedException('第二课堂未登录');
+    return _auth.token!;
   }
 
   Future<List<CyclActivity>> searchActivities({

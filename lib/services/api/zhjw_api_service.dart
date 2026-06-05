@@ -354,6 +354,7 @@ class ZhjwApiService {
           'User-Agent': kDefaultUserAgent,
         },
       );
+      _checkSessionExpiry(resp.body, resp.statusCode);
       return resp.body;
     });
     return _parseOptions(body, 'xsh');
@@ -372,6 +373,7 @@ class ZhjwApiService {
           'User-Agent': kDefaultUserAgent,
         },
       );
+      _checkSessionExpiry(resp.body, resp.statusCode);
       return resp.body;
     });
     return _parseGradeOptions(body, 'nj');
@@ -382,7 +384,7 @@ class ZhjwApiService {
     required String? college,
     required String? grade,
   }) async {
-    final body = await _request((client) async {
+    return _request((client) async {
       final resp = await client.post(
         Uri.parse(
           '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/load',
@@ -397,23 +399,19 @@ class ZhjwApiService {
         body:
             'famc=&jhmc=&nj=${grade ?? ''}&xw=&xzlx=&xdlx=00001&xsh=${college ?? ''}&pageNum=1&pageSize=100',
       );
-      return resp.body.trim();
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      final records = json['data']['records'] as List<dynamic>? ?? [];
+      return records
+          .map((e) => TrainProgram.fromJson(e as Map<String, dynamic>))
+          .toList();
     });
-
-    if (body.startsWith('<')) {
-      throw const UnauthenticatedException();
-    }
-
-    final json = jsonDecode(body) as Map<String, dynamic>;
-    final records = json['data']['records'] as List<dynamic>? ?? [];
-    return records
-        .map((e) => TrainProgram.fromJson(e as Map<String, dynamic>))
-        .toList();
   }
 
   /// 获取培养方案详情
   Future<TrainProgramDetail> fetchProgramDetail(String fajhh) async {
-    final body = await _request((client) async {
+    return _request((client) async {
       final resp = await client.post(
         Uri.parse(
           '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/detail',
@@ -427,21 +425,17 @@ class ZhjwApiService {
         },
         body: 'fajhh=$fajhh&lx=1',
       );
-      return resp.body.trim();
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      return TrainProgramDetail.fromJson(
+        jsonDecode(body) as Map<String, dynamic>,
+      );
     });
-
-    if (body.startsWith('<')) {
-      throw const UnauthenticatedException();
-    }
-
-    return TrainProgramDetail.fromJson(
-      jsonDecode(body) as Map<String, dynamic>,
-    );
   }
 
   /// 获取课程详情
   Future<CourseDetail> fetchCourseDetail(String urlPath) async {
-    final body = await _request((client) async {
+    return _request((client) async {
       final resp = await client.get(
         Uri.parse('$kZhjwBase$urlPath'),
         headers: {
@@ -451,14 +445,10 @@ class ZhjwApiService {
           'User-Agent': kDefaultUserAgent,
         },
       );
-      return resp.body.trim();
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      return CourseDetail.fromJson(jsonDecode(body) as Map<String, dynamic>);
     });
-
-    if (body.startsWith('<')) {
-      throw const UnauthenticatedException();
-    }
-
-    return CourseDetail.fromJson(jsonDecode(body) as Map<String, dynamic>);
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -467,9 +457,9 @@ class ZhjwApiService {
 
   /// 获取计划完成度数据
   ///
-  /// 返回解析后的节点列表。如果遇到频率限制，抛出 [ServiceException]。
+  /// 返回解析后的节点列表。如果遇到频率限制，抛出 [RateLimitedException]。
   Future<List<PlanCompletionNode>> fetchPlanCompletion() async {
-    final body = await _request((client) async {
+    return _request((client) async {
       final resp = await client.get(
         Uri.parse('$kZhjwBase/student/integratedQuery/planCompletion/index'),
         headers: {
@@ -478,20 +468,20 @@ class ZhjwApiService {
           'User-Agent': kDefaultUserAgent,
         },
       );
-      return resp.body;
+      final body = resp.body;
+
+      // 频率限制检测
+      if (body.contains('请勿频繁刷新')) {
+        throw const RateLimitedException();
+      }
+
+      // Session 过期检测（正常响应也是 HTML，需要区分）
+      if (body.startsWith('<') && !body.contains('zNodes')) {
+        throw const UnauthenticatedException();
+      }
+
+      return _parseZNodes(body);
     });
-
-    // 频率限制检测
-    if (body.contains('请勿频繁刷新')) {
-      throw const RateLimitedException();
-    }
-
-    // Session 过期检测（正常响应也是 HTML，需要区分）
-    if (body.startsWith('<') && !body.contains('zNodes')) {
-      throw const UnauthenticatedException();
-    }
-
-    return _parseZNodes(body);
   }
 
   // ═══════════════════════════════════════════════════════════════════
