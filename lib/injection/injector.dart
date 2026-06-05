@@ -134,7 +134,8 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<CcylProvider>(() async {
     await getIt.isReady<CcylAuth>();
-    return CcylProvider(getIt<CcylAuth>());
+    await getIt.isReady<CcylApiService>();
+    return CcylProvider(getIt<CcylAuth>(), getIt<CcylApiService>());
   });
   getIt.registerSingletonAsync<ProfileLabelsProvider>(() async {
     await getIt.isReady<WfwApiService>();

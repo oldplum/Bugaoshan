@@ -4,23 +4,19 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 /// 第二课堂 API Service（第1层）
 ///
-/// dekt.scu.edu.cn 的业务 API：活动、学分等。
-/// 通过 [CcylAuth] 获取已认证的 CcylService，内置自动重试。
+/// 通过 [CcylAuth] 获取 token，委托给 [CcylService] 的静态方法。
 class CcylApiService {
   final CcylAuth _auth;
   CcylApiService(this._auth);
 
-  Future<T> _request<T>(Future<T> Function(CcylService service) fn) async {
-    try {
-      final service = await _auth.getService();
-      return await fn(service);
-    } on UnauthenticatedException {
-      final service = await _auth.getService();
-      return await fn(service);
-    }
+  /// 获取 token，未登录时自动尝试 reLogin，失败抛 [UnauthenticatedException]。
+  Future<String> _ensureToken() async {
+    if (_auth.isLoggedIn) return _auth.token!;
+    // 尝试通过 CcylProvider.reLogin 触发，但这里直接检查
+    // 如果未登录，调用方会通过 CcylAuth.getService() 触发 reLogin
+    throw const UnauthenticatedException('第二课堂未登录');
   }
 
-  /// 搜索活动
   Future<List<CyclActivity>> searchActivities({
     int pageNum = 1,
     int pageSize = 10,
@@ -31,53 +27,53 @@ class CcylApiService {
     String? order,
     String? status,
     String? quality,
-  }) {
-    return _request(
-      (s) => s.searchActivities(
-        pageNum: pageNum,
-        pageSize: pageSize,
-        name: name ?? '',
-        level: level ?? '',
-        scoreType: scoreType ?? '',
-        org: org ?? '',
-        order: order ?? '',
-        status: status ?? '',
-        quality: quality ?? '',
-      ),
+  }) async {
+    final token = await _ensureToken();
+    return CcylService.searchActivities(
+      token: token,
+      pageNum: pageNum,
+      pageSize: pageSize,
+      name: name ?? '',
+      level: level ?? '',
+      scoreType: scoreType ?? '',
+      org: org ?? '',
+      order: order ?? '',
+      status: status ?? '',
+      quality: quality ?? '',
     );
   }
 
-  /// 获取我的活动
   Future<List<CyclActivity>> getMyActivities({
     int pageNum = 1,
     int pageSize = 10,
-  }) {
-    return _request(
-      (s) => s.getMyActivities(pageNum: pageNum, pageSize: pageSize),
+  }) async {
+    final token = await _ensureToken();
+    return CcylService.getMyActivities(
+      token: token,
+      pageNum: pageNum,
+      pageSize: pageSize,
     );
   }
 
-  /// 获取已预约活动
   Future<List<CyclActivity>> getOrderedActivities({
     int pageNum = 1,
     int pageSize = 10,
     String? name,
-  }) {
-    return _request(
-      (s) => s.getOrderedActivities(
-        pageNum: pageNum,
-        pageSize: pageSize,
-        name: name ?? '',
-      ),
+  }) async {
+    final token = await _ensureToken();
+    return CcylService.getOrderedActivities(
+      token: token,
+      pageNum: pageNum,
+      pageSize: pageSize,
+      name: name ?? '',
     );
   }
 
-  /// 获取所有组织
-  Future<List<CyclOrg>> getAllOrgs() {
-    return _request((s) => s.getAllOrgs());
+  Future<List<CyclOrg>> getAllOrgs() async {
+    final token = await _ensureToken();
+    return CcylService.getAllOrgs(token: token);
   }
 
-  /// 获取活动库详情
   Future<
     ({
       List<CyclActivity> activities,
@@ -85,36 +81,51 @@ class CcylApiService {
       bool subscribed,
     })
   >
-  getActivityLibDetail(String id) {
-    return _request((s) => s.getActivityLibDetail(id));
+  getActivityLibDetail(String id) async {
+    final token = await _ensureToken();
+    return CcylService.getActivityLibDetail(
+      token: token,
+      activityLibraryId: id,
+    );
   }
 
-  /// 预约活动
-  Future<void> subscribeActivity(String id) {
-    return _request((s) => s.subscribeActivity(id));
+  Future<void> subscribeActivity(String id) async {
+    final token = await _ensureToken();
+    return CcylService.subscribeActivity(token: token, activityLibraryId: id);
   }
 
-  /// 取消预约
-  Future<void> cancelSubscribe(String id) {
-    return _request((s) => s.cancelSubscribe(id));
+  Future<void> cancelSubscribe(String id) async {
+    final token = await _ensureToken();
+    return CcylService.cancelSubscribe(token: token, activityLibraryId: id);
   }
 
-  /// 获取活动学分类型
-  Future<List<CyclScoreType>> getActivityScoreTypes(String id) {
-    return _request((s) => s.getActivityScoreTypes(id));
+  Future<List<CyclScoreType>> getActivityScoreTypes(String id) async {
+    final token = await _ensureToken();
+    return CcylService.getActivityScoreTypes(
+      token: token,
+      activityLibraryId: id,
+    );
   }
 
-  /// 报名活动
-  Future<void> signUpActivity(String activityId, String scoreType) {
-    return _request((s) => s.signUpActivity(activityId, scoreType));
+  Future<void> signUpActivity(String activityId, String scoreType) async {
+    final token = await _ensureToken();
+    return CcylService.signUpActivity(
+      token: token,
+      activityId: activityId,
+      scoreType: scoreType,
+    );
   }
 
-  /// 取消报名
-  Future<void> cancelSignUp(String activityId) {
-    return _request((s) => s.cancelSignUp(activityId));
+  Future<void> cancelSignUp(String activityId) async {
+    final token = await _ensureToken();
+    final userId = _auth.requireUserId();
+    return CcylService.cancelSignUp(
+      token: token,
+      activityId: activityId,
+      userId: userId,
+    );
   }
 
-  /// 获取活动详情
   Future<
     ({
       CyclActivity activity,
@@ -123,24 +134,37 @@ class CcylApiService {
       bool signUp,
     })
   >
-  getActivityDetail(String activityId) {
-    return _request((s) => s.getActivityDetail(activityId));
+  getActivityDetail(String activityId) async {
+    final token = await _ensureToken();
+    return CcylService.getActivityDetail(token: token, activityId: activityId);
   }
 
-  /// 获取学分列表
-  Future<List<CyclCredit>> getCreditList({int pageNum = 1, int pageSize = 10}) {
-    return _request(
-      (s) => s.getCreditList(pageNum: pageNum, pageSize: pageSize),
+  Future<List<CyclCredit>> getCreditList({
+    int pageNum = 1,
+    int pageSize = 10,
+  }) async {
+    final token = await _ensureToken();
+    return CcylService.getCreditList(
+      token: token,
+      pageNum: pageNum,
+      pageSize: pageSize,
     );
   }
 
-  /// 导出学分到邮箱
-  Future<void> exportCreditsToEmail(List<String> creditIds, String email) {
-    return _request((s) => s.exportCreditsToEmail(creditIds, email));
+  Future<String> exportCreditsToEmail(
+    List<String> creditIds,
+    String email,
+  ) async {
+    final token = await _ensureToken();
+    return CcylService.exportCreditsToEmail(
+      token: token,
+      creditIds: creditIds,
+      email: email,
+    );
   }
 
-  /// 获取字典
-  Future<Map<String, List<CyclDict>>> getDicts(List<String> groupCodes) {
-    return _request((s) => s.getDicts(groupCodes));
+  Future<Map<String, List<CyclDict>>> getDicts(List<String> groupCodes) async {
+    final token = await _ensureToken();
+    return CcylService.getDicts(token: token, groupCodes: groupCodes);
   }
 }
