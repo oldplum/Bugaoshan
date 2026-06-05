@@ -25,6 +25,13 @@ class ServiceException extends ScuException {
   const ServiceException(super.message, {this.statusCode});
 }
 
+/// 频率限制（请求过于频繁）
+///
+/// 由 API Service 在检测到服务端限流时产生。
+class RateLimitedException extends ServiceException {
+  const RateLimitedException() : super('rateLimited');
+}
+
 /// 登录过程错误（验证码错误、账号密码错误等）
 ///
 /// 仅在 ScuAuth.login() 中产生，由登录页面直接捕获。

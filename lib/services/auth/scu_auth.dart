@@ -82,14 +82,6 @@ class ScuAuth extends ChangeNotifier {
     }
   }
 
-  /// 供外部（如 AuthManager 替代逻辑）强制设置状态。
-  void forceState(AuthState value) {
-    if (_state != value) {
-      _state = value;
-      notifyListeners();
-    }
-  }
-
   // ─── 初始化 ─────────────────────────────────────────────────────
 
   /// 从安全存储恢复 token（应用启动时调用）。

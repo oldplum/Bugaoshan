@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
@@ -11,14 +12,8 @@ class WfwApiService {
   final WfwAuth _auth;
   WfwApiService(this._auth);
 
-  Future<T> _request<T>(Future<T> Function(http.Client client) fn) async {
-    try {
-      final client = await _auth.getClient();
-      return await fn(client);
-    } on UnauthenticatedException {
-      final client = await _auth.getClient();
-      return await fn(client);
-    }
+  Future<T> _request<T>(Future<T> Function(http.Client client) fn) {
+    return retryOnUnauthenticated(_auth.getClient, fn);
   }
 
   /// 获取用户信息标签
@@ -41,5 +36,20 @@ class WfwApiService {
           .toList();
     }
     throw const ServiceException('获取用户标签失败');
+  }
+
+  /// 获取用户基本信息（realname, number 等）
+  Future<Map<String, dynamic>?> fetchUserProfile() async {
+    final json = await _request((client) async {
+      final resp = await client.get(
+        Uri.parse('https://wfw.scu.edu.cn/uc/wap/user/get-info'),
+      );
+      return jsonDecode(resp.body) as Map<String, dynamic>;
+    });
+
+    if (json['e'] == 0 && json['d'] != null) {
+      return json['d']['base'] as Map<String, dynamic>?;
+    }
+    return null;
   }
 }

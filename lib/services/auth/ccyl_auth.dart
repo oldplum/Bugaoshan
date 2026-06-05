@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -16,7 +15,7 @@ class CcylAuth extends ChangeNotifier {
   String? _token;
   CcylUser? _currentUser;
 
-  CcylAuth(ScuAuth scuAuth); // scuAuth 保留参数签名，CcylOAuthService 内部通过 getIt 获取
+  CcylAuth();
 
   String? get token => _token;
   bool get isLoggedIn => _token != null;

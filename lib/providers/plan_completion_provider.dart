@@ -60,16 +60,15 @@ class PlanCompletionProvider extends ChangeNotifier {
       _state = PlanCompletionLoadState.loaded;
       _error = null;
       await _saveToCache();
+    } on RateLimitedException catch (_) {
+      if (_nodes.isNotEmpty) {
+        _state = PlanCompletionLoadState.loaded;
+      } else {
+        _state = PlanCompletionLoadState.error;
+      }
+      _error = 'rateLimited';
     } on ServiceException catch (e) {
-      // 频率限制
-      if (e.message == 'rateLimited') {
-        if (_nodes.isNotEmpty) {
-          _state = PlanCompletionLoadState.loaded;
-        } else {
-          _state = PlanCompletionLoadState.error;
-        }
-        _error = 'rateLimited';
-      } else if (_nodes.isNotEmpty) {
+      if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
         _error = e.message;
       } else {

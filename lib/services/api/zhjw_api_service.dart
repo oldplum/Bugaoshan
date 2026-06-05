@@ -4,6 +4,7 @@ import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
+import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
@@ -19,19 +20,8 @@ class ZhjwApiService {
   final ZhjwAuth _auth;
   ZhjwApiService(this._auth);
 
-  /// 通用请求包装：自动重试一次。
-  ///
-  /// 如果 [ZhjwAuth.getClient] 抛出 [UnauthenticatedException]（SCU 认证失败），
-  /// 重试一次（getClient 内部会尝试 refresh）。
-  /// 第二次仍失败 → UnauthenticatedException 穿透到 Provider。
-  Future<T> _request<T>(Future<T> Function(CookieClient client) fn) async {
-    try {
-      final client = await _auth.getClient();
-      return await fn(client);
-    } on UnauthenticatedException {
-      final client = await _auth.getClient();
-      return await fn(client);
-    }
+  Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
+    return retryOnUnauthenticated(_auth.getClient, fn);
   }
 
   /// 检查会话是否过期。
@@ -493,7 +483,7 @@ class ZhjwApiService {
 
     // 频率限制检测
     if (body.contains('请勿频繁刷新')) {
-      throw const ServiceException('rateLimited');
+      throw const RateLimitedException();
     }
 
     // Session 过期检测（正常响应也是 HTML，需要区分）

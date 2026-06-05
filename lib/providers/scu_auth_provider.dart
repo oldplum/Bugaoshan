@@ -1,12 +1,10 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/providers/plan_completion_provider.dart';
-import 'package:bugaoshan/providers/profile_labels_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
+import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -22,8 +20,9 @@ const _keyUserNumber = 'scu_user_number';
 class ScuAuthProvider extends ChangeNotifier {
   final ScuAuth _scuAuth;
   final CcylAuth _ccylAuth;
+  final WfwApiService _wfwApi;
 
-  ScuAuthProvider(this._scuAuth, this._ccylAuth) {
+  ScuAuthProvider(this._scuAuth, this._ccylAuth, this._wfwApi) {
     _scuAuth.addListener(_onAuthChanged);
   }
 
@@ -79,32 +78,19 @@ class ScuAuthProvider extends ChangeNotifier {
     final prefs = getIt<SharedPreferences>();
     await prefs.remove(_keyUserRealname);
     await prefs.remove(_keyUserNumber);
-    getIt<PlanCompletionProvider>().clearCache();
-    getIt<ProfileLabelsProvider>().clear();
     notifyListeners();
   }
 
   Future<void> fetchUserInfo() async {
     try {
-      final client = await _scuAuth.getClient();
-      try {
-        final resp = await client.get(
-          Uri.parse('https://wfw.scu.edu.cn/uc/wap/user/get-info'),
-        );
-        final json = jsonDecode(resp.body) as Map<String, dynamic>;
-        if (json['e'] == 0 && json['d'] != null) {
-          final base = json['d']['base'] as Map<String, dynamic>?;
-          if (base != null) {
-            _userRealname = base['realname']?.toString();
-            final role = base['role'] as Map<String, dynamic>?;
-            _userNumber = role?['number']?.toString();
-            final prefs = getIt<SharedPreferences>();
-            await prefs.setString(_keyUserRealname, _userRealname ?? '');
-            await prefs.setString(_keyUserNumber, _userNumber ?? '');
-          }
-        }
-      } finally {
-        client.close();
+      final base = await _wfwApi.fetchUserProfile();
+      if (base != null) {
+        _userRealname = base['realname']?.toString();
+        final role = base['role'] as Map<String, dynamic>?;
+        _userNumber = role?['number']?.toString();
+        final prefs = getIt<SharedPreferences>();
+        await prefs.setString(_keyUserRealname, _userRealname ?? '');
+        await prefs.setString(_keyUserNumber, _userNumber ?? '');
       }
     } catch (e) {
       debugPrint('fetchUserInfo error: $e');

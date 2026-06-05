@@ -15,6 +15,7 @@ import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
@@ -101,7 +102,7 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<CcylAuth>(() async {
     await getIt.isReady<ScuAuth>();
-    final auth = CcylAuth(getIt<ScuAuth>());
+    final auth = CcylAuth();
     await auth.init();
     return auth;
   });
@@ -128,7 +129,12 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
     await getIt.isReady<ScuAuth>();
     await getIt.isReady<CcylAuth>();
-    final provider = ScuAuthProvider(getIt<ScuAuth>(), getIt<CcylAuth>());
+    await getIt.isReady<WfwApiService>();
+    final provider = ScuAuthProvider(
+      getIt<ScuAuth>(),
+      getIt<CcylAuth>(),
+      getIt<WfwApiService>(),
+    );
     await provider.init();
     return provider;
   });
@@ -188,6 +194,24 @@ void _configureAsyncDependencies() {
       });
     };
     return service;
+  });
+
+  // ── Logout cleanup listener ──────────────────────────────────────
+  // 当 ScuAuth 状态变为 unknown（logout）时，清理下游 Provider 缓存。
+  // 用 listener 机制替代 ScuAuthProvider 直接 getIt 调用（PRR-05）。
+  getIt.isReady<ScuAuth>().then((_) {
+    getIt<ScuAuth>().addListener(() {
+      final scu = getIt<ScuAuth>();
+      if (scu.state == AuthState.unknown) {
+        // logout 发生，清理需要登录态的 Provider 缓存
+        if (getIt.isRegistered<PlanCompletionProvider>()) {
+          getIt<PlanCompletionProvider>().clearCache();
+        }
+        if (getIt.isRegistered<ProfileLabelsProvider>()) {
+          getIt<ProfileLabelsProvider>().clear();
+        }
+      }
+    });
   });
 }
 

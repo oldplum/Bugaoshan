@@ -51,12 +51,26 @@ Two patterns coexist by design:
 ### Dependency Injection
 GetIt + Injectable. All Provider/Service registrations are done manually in `lib/injection/injector.dart` (not via `@injectable` annotations). `lib/injection/injector.config.dart` is auto-generated but currently only contains an empty `init()` extension. Re-run `dart run build_runner build` if `@injectable` annotations are ever added.
 
-### Service Layer
-- **`ScuAuthService`** (`lib/services/scu_auth/scu_auth_service.dart`) — SCU 统一身份认证实现。`login()` / `fetchCaptcha()` / `bindSession()` / `logout()`，管理 token、cookie、SSO 预热（JWT + CAS Apereo）。**无 AuthManager 依赖**（单向），可独立单测。被 `ScuAuthSession` 持有。定义 `ScuLoginException` / `CaptchaResult` / `kZhjwBase`。
-- **`ScuApiService`** (`lib/services/scu_api/scu_api_service.dart`) — SCU 教务系统**数据** API。`scu_api/` 文件夹下按 `extension + part of` 拆分为：主类（`bindAuthManager()` + `request()` 通用包装 + `_checkSessionExpiry()`）、`scu_api_schedule.dart`（课表/学期）、`scu_api_grades.dart`（成绩）、`scu_api_classroom.dart`（教室）、`cookie_client.dart`。所有 `fetchXxx()` 内部走 `_authManager.scu.request()` 自动重试。`ScuLoginException` / `CaptchaResult` 从 `scu_auth_service.dart` 导入。
-- **`CcylService`** (`lib/services/ccyl_service.dart`) — 第二课堂 (CCYL) API client. OAuth-based login via `CcylService.login(oauthCode)`. Activities, reservations, and 成绩单.
-- **`CcylOauthService`** (`lib/services/ccyl_oauth_service.dart`) — OAuth flow helper for CCYL login.
-- **`BalanceQueryService`** (`lib/services/balance_query_service.dart`) — Queries电费 and 空调余额 via `payapp.scu.edu.cn`.
+### Service Layer (Three-Layer Architecture)
+
+**Layer 3 — Unified Auth:**
+- **`ScuAuth`** (`lib/services/auth/scu_auth.dart`) — SCU 统一身份认证（第3层）。合并 login / fetchCaptcha / bindSession / logout / token 管理 / SSO 预热 / 自动续期。内置 `_synchronizedRefresh` mutex（Completer 互斥）。续期失败抛 `UnauthenticatedException`。
+
+**Layer 2 — Subsystem Auth:**
+- **`ZhjwAuth`** (`lib/services/auth/zhjw_auth.dart`) — 教务系统 SSO，代理 `ScuAuth.getClient()`。
+- **`WfwAuth`** (`lib/services/auth/wfw_auth.dart`) — 微服务 Bearer token 注入。
+- **`PayAppAuth`** (`lib/services/auth/payapp_auth.dart`) — 缴费平台 OAuth warrant 跳转。
+- **`FitnessAuth`** (`lib/services/auth/fitness_auth.dart`) — 体测 SSO 跳转。
+- **`CcylAuth`** (`lib/services/auth/ccyl_auth.dart`) — 第二课堂 OAuth token 管理。
+- **`CcylOauthService`** (`lib/services/auth/ccyl_oauth_service.dart`) — SCU→CCYL OAuth 桥接。
+
+**Layer 1 — API Service:**
+- **`ZhjwApiService`** (`lib/services/api/zhjw_api_service.dart`) — 教务系统数据 API（课表/成绩/教室/培养方案/计划完成度）。
+- **`WfwApiService`** (`lib/services/api/wfw_api_service.dart`) — 微服务 API（用户标签）。
+- **`PayAppApiService`** (`lib/services/api/payapp_api_service.dart`) — 缴费平台 API（电费/空调余额）。
+- **`CcylApiService`** (`lib/services/api/ccyl_api_service.dart`) — 第二课堂 API（活动/学分）。
+- **`CcylService`** (`lib/services/ccyl/ccyl_service.dart`) — 第二课堂纯数据 API（无状态静态方法）。
+- **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — 电费/空调余额纯数据 API。
 - **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite-backed storage. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
 - **`DownloadManager`** (`lib/services/download_manager.dart`) — `ChangeNotifier` that tracks download task lifecycle (pending → downloading → done/error). Used by `showAttachmentsSheet` to reflect per-file state in the UI.
 - **`IcsService`** (`lib/services/ics_service.dart`) — Exports course schedules as iCalendar (.ics) files.
@@ -173,9 +187,9 @@ lib/
 
 ## Notable Implementation Details
 
-- `CookieClient` (`lib/services/scu_api/cookie_client.dart`) — Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。`followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie。被 `ScuAuthService.bindSession()` 用来执行 SSO 跳转链。
-- `AuthSession.request()` (`lib/services/auth/auth_session.dart`) — 统一请求包装：`getClient()` → 业务 HTTP → 过期检测 → `_synchronizedRefresh()`（Completer 互斥，N 并发 = 1 次刷新）→ 自动重试一次。业务方只需 `await service.fetchXxx()`，不碰 token/cookie/重试细节。
-- Session 过期统一由 `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) 监听 `AuthManager.onSessionExpired()`，全局弹 SnackBar 带「前往登录」action 按钮（5 秒防抖），替代了原 `SessionExpiryHandler` 的阻塞式 dialog。
+- `CookieClient` (`lib/services/auth/cookie_client.dart`) — Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。`followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie。被 `ScuAuth.bindSession()` 用来执行 SSO 跳转链。
+- `_request()` 模板方法（每个 API Service 都有）— 自动重试一次：`_auth.getClient()` → 业务 HTTP → 捕获 `UnauthenticatedException` → 重试一次 → 仍失败则穿透到 Provider。业务方只需 `await apiService.fetchXxx()`，不碰 token/cookie/重试细节。
+- Session 过期统一由 `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) 监听 `ScuAuth.onSessionExpired` 回调，全局弹 SnackBar 带「前往登录」action 按钮（5 秒防抖）。
 - Grades are cached in SharedPreferences as JSON; on refresh failure with `sessionExpired`, the cached data is kept but user is logged out.
 - `flutter pub run build_runner build --delete-conflicting-outputs` is run in CI before `flutter gen-l10n` — code generation must precede localization generation.
 - The `DatabaseService` includes a Hive-to-SQLite migration path for users upgrading from older versions.

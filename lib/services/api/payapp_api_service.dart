@@ -1,6 +1,6 @@
+import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 
 /// 缴费平台 API Service（第1层）
@@ -11,14 +11,8 @@ class PayAppApiService {
   final BalanceQueryService _service = BalanceQueryService();
   PayAppApiService(this._auth);
 
-  Future<T> _request<T>(Future<T> Function(CookieClient client) fn) async {
-    try {
-      final client = await _auth.getClient();
-      return await fn(client);
-    } on UnauthenticatedException {
-      final client = await _auth.getClient();
-      return await fn(client);
-    }
+  Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
+    return retryOnUnauthenticated(_auth.getClient, fn);
   }
 
   /// 获取校区列表
