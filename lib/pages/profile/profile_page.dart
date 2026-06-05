@@ -117,7 +117,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (status.isLoggedIn &&
             !_labelsProvider.hasData &&
-            !_labelsProvider.loading) {
+            !_labelsProvider.loading &&
+            !_labelsProvider.error) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _tryFetchLabels(),
           );
