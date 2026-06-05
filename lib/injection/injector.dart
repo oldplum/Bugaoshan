@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
-import 'package:bugaoshan/providers/profile_labels_provider.dart';
+import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -143,9 +143,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<CcylApiService>();
     return CcylProvider(getIt<CcylAuth>(), getIt<CcylApiService>());
   });
-  getIt.registerSingletonAsync<ProfileLabelsProvider>(() async {
+  getIt.registerSingletonAsync<UserInfoProvider>(() async {
+    await getIt.isReady<ScuAuth>();
     await getIt.isReady<WfwApiService>();
-    return ProfileLabelsProvider(getIt<WfwApiService>());
+    return UserInfoProvider(getIt<ScuAuth>(), getIt<WfwApiService>());
   });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
@@ -207,8 +208,8 @@ void _configureAsyncDependencies() {
         if (getIt.isRegistered<PlanCompletionProvider>()) {
           getIt<PlanCompletionProvider>().clearCache();
         }
-        if (getIt.isRegistered<ProfileLabelsProvider>()) {
-          getIt<ProfileLabelsProvider>().clear();
+        if (getIt.isRegistered<UserInfoProvider>()) {
+          getIt<UserInfoProvider>().clear();
         }
       }
     });

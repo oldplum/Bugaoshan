@@ -1,5 +1,5 @@
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/profile_labels_provider.dart';
+import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
@@ -26,37 +26,10 @@ class _ProfilePageState extends State<ProfilePage> {
   final _storage = const FlutterSecureStorage();
   String? _username;
 
-  late final ProfileLabelsProvider _labelsProvider;
-  late final VoidCallback _labelsListener;
-
   @override
   void initState() {
     super.initState();
-    _labelsProvider = getIt<ProfileLabelsProvider>();
-    _labelsListener = () {
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) setState(() {});
-        });
-      }
-    };
-    _labelsProvider.addListener(_labelsListener);
     _loadUsername();
-    _tryFetchLabels();
-  }
-
-  @override
-  void dispose() {
-    _labelsProvider.removeListener(_labelsListener);
-    super.dispose();
-  }
-
-  void _tryFetchLabels() {
-    if (!mounted) return;
-    final authProvider = getIt<ScuAuthProvider>();
-    if (authProvider.isLoggedIn && !_labelsProvider.loading) {
-      _labelsProvider.fetchLabels();
-    }
   }
 
   Future<void> _loadUsername() async {
@@ -70,8 +43,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final result = await popupOrNavigate(context, const ScuLoginPage());
     if (result == true && context.mounted) {
       _loadUsername();
-      _labelsProvider.clear();
-      _labelsProvider.fetchLabels();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('登录成功')));
@@ -108,21 +79,13 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = getIt<ScuAuthProvider>();
+    final userInfoProvider = getIt<UserInfoProvider>();
     final localizations = AppLocalizations.of(context)!;
 
     return ListenableBuilder(
-      listenable: authProvider,
+      listenable: Listenable.merge([authProvider, userInfoProvider]),
       builder: (context, _) {
         final status = LoginStatus.from(authProvider);
-
-        if (status.isLoggedIn &&
-            !_labelsProvider.hasData &&
-            !_labelsProvider.loading &&
-            !_labelsProvider.error) {
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _tryFetchLabels(),
-          );
-        }
 
         final loginStatusCard = LoginStatusCard(
           status: status,
@@ -141,11 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
             AnimatedSize(
               duration: appConfigService.cardSizeAnimationDuration.value,
               curve: appCurve,
-              child: UserInfoCard(
-                isLoggedIn: status.isLoggedIn,
-                labelsProvider: _labelsProvider,
-                onRetry: _tryFetchLabels,
-              ),
+              child: UserInfoCard(provider: userInfoProvider),
             ),
 
             const SizedBox(height: 12),

@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/profile_labels_provider.dart';
+import 'package:bugaoshan/providers/user_info_provider.dart';
 
 class UserInfoCard extends StatelessWidget {
-  final ProfileLabelsProvider labelsProvider;
-  final VoidCallback onRetry;
-  final bool isLoggedIn;
+  final UserInfoProvider provider;
 
-  const UserInfoCard({
-    super.key,
-    required this.labelsProvider,
-    required this.onRetry,
-    required this.isLoggedIn,
-  });
+  const UserInfoCard({super.key, required this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -23,37 +16,22 @@ class UserInfoCard extends StatelessWidget {
     Widget child;
     VoidCallback? onTap;
 
-    if (!isLoggedIn) {
-      child = Row(
-        children: [
-          Icon(
-            Icons.lock_outline_rounded,
-            size: 20,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 14),
-          Text(
-            localizations.loginToViewUserInfo,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      );
-      onTap = null;
-    } else if (labelsProvider.loading) {
+    if (!provider.hasData && !provider.loading && !provider.error) {
+      // 未登录或尚未获取，不显示
+      return const SizedBox.shrink();
+    } else if (provider.loading) {
       child = _buildLoadingContent(theme, localizations);
       onTap = null;
-    } else if (labelsProvider.error) {
+    } else if (provider.error) {
       child = _buildErrorContent(theme, localizations, primaryColor);
-      onTap = onRetry;
+      onTap = provider.retry;
     } else {
-      final labels = labelsProvider.labels;
+      final labels = provider.labels;
       if (labels == null || labels.isEmpty) {
         return const SizedBox.shrink();
       }
       child = _buildLabelsContent(theme, primaryColor, localizations, labels);
-      onTap = onRetry;
+      onTap = provider.retry;
     }
 
     final card = Container(
