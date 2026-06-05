@@ -1,5 +1,5 @@
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
-import 'package:bugaoshan/services/balance/balance_query_service.dart';
+import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 
