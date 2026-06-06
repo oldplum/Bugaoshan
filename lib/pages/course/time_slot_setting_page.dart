@@ -124,143 +124,6 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section count settings
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                l10n.sectionCount,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-            _buildSectionCounter(l10n.morning, _morningSections, (v) {
-              setState(() {
-                _morningSections = v;
-                _adjustTimeSlots();
-              });
-              _autoSave();
-            }),
-            _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
-              setState(() {
-                _afternoonSections = v;
-                _adjustTimeSlots();
-              });
-              _autoSave();
-            }),
-            _buildSectionCounter(l10n.evening, _eveningSections, (v) {
-              setState(() {
-                _eveningSections = v;
-                _adjustTimeSlots();
-              });
-              _autoSave();
-            }),
-            const Divider(height: 32),
-            SwitchListTile(
-              title: Text(l10n.autoSyncTime),
-              value: _autoSyncTime,
-              onChanged: (v) {
-                setState(() => _autoSyncTime = v);
-                _autoSave();
-              },
-              contentPadding: EdgeInsets.zero,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              spacing: 16,
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: _courseDuration.toString(),
-                    decoration: InputDecoration(
-                      labelText: l10n.courseDuration,
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) {
-                      final val = int.tryParse(v);
-                      if (val != null && val > 0) {
-                        _courseDuration = val;
-                        _autoSave();
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: _breakDuration.toString(),
-                    decoration: InputDecoration(
-                      labelText: l10n.breakDuration,
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) {
-                      final val = int.tryParse(v);
-                      if (val != null && val >= 0) {
-                        _breakDuration = val;
-                        _autoSave();
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(_timeSlots.length, (i) {
-              String groupTitle = '';
-              if (i == 0) {
-                groupTitle = l10n.morning;
-              } else if (i == _morningSections) {
-                groupTitle = l10n.afternoon;
-              } else if (i == _morningSections + _afternoonSections) {
-                groupTitle = l10n.evening;
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (groupTitle.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: Text(
-                        groupTitle,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  _TimeSlotEditor(
-                    index: i,
-                    slot: _timeSlots[i],
-                    onChanged: (slot, isStart) {
-                      setState(() {
-                        if (isStart && _autoSyncTime) {
-                          int endMin = slot.startTime.minute + _courseDuration;
-                          int endHour = slot.startTime.hour + (endMin ~/ 60);
-                          _timeSlots[i] = slot.copyWith(
-                            endTime: TimeOfDay(
-                              hour: endHour % 24,
-                              minute: endMin % 60,
-                            ),
-                          );
-                        } else {
-                          _timeSlots[i] = slot;
-                        }
-
-                        if (_autoSyncTime) {
-                          _syncFollowingSlots(i);
-                        }
-                      });
-                      _autoSave();
-                    },
-                  ),
-                ],
-              );
-            }),
-            const Divider(height: 32),
             // Quick set section
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -411,6 +274,143 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                 );
               },
             ),
+            const Divider(height: 32),
+            // Section count settings
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.sectionCount,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            _buildSectionCounter(l10n.morning, _morningSections, (v) {
+              setState(() {
+                _morningSections = v;
+                _adjustTimeSlots();
+              });
+              _autoSave();
+            }),
+            _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
+              setState(() {
+                _afternoonSections = v;
+                _adjustTimeSlots();
+              });
+              _autoSave();
+            }),
+            _buildSectionCounter(l10n.evening, _eveningSections, (v) {
+              setState(() {
+                _eveningSections = v;
+                _adjustTimeSlots();
+              });
+              _autoSave();
+            }),
+            const Divider(height: 32),
+            SwitchListTile(
+              title: Text(l10n.autoSyncTime),
+              value: _autoSyncTime,
+              onChanged: (v) {
+                setState(() => _autoSyncTime = v);
+                _autoSave();
+              },
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              spacing: 16,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    initialValue: _courseDuration.toString(),
+                    decoration: InputDecoration(
+                      labelText: l10n.courseDuration,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) {
+                      final val = int.tryParse(v);
+                      if (val != null && val > 0) {
+                        _courseDuration = val;
+                        _autoSave();
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    initialValue: _breakDuration.toString(),
+                    decoration: InputDecoration(
+                      labelText: l10n.breakDuration,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) {
+                      final val = int.tryParse(v);
+                      if (val != null && val >= 0) {
+                        _breakDuration = val;
+                        _autoSave();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(_timeSlots.length, (i) {
+              String groupTitle = '';
+              if (i == 0) {
+                groupTitle = l10n.morning;
+              } else if (i == _morningSections) {
+                groupTitle = l10n.afternoon;
+              } else if (i == _morningSections + _afternoonSections) {
+                groupTitle = l10n.evening;
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (groupTitle.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      child: Text(
+                        groupTitle,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  _TimeSlotEditor(
+                    index: i,
+                    slot: _timeSlots[i],
+                    onChanged: (slot, isStart) {
+                      setState(() {
+                        if (isStart && _autoSyncTime) {
+                          int endMin = slot.startTime.minute + _courseDuration;
+                          int endHour = slot.startTime.hour + (endMin ~/ 60);
+                          _timeSlots[i] = slot.copyWith(
+                            endTime: TimeOfDay(
+                              hour: endHour % 24,
+                              minute: endMin % 60,
+                            ),
+                          );
+                        } else {
+                          _timeSlots[i] = slot;
+                        }
+
+                        if (_autoSyncTime) {
+                          _syncFollowingSlots(i);
+                        }
+                      });
+                      _autoSave();
+                    },
+                  ),
+                ],
+              );
+            }),
           ],
         ),
       ),
