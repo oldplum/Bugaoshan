@@ -21,6 +21,11 @@ class UserInfoProvider extends ChangeNotifier {
 
   UserInfoProvider(this._scuAuth, this._wfwApi) {
     _scuAuth.addListener(_onAuthChanged);
+    // ScuAuth.init() 在 DI 阶段完成，此时本 Provider 还没创建，
+    // init() 的 notifyListeners 没人接收。构造后主动检查一次。
+    if (_scuAuth.isReady) {
+      Future.microtask(_fetchAll);
+    }
   }
 
   List<Map<String, dynamic>>? _labels;
