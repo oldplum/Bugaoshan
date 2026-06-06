@@ -35,7 +35,7 @@ cd Bugaoshan
 >
 > ```bash
 > # Linux / macOS
-> ln -sf ../../.githooks/pre-commit .git/hooks/pre-commit
+> ln -sf .githooks/pre-commit .git/hooks/pre-commit
 >
 > # Windows (Git Bash)
 > cp .githooks/pre-commit .git/hooks/pre-commit
