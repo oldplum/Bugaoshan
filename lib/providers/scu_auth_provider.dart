@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/providers/secure_storage_provider.dart';
-import 'package:bugaoshan/services/api/wfw_api_service.dart';
+import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -16,13 +14,13 @@ const _keyUserNumber = 'scu_user_number';
 
 /// 持久化 SCU 登录状态的 Provider，注册为 singleton。
 ///
-/// 内部委托给 [ScuAuth] 执行实际鉴权逻辑。
+/// 认证控制器：管理登录/登出/自动登录/凭据。
+/// 用户信息获取由 [UserInfoProvider] 通过监听 [WfwAuth] 自动触发。
 class ScuAuthProvider extends ChangeNotifier {
   final ScuAuth _scuAuth;
   final CcylAuth _ccylAuth;
-  final WfwApiService _wfwApi;
 
-  ScuAuthProvider(this._scuAuth, this._ccylAuth, this._wfwApi) {
+  ScuAuthProvider(this._scuAuth, this._ccylAuth) {
     _scuAuth.addListener(_onAuthChanged);
   }
 
@@ -51,6 +49,13 @@ class ScuAuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _scuAuth.isReady;
   bool get isExpired => _scuAuth.isExpired;
 
+  /// 更新用户信息（由 UserInfoProvider 获取后调用）
+  void setUserInfo(String? realname, String? number) {
+    _userRealname = realname;
+    _userNumber = number;
+    notifyListeners();
+  }
+
   Future<void> login({
     required String username,
     required String password,
@@ -63,10 +68,7 @@ class ScuAuthProvider extends ChangeNotifier {
       captchaCode: captchaCode,
       captchaText: captchaText,
     );
-
-    // 获取用户信息 与 绑定第二课堂 互相独立，并行执行，无需等待
-    Future.wait([fetchUserInfo(), getIt<CcylProvider>().reLogin()]);
-
+    // 登录成功后 ScuAuth state → ready，WfwAuth/CcylAuth 自动感知并触发后续流程
     notifyListeners();
   }
 
@@ -81,21 +83,7 @@ class ScuAuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchUserInfo() async {
-    try {
-      final base = await _wfwApi.fetchUserProfile();
-      if (base != null) {
-        _userRealname = base['realname']?.toString();
-        final role = base['role'] as Map<String, dynamic>?;
-        _userNumber = role?['number']?.toString();
-        final prefs = getIt<SharedPreferences>();
-        await prefs.setString(_keyUserRealname, _userRealname ?? '');
-        await prefs.setString(_keyUserNumber, _userNumber ?? '');
-      }
-    } catch (e) {
-      debugPrint('fetchUserInfo error: $e');
-    }
-  }
+  Future<CaptchaResult> fetchCaptcha() => _scuAuth.fetchCaptcha();
 
   Future<Map<String, String>?> getSavedCredentials() async {
     return await _scuAuth.getSavedCredentials();
@@ -158,6 +146,7 @@ class ScuAuthProvider extends ChangeNotifier {
             captchaCode: captcha.code,
             captchaText: captchaText,
           );
+          // 登录后 ScuAuth → ready，WfwAuth/CcylAuth 自动感知触发后续流程
           return true;
         } on ScuLoginException catch (e) {
           if (e.message == 'invalid_captcha') {

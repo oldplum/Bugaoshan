@@ -1,16 +1,18 @@
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class CcylOAuthService {
   static const _idBase = 'https://id.scu.edu.cn';
+  final ScuAuth _scuAuth;
+
+  CcylOAuthService(this._scuAuth);
+
   Future<String?> getOAuthCode() async {
-    final scuAuth = getIt<ScuAuth>();
-    final accessToken = scuAuth.accessToken;
+    final accessToken = _scuAuth.accessToken;
     if (accessToken == null) return null;
 
-    final client = await scuAuth.getClient();
+    final client = await _scuAuth.getClient();
 
     final spLoggedUrl = Uri.parse(
       '$_idBase/api/bff/v1.2/commons/sp_logged'

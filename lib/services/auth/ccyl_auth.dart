@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
-import 'package:bugaoshan/providers/secure_storage_provider.dart';
+import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
+import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
@@ -12,11 +13,13 @@ const _keyCcylUserId = 'ccyl_user_id';
 ///
 /// 管理 CCYL 的 token、用户信息、登录/登出。
 /// CCYL 拥有独立于 SCU 的 OAuth token 体系，不共享 session cookie。
+/// reLogin 时通过 [CcylOAuthService] 从 SCU 获取 OAuth code。
 class CcylAuth extends ChangeNotifier {
+  final ScuAuth _scuAuth;
   String? _token;
   CcylUser? _currentUser;
 
-  CcylAuth();
+  CcylAuth(this._scuAuth);
 
   String? get token => _token;
   bool get isLoggedIn => _token != null;
@@ -61,7 +64,7 @@ class CcylAuth extends ChangeNotifier {
   /// 通过 SCU 自动恢复 CCYL 登录（OAuth 静默绑定）。
   Future<bool> reLogin() async {
     try {
-      final oauth = CcylOAuthService();
+      final oauth = CcylOAuthService(_scuAuth);
       final oauthCode = await oauth.getOAuthCode();
       if (oauthCode == null) return false;
       final result = await CcylService.login(oauthCode);

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 
@@ -69,7 +69,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   Future<void> _loadCaptcha() async {
     setState(() => _captchaLoading = true);
     try {
-      final captcha = await getIt<ScuAuth>().fetchCaptcha();
+      final captcha = await getIt<ScuAuthProvider>().fetchCaptcha();
       String? recognizedText;
       try {
         final comma = captcha.captchaBase64.indexOf(',');

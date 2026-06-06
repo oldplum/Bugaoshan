@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -9,23 +10,23 @@ import 'package:bugaoshan/utils/constants.dart';
 /// 子站通过 SCU 的 Bearer token 获取自己的 cookie/session。
 ///
 /// [PayAppAuth] 和 [FitnessAuth] 都继承此类，只需提供不同的 SSO URL。
-abstract class SsoRelayAuth {
+///
+/// 监听 [ScuAuth] 状态变化并转发通知。
+abstract class SsoRelayAuth extends ChangeNotifier {
   final ScuAuth _scuAuth;
   final String _ssoUrl;
 
   CookieClient? _cachedClient;
   CookieClient? _lastScuClient;
 
-  SsoRelayAuth(this._scuAuth, this._ssoUrl);
+  SsoRelayAuth(this._scuAuth, this._ssoUrl) {
+    _scuAuth.addListener(notifyListeners);
+  }
 
   /// 获取已认证的子站 CookieClient。
-  ///
-  /// 内部先获取 SCU CookieClient，再执行 SSO 跳转。
-  /// 如果 SCU 认证失败，[UnauthenticatedException] 自动穿透。
   Future<CookieClient> getClient() async {
     final scuClient = await _scuAuth.getClient();
 
-    // 当底层 client 与上次 SSO 过的 client 不是同一实例时，重新执行 SSO
     if (!identical(scuClient, _lastScuClient)) {
       _lastScuClient = scuClient;
       _cachedClient = null;
@@ -34,9 +35,7 @@ abstract class SsoRelayAuth {
     if (_cachedClient != null) return _cachedClient!;
 
     final auth = _scuAuth.accessToken;
-    if (auth == null) {
-      throw const UnauthenticatedException();
-    }
+    if (auth == null) throw const UnauthenticatedException();
 
     await scuClient.followRedirects(
       Uri.parse(_ssoUrl),
@@ -50,8 +49,11 @@ abstract class SsoRelayAuth {
     return scuClient;
   }
 
-  /// 清除缓存的 SSO client。
-  void invalidate() {
-    _cachedClient = null;
+  void invalidate() => _cachedClient = null;
+
+  @override
+  void dispose() {
+    _scuAuth.removeListener(notifyListeners);
+    super.dispose();
   }
 }

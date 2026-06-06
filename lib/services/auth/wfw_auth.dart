@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 
@@ -5,13 +6,20 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 ///
 /// wfw.scu.edu.cn 通过 SCU SSO session 认证（CookieClient），
 /// 与教务系统共享同一个 SSO session。
-class WfwAuth {
+///
+/// 监听 [ScuAuth] 状态变化并转发通知，Provider 可通过 addListener 感知。
+class WfwAuth extends ChangeNotifier {
   final ScuAuth _scuAuth;
-  WfwAuth(this._scuAuth);
+  WfwAuth(this._scuAuth) {
+    _scuAuth.addListener(notifyListeners);
+  }
 
   /// 获取已认证的 CookieClient（SSO session）。
-  ///
-  /// wfw.scu.edu.cn 使用与教务系统相同的 SSO session，
-  /// 在 ScuAuth.bindSession() 中已预热。
   Future<CookieClient> getClient() => _scuAuth.getClient();
+
+  @override
+  void dispose() {
+    _scuAuth.removeListener(notifyListeners);
+    super.dispose();
+  }
 }

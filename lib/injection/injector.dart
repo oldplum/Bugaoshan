@@ -102,7 +102,7 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<CcylAuth>(() async {
     await getIt.isReady<ScuAuth>();
-    final auth = CcylAuth();
+    final auth = CcylAuth(getIt<ScuAuth>());
     await auth.init();
     return auth;
   });
@@ -129,12 +129,7 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
     await getIt.isReady<ScuAuth>();
     await getIt.isReady<CcylAuth>();
-    await getIt.isReady<WfwApiService>();
-    final provider = ScuAuthProvider(
-      getIt<ScuAuth>(),
-      getIt<CcylAuth>(),
-      getIt<WfwApiService>(),
-    );
+    final provider = ScuAuthProvider(getIt<ScuAuth>(), getIt<CcylAuth>());
     await provider.init();
     return provider;
   });
@@ -145,8 +140,13 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<UserInfoProvider>(() async {
     await getIt.isReady<ScuAuth>();
+    await getIt.isReady<WfwAuth>();
     await getIt.isReady<WfwApiService>();
-    return UserInfoProvider(getIt<ScuAuth>(), getIt<WfwApiService>());
+    return UserInfoProvider(
+      getIt<ScuAuth>(),
+      getIt<WfwAuth>(),
+      getIt<WfwApiService>(),
+    );
   });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
