@@ -44,7 +44,11 @@ class UserInfoProvider extends ChangeNotifier {
 
   void _onAuthChanged() {
     if (_wfwAuth.state == AuthState.ready) {
-      _fetchAll();
+      // SSO session 刚通过 session/save 建立，CookieClient 的 jar 里仅有
+      // id.scu.edu.cn 域 cookie。立即访问 wfw.scu.edu.cn 会触发重定向链，
+      // 重定向期间的并发请求可能被服务端限流或产生 session 竞态导致失败。
+      // 给一个短延迟让重定向链完成，同时 _fetchAll 内部有一次自动重试兜底。
+      Future.delayed(const Duration(milliseconds: 300), _fetchAll);
     } else if (_wfwAuth.state == AuthState.unknown) {
       clear();
     }
@@ -57,35 +61,50 @@ class UserInfoProvider extends ChangeNotifier {
     _error = false;
     notifyListeners();
 
-    try {
-      final results = await Future.wait([
-        _wfwApi.fetchUserProfile(),
-        _wfwApi.fetchProfileLabels(),
-      ]);
+    await _doFetch();
 
-      // 更新用户基本信息
-      final profile = results[0] as Map<String, dynamic>?;
-      if (profile != null) {
-        _userRealname = profile['realname']?.toString();
-        final role = profile['role'] as Map<String, dynamic>?;
-        _userNumber = role?['number']?.toString();
-        final prefs = getIt<SharedPreferences>();
-        await prefs.setString(_keyUserRealname, _userRealname ?? '');
-        await prefs.setString(_keyUserNumber, _userNumber ?? '');
-        // 同步到 ScuAuthProvider（向后兼容）
-        getIt<ScuAuthProvider>().setUserInfo(_userRealname, _userNumber);
-      }
-
-      // 更新标签
-      _labels = results[1] as List<Map<String, dynamic>>?;
-      _error = false;
-    } on UnauthenticatedException {
-      _error = true;
-    } catch (e) {
-      _error = true;
-    }
     _loading = false;
     notifyListeners();
+  }
+
+  Future<void> _doFetch() async {
+    try {
+      await _attemptFetch();
+    } on UnauthenticatedException {
+      _error = true;
+    } catch (_) {
+      // 非认证错误（如服务端限流、网络瞬断），自动重试一次
+      try {
+        await Future.delayed(const Duration(seconds: 1));
+        await _attemptFetch();
+      } catch (_) {
+        _error = true;
+      }
+    }
+  }
+
+  Future<void> _attemptFetch() async {
+    final results = await Future.wait([
+      _wfwApi.fetchUserProfile(),
+      _wfwApi.fetchProfileLabels(),
+    ]);
+
+    // 更新用户基本信息
+    final profile = results[0] as Map<String, dynamic>?;
+    if (profile != null) {
+      _userRealname = profile['realname']?.toString();
+      final role = profile['role'] as Map<String, dynamic>?;
+      _userNumber = role?['number']?.toString();
+      final prefs = getIt<SharedPreferences>();
+      await prefs.setString(_keyUserRealname, _userRealname ?? '');
+      await prefs.setString(_keyUserNumber, _userNumber ?? '');
+      // 同步到 ScuAuthProvider（向后兼容）
+      getIt<ScuAuthProvider>().setUserInfo(_userRealname, _userNumber);
+    }
+
+    // 更新标签
+    _labels = results[1] as List<Map<String, dynamic>>?;
+    _error = false;
   }
 
   Future<void> fetchLabels() async {
