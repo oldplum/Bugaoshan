@@ -292,12 +292,10 @@ class DatabaseService {
       return;
     }
     _currentScheduleId = scheduleId;
-    await _db.update(
-      'metadata',
-      {'value': scheduleId},
-      where: 'key = ?',
-      whereArgs: [_keyCurrentScheduleId],
-    );
+    await _db.insert('metadata', {
+      'key': _keyCurrentScheduleId,
+      'value': scheduleId,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
     await _loadCoursesCache();
   }
 
@@ -357,12 +355,10 @@ class DatabaseService {
         await switchSchedule(_schedulesCache.first.id);
       } else {
         _currentScheduleId = '';
-        await _db.update(
-          'metadata',
-          {'value': ''},
-          where: 'key = ?',
-          whereArgs: [_keyCurrentScheduleId],
-        );
+        await _db.insert('metadata', {
+          'key': _keyCurrentScheduleId,
+          'value': '',
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
         await _loadCoursesCache();
       }
     }
