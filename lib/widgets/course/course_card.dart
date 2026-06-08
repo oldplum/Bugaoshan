@@ -48,7 +48,7 @@ class CourseCard extends StatelessWidget {
           if (config.showLocation && course.location.isNotEmpty)
             (text: course.location, preferredMaxLines: 2),
           if (config.showTeacherName && course.teacher.isNotEmpty)
-            (text: course.teacher, preferredMaxLines: 1),
+            (text: course.teacher, preferredMaxLines: 2),
           (
             text: l10n.weekRange(course.startWeek, course.endWeek),
             preferredMaxLines: 2,

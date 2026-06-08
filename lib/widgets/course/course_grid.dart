@@ -160,6 +160,7 @@ class _CourseGridState extends State<CourseGrid> {
                                 .where((c) => c.dayOfWeek == day)
                                 .toList();
                             dayCourses.sort(_compareCoursesForLayout);
+                            dayCourses = _mergeSameSlotCourses(dayCourses);
                           } else {
                             dayCourses = selectVisibleCoursesForDay(
                               widget.courses
@@ -684,4 +685,66 @@ List<_TrackInfo> _assignCourseTracks(List<Course> courses) {
     final localTrack = overlapping.indexOf(i);
     return _TrackInfo(track: localTrack, totalTracks: overlapping.length);
   });
+}
+
+/// Merges courses with the same name, day, and section range into one card.
+/// Reduces track count and shows combined info in compact format.
+List<Course> _mergeSameSlotCourses(List<Course> courses) {
+  if (courses.length <= 1) return courses;
+
+  final groups = <String, List<Course>>{};
+  for (final course in courses) {
+    final key =
+        '${course.name}|${course.dayOfWeek}|${course.startSection}|${course.endSection}';
+    groups.putIfAbsent(key, () => []).add(course);
+  }
+
+  if (groups.length == courses.length) return courses;
+
+  final result = <Course>[];
+  for (final group in groups.values) {
+    if (group.length == 1) {
+      result.add(group[0]);
+    } else {
+      // Only merge if same location; different locations → keep side-by-side tracks
+      final uniqueLocations = group.map((c) => c.location).toSet();
+      if (uniqueLocations.length == 1) {
+        result.add(_mergeCourseGroup(group));
+      } else {
+        result.addAll(group);
+      }
+    }
+  }
+  return result;
+}
+
+Course _mergeCourseGroup(List<Course> group) {
+  final first = group.first;
+
+  // Teacher: unique names (some fields already contain comma-separated names)
+  final teacher = group
+      .expand((c) => c.teacher.split(RegExp(r'[,，、]')))
+      .map((s) => s.trim())
+      .where((s) => s.isNotEmpty)
+      .toSet()
+      .join('\u3001');
+
+  // Location: unique values, no week annotations
+  final location = group.map((c) => c.location).toSet().join(' \u00b7 ');
+
+  final minWeek = group.map((c) => c.startWeek).reduce((a, b) => a < b ? a : b);
+  final maxWeek = group.map((c) => c.endWeek).reduce((a, b) => a > b ? a : b);
+
+  return Course(
+    name: first.name,
+    teacher: teacher,
+    location: location,
+    startWeek: minWeek,
+    endWeek: maxWeek,
+    dayOfWeek: first.dayOfWeek,
+    startSection: first.startSection,
+    endSection: first.endSection,
+    colorValue: first.colorValue,
+    weekType: first.weekType,
+  );
 }

@@ -27,7 +27,7 @@ class _ClassScheduleInquiryDetailPageState
   String? _error;
 
   /// 将教务系统周次描述解析为 Course 的周次参数。
-  /// zcsm 格式如 "1-10周"、"1-10,12周"、"1-16(单)" 等。
+  /// zcsm 格式如 "1-10周"、"1-10,12周"、"1-16(单)"、"第16周" 等。
   (int startWeek, int endWeek, WeekType weekType) _parseWeeks(String zcsm) {
     if (zcsm.isEmpty) return (1, 20, WeekType.every);
     final text = zcsm.replaceAll('周', '').trim();
@@ -35,20 +35,28 @@ class _ClassScheduleInquiryDetailPageState
     if (text.contains('单')) weekType = WeekType.odd;
     if (text.contains('双')) weekType = WeekType.even;
     final numbers = text.replaceAll(RegExp(r'[^\d,\-]'), '');
+    if (numbers.isEmpty) return (1, 20, weekType);
     final parts = numbers.split(',');
-    int startWeek = 1, endWeek = 20;
+    int? minStart;
+    int? maxEnd;
     for (final part in parts) {
       final range = part.split('-');
       if (range.length == 2) {
         final s = int.tryParse(range[0]);
         final e = int.tryParse(range[1]);
         if (s != null && e != null) {
-          if (startWeek == 1 || s < startWeek) startWeek = s;
-          if (endWeek == 20 || e > endWeek) endWeek = e;
+          minStart = minStart == null ? s : (s < minStart ? s : minStart);
+          maxEnd = maxEnd == null ? e : (e > maxEnd ? e : maxEnd);
+        }
+      } else if (range.length == 1) {
+        final w = int.tryParse(range[0]);
+        if (w != null) {
+          minStart = minStart == null ? w : (w < minStart ? w : minStart);
+          maxEnd = maxEnd == null ? w : (w > maxEnd ? w : maxEnd);
         }
       }
     }
-    return (startWeek, endWeek, weekType);
+    return (minStart ?? 1, maxEnd ?? 20, weekType);
   }
 
   @override
@@ -212,10 +220,34 @@ class _ClassScheduleInquiryDetailPageState
 
   Widget _buildCourseList(BuildContext context) {
     final theme = Theme.of(context);
+    // Merge same-name same-slot items for display
+    final groups = <String, List<ClassScheduleInquiryItem>>{};
+    for (final item in _courses) {
+      final key =
+          '${item.courseName}|${item.dayOfWeek}|${item.startPeriod}|${item.duration}';
+      groups.putIfAbsent(key, () => []).add(item);
+    }
+
     return Column(
-      children: _courses.asMap().entries.map((entry) {
-        final course = entry.value;
-        final color = _getCourseColor(course.courseCode);
+      children: groups.values.map((group) {
+        group.sort((a, b) => a.weeksDescription.compareTo(b.weeksDescription));
+        final first = group.first;
+        final color = _getCourseColor(first.courseCode);
+
+        // Build merged info strings (no week annotations — shown in header)
+        final teacherInfo = group.map((c) => c.teacherName).toSet().join('、');
+
+        final locationInfo = group
+            .map(
+              (c) => [
+                c.campus,
+                c.building,
+                c.classroom,
+              ].where((s) => s.isNotEmpty).join(' '),
+            )
+            .toSet()
+            .join(' · ');
+
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: Padding(
@@ -237,39 +269,41 @@ class _ClassScheduleInquiryDetailPageState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        course.courseName,
+                        first.courseName,
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${course.courseCode} · ${course.courseSeq}',
+                        '${first.courseCode} · ${first.courseSeq}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      _buildInfoRow(
-                        Icons.person_outline,
-                        course.teacherName,
-                        theme,
-                      ),
+                      _buildInfoRow(Icons.person_outline, teacherInfo, theme),
                       _buildInfoRow(
                         Icons.date_range,
-                        course.weeksDescription,
+                        group.length == 1
+                            ? first.weeksDescription
+                            : () {
+                                final minW = group
+                                    .map(
+                                      (c) => _parseWeeks(c.weeksDescription).$1,
+                                    )
+                                    .reduce((a, b) => a < b ? a : b);
+                                final maxW = group
+                                    .map(
+                                      (c) => _parseWeeks(c.weeksDescription).$2,
+                                    )
+                                    .reduce((a, b) => a > b ? a : b);
+                                return '$minW-$maxW周';
+                              }(),
                         theme,
                       ),
-                      if (course.classroom.isNotEmpty)
-                        _buildInfoRow(
-                          Icons.room_outlined,
-                          [
-                            course.campus,
-                            course.building,
-                            course.classroom,
-                          ].where((s) => s.isNotEmpty).join(' '),
-                          theme,
-                        ),
+                      if (group.any((c) => c.classroom.isNotEmpty))
+                        _buildInfoRow(Icons.room_outlined, locationInfo, theme),
                     ],
                   ),
                 ),
