@@ -75,7 +75,8 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
 
   Future<void> _onLogin() async {
     final result = await popupOrNavigate(context, const ScuLoginPage());
-    if (result == true && context.mounted) {
+    if (!mounted) return;
+    if (result == true) {
       _loadUsername();
       ScaffoldMessenger.of(
         context,
