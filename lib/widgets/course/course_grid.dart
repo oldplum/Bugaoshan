@@ -64,6 +64,7 @@ class CourseGrid extends StatefulWidget {
   final ScheduleConfig config;
   final int displayWeek;
   final int totalWeeks;
+  final bool forceActive;
   final void Function(Course course)? onCourseTap;
   final void Function(Course course)? onCourseLongPress;
   final void Function(int dayOfWeek, int section)? onEmptyTap;
@@ -75,6 +76,7 @@ class CourseGrid extends StatefulWidget {
     required this.config,
     required this.displayWeek,
     required this.totalWeeks,
+    this.forceActive = false,
     this.onCourseTap,
     this.onCourseLongPress,
     this.onEmptyTap,
@@ -152,14 +154,22 @@ class _CourseGridState extends State<CourseGrid> {
                           final day = widget.config.showWeekend
                               ? (dayIndex == 0 ? 7 : dayIndex)
                               : dayIndex + 1;
-                          final dayCourses = selectVisibleCoursesForDay(
-                            widget.courses
+                          List<Course> dayCourses;
+                          if (widget.forceActive) {
+                            dayCourses = widget.courses
                                 .where((c) => c.dayOfWeek == day)
-                                .toList(),
-                            widget.displayWeek,
-                            showNonCurrentWeekCourses:
-                                widget.config.showNonCurrentWeekCourses,
-                          );
+                                .toList();
+                            dayCourses.sort(_compareCoursesForLayout);
+                          } else {
+                            dayCourses = selectVisibleCoursesForDay(
+                              widget.courses
+                                  .where((c) => c.dayOfWeek == day)
+                                  .toList(),
+                              widget.displayWeek,
+                              showNonCurrentWeekCourses:
+                                  widget.config.showNonCurrentWeekCourses,
+                            );
+                          }
                           return _buildDayColumn(
                             context,
                             day,
@@ -232,16 +242,28 @@ class _CourseGridState extends State<CourseGrid> {
                         daysFromMonday,
                   ),
                 );
-                final isToday = date.isAtSameMomentAs(today);
-                final specialDay = HolidayUtils.getSpecialDay(date);
-                final isHoliday = specialDay.type == SpecialDayType.holiday;
-                final isFestival = specialDay.type == SpecialDayType.festival;
-                final isSolarTerm = specialDay.type == SpecialDayType.solarTerm;
+                final isToday =
+                    !widget.forceActive && date.isAtSameMomentAs(today);
+                final specialDay = !widget.forceActive
+                    ? HolidayUtils.getSpecialDay(date)
+                    : SpecialDayInfo(type: SpecialDayType.ordinary);
+                final isHoliday =
+                    !widget.forceActive &&
+                    specialDay.type == SpecialDayType.holiday;
+                final isFestival =
+                    !widget.forceActive &&
+                    specialDay.type == SpecialDayType.festival;
+                final isSolarTerm =
+                    !widget.forceActive &&
+                    specialDay.type == SpecialDayType.solarTerm;
                 final isSpecial = isHoliday || isFestival || isSolarTerm;
 
                 return Expanded(
                   child: GestureDetector(
-                    onTap: isSpecial && widget.onSpecialDayTap != null
+                    onTap:
+                        !widget.forceActive &&
+                            isSpecial &&
+                            widget.onSpecialDayTap != null
                         ? () => widget.onSpecialDayTap!(date, specialDay)
                         : null,
                     child: Container(
@@ -278,52 +300,53 @@ class _CourseGridState extends State<CourseGrid> {
                                     : theme.colorScheme.onSurface,
                               ),
                             ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  l10n.dateMonthDay(date.month, date.day),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: isToday
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    color: isHoliday
-                                        ? Colors.red
-                                        : isFestival
-                                        ? Colors.orange
-                                        : isSolarTerm
-                                        ? Colors.green
-                                        : isToday
-                                        ? theme.colorScheme.primary.withAlpha(
-                                            200,
-                                          )
-                                        : theme.colorScheme.onSurfaceVariant,
+                            if (!widget.forceActive)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    l10n.dateMonthDay(date.month, date.day),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: isToday
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: isHoliday
+                                          ? Colors.red
+                                          : isFestival
+                                          ? Colors.orange
+                                          : isSolarTerm
+                                          ? Colors.green
+                                          : isToday
+                                          ? theme.colorScheme.primary.withAlpha(
+                                              200,
+                                            )
+                                          : theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                                if (isHoliday) ...[
-                                  const SizedBox(width: 2),
-                                  _buildLabelBadge(
-                                    l10n.holidayLabel,
-                                    Colors.red,
-                                  ),
+                                  if (isHoliday) ...[
+                                    const SizedBox(width: 2),
+                                    _buildLabelBadge(
+                                      l10n.holidayLabel,
+                                      Colors.red,
+                                    ),
+                                  ],
+                                  if (isFestival) ...[
+                                    const SizedBox(width: 2),
+                                    _buildLabelBadge(
+                                      l10n.festivalLabel,
+                                      Colors.orange,
+                                    ),
+                                  ],
+                                  if (isSolarTerm) ...[
+                                    const SizedBox(width: 2),
+                                    _buildLabelBadge(
+                                      l10n.solarTermLabel,
+                                      Colors.green,
+                                    ),
+                                  ],
                                 ],
-                                if (isFestival) ...[
-                                  const SizedBox(width: 2),
-                                  _buildLabelBadge(
-                                    l10n.festivalLabel,
-                                    Colors.orange,
-                                  ),
-                                ],
-                                if (isSolarTerm) ...[
-                                  const SizedBox(width: 2),
-                                  _buildLabelBadge(
-                                    l10n.solarTermLabel,
-                                    Colors.green,
-                                  ),
-                                ],
-                              ],
-                            ),
+                              ),
                           ],
                         ),
                       ),
@@ -502,6 +525,7 @@ class _CourseGridState extends State<CourseGrid> {
                     course: course,
                     config: widget.config,
                     displayWeek: widget.displayWeek,
+                    forceActive: widget.forceActive,
                     onTap: widget.onCourseTap != null
                         ? () => widget.onCourseTap!(course)
                         : null,

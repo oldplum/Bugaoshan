@@ -3,9 +3,10 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/widgets/course/course_card.dart';
+import 'package:bugaoshan/widgets/course/course_grid.dart';
 
 /// 班级课表详情页 - 以课表网格展示班级课程
 class ClassScheduleInquiryDetailPage extends StatefulWidget {
@@ -25,16 +26,30 @@ class _ClassScheduleInquiryDetailPageState
   bool _isLoading = true;
   String? _error;
 
-  static List<String> _buildDayLabels(AppLocalizations l10n) => [
-    '',
-    l10n.monday,
-    l10n.tuesday,
-    l10n.wednesday,
-    l10n.thursday,
-    l10n.friday,
-    l10n.saturday,
-    l10n.sunday,
-  ];
+  /// 将教务系统周次描述解析为 Course 的周次参数。
+  /// zcsm 格式如 "1-10周"、"1-10,12周"、"1-16(单)" 等。
+  (int startWeek, int endWeek, WeekType weekType) _parseWeeks(String zcsm) {
+    if (zcsm.isEmpty) return (1, 20, WeekType.every);
+    final text = zcsm.replaceAll('周', '').trim();
+    WeekType weekType = WeekType.every;
+    if (text.contains('单')) weekType = WeekType.odd;
+    if (text.contains('双')) weekType = WeekType.even;
+    final numbers = text.replaceAll(RegExp(r'[^\d,\-]'), '');
+    final parts = numbers.split(',');
+    int startWeek = 1, endWeek = 20;
+    for (final part in parts) {
+      final range = part.split('-');
+      if (range.length == 2) {
+        final s = int.tryParse(range[0]);
+        final e = int.tryParse(range[1]);
+        if (s != null && e != null) {
+          if (startWeek == 1 || s < startWeek) startWeek = s;
+          if (endWeek == 20 || e > endWeek) endWeek = e;
+        }
+      }
+    }
+    return (startWeek, endWeek, weekType);
+  }
 
   @override
   void initState() {
@@ -131,12 +146,38 @@ class _ClassScheduleInquiryDetailPageState
       );
     }
 
+    final hasWeekend = _courses.any((c) => c.dayOfWeek > 5);
+    final rowHeight = getIt<AppConfigProvider>().courseRowHeight.value;
+    const headerHeight = 40.0;
+    const int totalPeriods = 12;
+    final gridHeight = headerHeight + totalPeriods * rowHeight;
+
+    final gridConfig = ScheduleConfig(
+      semesterStartDate: DateTime(2025, 9, 1),
+      showTeacherName: true,
+      showLocation: true,
+      showWeekend: hasWeekend,
+      morningSections: 0,
+      afternoonSections: 0,
+      eveningSections: totalPeriods,
+      timeSlots: [],
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildScheduleGrid(context),
+          SizedBox(
+            height: gridHeight,
+            child: CourseGrid(
+              courses: _courses.map(_toCourse).toList(),
+              config: gridConfig,
+              displayWeek: 1,
+              totalWeeks: 20,
+              forceActive: true,
+            ),
+          ),
           const SizedBox(height: 24),
           Text(
             l10n.classScheduleInquiryDetail,
@@ -149,229 +190,9 @@ class _ClassScheduleInquiryDetailPageState
     );
   }
 
-  Widget _buildScheduleGrid(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final dayLabels = _buildDayLabels(l10n);
-
-    // 检测是否有周末课程，决定显示5天还是7天
-    final hasWeekend = _courses.any((c) => c.dayOfWeek > 5);
-    final dayCount = hasWeekend ? 7 : 5;
-
-    // Build a map: dayOfWeek -> (startPeriod -> [courses])
-    final Map<int, Map<int, List<ClassScheduleInquiryItem>>> gridMap = {};
-    for (final course in _courses) {
-      gridMap.putIfAbsent(course.dayOfWeek, () => {});
-      for (
-        int p = course.startPeriod;
-        p < course.startPeriod + course.duration;
-        p++
-      ) {
-        gridMap[course.dayOfWeek]!.putIfAbsent(p, () => []);
-        if (gridMap[course.dayOfWeek]![p]!.length < 2) {
-          gridMap[course.dayOfWeek]![p]!.add(course);
-        }
-      }
-    }
-
-    const double sectionWidth = 35;
-    const double rowHeight = 72;
-    const int totalPeriods = 12;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Header row
-        SizedBox(
-          height: 40,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                width: sectionWidth,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      right: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                        width: 0.5,
-                      ),
-                      bottom: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              ...List.generate(dayCount, (dayIndex) {
-                return Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                        ),
-                        right: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                          width: 0.5,
-                        ),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        dayLabels[dayIndex + 1],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-        ),
-        // Grid content: section column + dayCount day stacks
-        SizedBox(
-          height: totalPeriods * rowHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildSectionColumn(
-                context,
-                totalPeriods,
-                sectionWidth,
-                rowHeight,
-              ),
-              Expanded(
-                child: Row(
-                  children: List.generate(dayCount, (dayIndex) {
-                    return Expanded(
-                      child: _buildDayColumn(
-                        context,
-                        dayIndex + 1,
-                        gridMap,
-                        totalPeriods,
-                        rowHeight,
-                      ),
-                    );
-                  }),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionColumn(
-    BuildContext context,
-    int totalPeriods,
-    double sectionWidth,
-    double rowHeight,
-  ) {
-    final theme = Theme.of(context);
-    return SizedBox(
-      width: sectionWidth,
-      child: Column(
-        children: List.generate(totalPeriods, (i) {
-          final period = i + 1;
-          return Container(
-            height: rowHeight,
-            decoration: BoxDecoration(
-              border: Border(
-                right: BorderSide(
-                  color: theme.colorScheme.outlineVariant,
-                  width: 0.5,
-                ),
-                bottom: BorderSide(
-                  color: theme.colorScheme.outlineVariant,
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '$period',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildDayColumn(
-    BuildContext context,
-    int dayOfWeek,
-    Map<int, Map<int, List<ClassScheduleInquiryItem>>> gridMap,
-    int totalPeriods,
-    double rowHeight,
-  ) {
-    final theme = Theme.of(context);
-
-    // Collect unique courses for this day
-    final dayCourses = <ClassScheduleInquiryItem>{};
-    for (int p = 1; p <= totalPeriods; p++) {
-      final courses = gridMap[dayOfWeek]?[p] ?? [];
-      dayCourses.addAll(courses);
-    }
-
-    return SizedBox(
-      height: totalPeriods * rowHeight,
-      child: Stack(
-        children: [
-          // Grid lines
-          ...List.generate(totalPeriods, (i) {
-            return Positioned(
-              top: i * rowHeight,
-              left: 0,
-              right: 0,
-              height: rowHeight,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.colorScheme.outlineVariant,
-                      width: 0.5,
-                    ),
-                    right: BorderSide(
-                      color: theme.colorScheme.outlineVariant,
-                      width: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-          // Course cards
-          ...dayCourses.map((course) {
-            final top = (course.startPeriod - 1) * rowHeight;
-            final courseHeight = course.duration * rowHeight - 2;
-            return Positioned(
-              top: top + 1,
-              left: 1,
-              right: 1,
-              height: courseHeight,
-              child: _buildCourseCell(context, course),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  /// 将 API 课程项转为 Course 对象供 CourseCard 使用。
-  /// 班级课表不涉及周次切换，固定 1-20 周 + every 即可保证始终可见。
+  /// 将 API 课程项转为 Course 对象。
   Course _toCourse(ClassScheduleInquiryItem item) {
+    final (startWeek, endWeek, weekType) = _parseWeeks(item.weeksDescription);
     return Course(
       name: item.courseName,
       teacher: item.teacherName,
@@ -379,28 +200,13 @@ class _ClassScheduleInquiryDetailPageState
         item.building,
         item.classroom,
       ].where((s) => s.isNotEmpty).join(' '),
-      startWeek: 1,
-      endWeek: 20,
+      startWeek: startWeek,
+      endWeek: endWeek,
       dayOfWeek: item.dayOfWeek,
       startSection: item.startPeriod,
       endSection: item.startPeriod + item.duration - 1,
       colorValue: _getCourseColor(item.courseCode).toARGB32(),
-      weekType: WeekType.every,
-    );
-  }
-
-  Widget _buildCourseCell(BuildContext context, ClassScheduleInquiryItem item) {
-    final course = _toCourse(item);
-    // semesterStartDate 不影响显示：displayWeek=1 且 weekType=every 时
-    // CourseCard 不依赖实际日期计算，保持无状态即可。
-    final config = ScheduleConfig(
-      semesterStartDate: DateTime(2025, 9, 1),
-      showTeacherName: true,
-      showLocation: true,
-    );
-    return Padding(
-      padding: const EdgeInsets.all(1),
-      child: CourseCard(course: course, config: config, displayWeek: 1),
+      weekType: weekType,
     );
   }
 
