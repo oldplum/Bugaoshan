@@ -75,7 +75,7 @@ class CourseGrid extends StatefulWidget {
     required this.courses,
     required this.config,
     required this.displayWeek,
-    required this.totalWeeks,
+    this.totalWeeks = 20,
     this.showAllWeeks = false,
     this.onCourseTap,
     this.onCourseLongPress,
