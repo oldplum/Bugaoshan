@@ -192,34 +192,6 @@ class _TestPageState extends State<TestPage> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  void _showEnvironmentInfoDialog(BuildContext context) async {
-    final localizations = AppLocalizations.of(context)!;
-    final versionInfo = await _versionInfoProvider.getVersionInfo();
-    if (!context.mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.info_outline),
-            const SizedBox(width: 8),
-            Text(localizations.environmentInfo),
-          ],
-        ),
-        content: SelectableText(
-          versionInfo,
-          style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(localizations.confirm),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -233,9 +205,7 @@ class _TestPageState extends State<TestPage> {
           children: [
             _SectionTitle(title: localizations.environmentInfo),
             const SizedBox(height: 12),
-            EnvironmentInfoButton(
-              onPressed: () => _showEnvironmentInfoDialog(context),
-            ),
+            const EnvironmentInfoButton(),
             const SizedBox(height: 32),
             _SectionTitle(title: localizations.wizard),
             const SizedBox(height: 12),
