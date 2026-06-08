@@ -232,6 +232,26 @@ class DatabaseService {
     await _loadCoursesCache();
   }
 
+  /// 替换指定课表的所有课程（先删后插）。用于「更新课表」场景。
+  Future<void> replaceScheduleCourses(
+    String scheduleId,
+    List<Course> courses,
+  ) async {
+    await _db.transaction((txn) async {
+      await txn.delete(
+        'courses',
+        where: 'schedule_id = ?',
+        whereArgs: [scheduleId],
+      );
+      for (final course in courses) {
+        await txn.insert('courses', _courseToRow(course, scheduleId));
+      }
+    });
+    if (_currentScheduleId == scheduleId) {
+      await _loadCoursesCache();
+    }
+  }
+
   Future<void> updateCourse(Course course) async {
     if (_currentScheduleId.isEmpty) {
       debugPrint('DatabaseService.updateCourse: no current schedule');

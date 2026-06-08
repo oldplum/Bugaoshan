@@ -1273,6 +1273,42 @@ abstract class AppLocalizations {
   /// **'Schedule name already exists'**
   String get duplicateScheduleName;
 
+  /// No description provided for @importNameConflictAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule \"{name}\" already exists, please choose:'**
+  String importNameConflictAction(Object name);
+
+  /// No description provided for @importNameConflictAddSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Import with suffix'**
+  String get importNameConflictAddSuffix;
+
+  /// No description provided for @importNameConflictUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update existing schedule'**
+  String get importNameConflictUpdate;
+
+  /// No description provided for @importAllConflictAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Some schedule names conflict, please choose how to proceed:'**
+  String get importAllConflictAction;
+
+  /// No description provided for @importAllConflictAddSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Add suffix to all'**
+  String get importAllConflictAddSuffix;
+
+  /// No description provided for @importAllConflictUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update all'**
+  String get importAllConflictUpdate;
+
   /// No description provided for @importSchedule.
   ///
   /// In en, this message translates to:

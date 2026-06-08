@@ -632,6 +632,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get duplicateScheduleName => 'Schedule name already exists';
 
   @override
+  String importNameConflictAction(Object name) {
+    return 'Schedule \"$name\" already exists, please choose:';
+  }
+
+  @override
+  String get importNameConflictAddSuffix => 'Import with suffix';
+
+  @override
+  String get importNameConflictUpdate => 'Update existing schedule';
+
+  @override
+  String get importAllConflictAction =>
+      'Some schedule names conflict, please choose how to proceed:';
+
+  @override
+  String get importAllConflictAddSuffix => 'Add suffix to all';
+
+  @override
+  String get importAllConflictUpdate => 'Update all';
+
+  @override
   String get importSchedule => 'Import Schedule';
 
   @override

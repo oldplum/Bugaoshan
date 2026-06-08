@@ -612,6 +612,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get duplicateScheduleName => '课表名称已存在';
 
   @override
+  String importNameConflictAction(Object name) {
+    return '课表 \"$name\" 已存在，请选择操作：';
+  }
+
+  @override
+  String get importNameConflictAddSuffix => '添加后缀导入';
+
+  @override
+  String get importNameConflictUpdate => '更新当前课表';
+
+  @override
+  String get importAllConflictAction => '部分课表名称与已有课表冲突，请选择操作方式：';
+
+  @override
+  String get importAllConflictAddSuffix => '全部添加后缀';
+
+  @override
+  String get importAllConflictUpdate => '全部更新';
+
+  @override
   String get importSchedule => '导入课表';
 
   @override
