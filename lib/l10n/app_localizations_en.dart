@@ -541,6 +541,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get courseGridSection => 'Course Grid';
 
   @override
+  String get courseStyleSetting => 'Course Style';
+
+  @override
   String get otherSection => 'Other';
 
   @override

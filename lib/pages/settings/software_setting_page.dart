@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
+import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
@@ -31,10 +32,6 @@ class SoftwareSettingPage extends StatelessWidget {
 
     return ListenableBuilder(
       listenable: Listenable.merge([
-        appConfig.colorOpacity,
-        appConfig.courseCardFontSize,
-        appConfig.showCourseGrid,
-        appConfig.courseRowHeight,
         appConfig.backgroundImagePath,
         appConfig.backgroundImageOpacity,
         appConfig.widgetShowTomorrow,
@@ -76,57 +73,14 @@ class SoftwareSettingPage extends StatelessWidget {
                   child: Text(localizations.customDock),
                 ),
 
-                const Divider(),
-                // Course card section
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    localizations.courseCardSection,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    popupOrNavigate(context, const SetCourseStylePage());
+                  },
+                  icon: const Icon(Icons.style),
+                  child: Text(localizations.courseStyleSetting),
                 ),
-                // Color opacity
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text(localizations.colorOpacity)),
-                        Text(
-                          '${(appConfig.colorOpacity.value * 100).round()}%',
-                        ),
-                      ],
-                    ),
-                    Slider(
-                      value: appConfig.colorOpacity.value,
-                      min: 0.3,
-                      max: 1.0,
-                      divisions: 14,
-                      onChanged: (v) => appConfig.colorOpacity.value = v,
-                    ),
-                  ],
-                ),
-                // Font size
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text(localizations.fontSize)),
-                        Text('${appConfig.courseCardFontSize.value.round()}'),
-                      ],
-                    ),
-                    Slider(
-                      value: appConfig.courseCardFontSize.value,
-                      min: 8,
-                      max: 20,
-                      divisions: 12,
-                      onChanged: (v) => appConfig.courseCardFontSize.value = v,
-                    ),
-                  ],
-                ),
+
                 const Divider(),
                 // Background image section
                 Align(
@@ -196,43 +150,6 @@ class SoftwareSettingPage extends StatelessWidget {
                     ],
                   ],
                 ),
-                const Divider(),
-                // Course grid section
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    localizations.courseGridSection,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-                // Show course grid switch
-                SwitchListTile(
-                  title: Text(localizations.showCourseGrid),
-                  value: appConfig.showCourseGrid.value,
-                  onChanged: (v) => appConfig.showCourseGrid.value = v,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                // Course row height
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text(localizations.courseRowHeight)),
-                        Text('${appConfig.courseRowHeight.value.round()}'),
-                      ],
-                    ),
-                    Slider(
-                      value: appConfig.courseRowHeight.value,
-                      min: 48,
-                      max: 120,
-                      divisions: 18,
-                      onChanged: (v) => appConfig.courseRowHeight.value = v,
-                    ),
-                  ],
-                ),
                 if (Platform.isAndroid) ...[
                   const Divider(),
                   Align(
@@ -283,10 +200,6 @@ class SoftwareSettingPage extends StatelessWidget {
                 ),
                 ButtonWithMaxWidth(
                   onPressed: () {
-                    appConfig.colorOpacity.value = 0.85;
-                    appConfig.courseCardFontSize.value = 14.0;
-                    appConfig.showCourseGrid.value = true;
-                    appConfig.courseRowHeight.value = 72.0;
                     appConfig.backgroundImageOpacity.value = 0.3;
                   },
                   icon: const Icon(Icons.refresh),

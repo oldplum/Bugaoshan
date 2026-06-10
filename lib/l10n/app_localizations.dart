@@ -1099,6 +1099,12 @@ abstract class AppLocalizations {
   /// **'Course Grid'**
   String get courseGridSection;
 
+  /// No description provided for @courseStyleSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Style'**
+  String get courseStyleSetting;
+
   /// No description provided for @otherSection.
   ///
   /// In en, this message translates to:
