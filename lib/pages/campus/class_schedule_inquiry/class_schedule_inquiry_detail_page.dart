@@ -141,7 +141,7 @@ class _ClassScheduleInquiryDetailPageState
     );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(2, 2, 2, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

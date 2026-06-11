@@ -44,16 +44,22 @@ class CourseCard extends StatelessWidget {
             : Colors.white;
         final fontSize = appConfig.courseCardFontSize.value;
         final smallFontSize = fontSize - 1;
-        final details = <({String text, int preferredMaxLines})>[
-          if (config.showLocation && course.location.isNotEmpty)
-            (text: course.location, preferredMaxLines: 2),
-          if (config.showTeacherName && course.teacher.isNotEmpty)
-            (text: course.teacher, preferredMaxLines: 2),
-          (
-            text: l10n.weekRange(course.startWeek, course.endWeek),
-            preferredMaxLines: 1,
-          ),
-        ];
+        final details =
+            <({String text, int preferredMaxLines, int renderMaxLines})>[
+              if (config.showLocation && course.location.isNotEmpty)
+                (
+                  text: course.location,
+                  preferredMaxLines: 2,
+                  renderMaxLines: 2,
+                ),
+              if (config.showTeacherName && course.teacher.isNotEmpty)
+                (text: course.teacher, preferredMaxLines: 2, renderMaxLines: 2),
+              (
+                text: l10n.weekRange(course.startWeek, course.endWeek),
+                preferredMaxLines: 1,
+                renderMaxLines: 2,
+              ),
+            ];
 
         return GestureDetector(
           onTap: onTap,
@@ -66,7 +72,10 @@ class CourseCard extends StatelessWidget {
                 < 100 => 3,
                 _ => 5,
               };
-              final visibleDetails = <({String text, int preferredMaxLines})>[];
+              final visibleDetails =
+                  <
+                    ({String text, int preferredMaxLines, int renderMaxLines})
+                  >[];
               var usedDetailLines = 0;
               for (final detail in details) {
                 final nextUsedLines =
@@ -117,7 +126,7 @@ class CourseCard extends StatelessWidget {
                               detail.text,
                               smallFontSize,
                               textColor,
-                              maxLines: detail.preferredMaxLines,
+                              maxLines: detail.renderMaxLines,
                             ),
                           ),
                         ],

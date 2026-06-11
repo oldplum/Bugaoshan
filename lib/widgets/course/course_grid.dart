@@ -745,6 +745,8 @@ Course _mergeCourseGroup(List<Course> group) {
     startSection: first.startSection,
     endSection: first.endSection,
     colorValue: first.colorValue,
-    weekType: first.weekType,
+    weekType: group.map((c) => c.weekType).toSet().length == 1
+        ? first.weekType
+        : WeekType.every,
   );
 }
