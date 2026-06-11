@@ -1685,7 +1685,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addWidgetSection => '桌面小组件';
 
   @override
-  String get addWidgetPageTitle => '添加小组件';
+  String get addWidgetPageTitle => '小组件';
 
   @override
   String get addWidgetDesc => '将课表小组件添加到桌面，随时查看今日课程安排。';

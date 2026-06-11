@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/models/widget_size.dart';
 
@@ -80,6 +81,27 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     await service.requestIgnoreBatteryOptimizations();
   }
 
+  Widget _buildShowTomorrowSwitch(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    final appConfig = getIt<AppConfigProvider>();
+    return SwitchListTile(
+      title: Text(localizations.widgetShowTomorrowAfterEnd),
+      value: appConfig.widgetShowTomorrow.value,
+      onChanged: (v) async {
+        appConfig.widgetShowTomorrow.value = v;
+        final service = getIt<WidgetUpdateService>();
+        try {
+          await service.updateWidgetData(force: true);
+        } catch (e, st) {
+          debugPrint('WidgetUpdate toggle failed: $e');
+          debugPrint('$st');
+        }
+      },
+    );
+  }
+
   Future<void> _pinWidget(BuildContext context, WidgetSize size) async {
     final localizations = AppLocalizations.of(context)!;
     final service = getIt<WidgetUpdateService>();
@@ -99,29 +121,37 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final appConfig = getIt<AppConfigProvider>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (widget.showDescription) ...[
-          Text(
-            localizations.addWidgetDesc,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return ListenableBuilder(
+      listenable: appConfig.widgetShowTomorrow,
+      builder: (context, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.showDescription) ...[
+              Text(
+                localizations.addWidgetDesc,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+            BatteryOptimizationCard(
+              status: _status,
+              onRequestIgnore: _requestIgnoreBatteryOptimizations,
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
-        BatteryOptimizationCard(
-          status: _status,
-          onRequestIgnore: _requestIgnoreBatteryOptimizations,
-        ),
-        const SizedBox(height: 16),
-        // Consolidated single card with size choices
-        _WidgetPickerCard(onPin: _pinWidget),
-        const SizedBox(height: 16),
-        HintCard(hint: localizations.pinWidgetHint),
-      ],
+            const SizedBox(height: 16),
+            // Consolidated single card with size choices
+            _WidgetPickerCard(onPin: _pinWidget),
+            const SizedBox(height: 16),
+            _buildShowTomorrowSwitch(context, localizations),
+            const SizedBox(height: 16),
+            HintCard(hint: localizations.pinWidgetHint),
+          ],
+        );
+      },
     );
   }
 }

@@ -618,7 +618,7 @@
         }
     },
     "addWidgetSection": "Desktop Widget",
-    "addWidgetPageTitle": "Add Widget",
+    "addWidgetPageTitle": "Widget",
     "addWidgetDesc": "Add course schedule widgets to your home screen for quick access.",
     "widgetSizeSmall": "Small (2×2)",
     "widgetSizeSmallDesc": "Shows today's next 2 courses",

@@ -613,7 +613,7 @@
         }
     },
     "addWidgetSection": "桌面小组件",
-    "addWidgetPageTitle": "添加小组件",
+    "addWidgetPageTitle": "小组件",
     "addWidgetDesc": "将课表小组件添加到桌面，随时查看今日课程安排。",
     "widgetSizeSmall": "小组件 (2×2)",
     "widgetSizeSmallDesc": "显示今天接下来的 2 节课程",

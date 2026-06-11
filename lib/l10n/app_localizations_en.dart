@@ -1732,7 +1732,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addWidgetSection => 'Desktop Widget';
 
   @override
-  String get addWidgetPageTitle => 'Add Widget';
+  String get addWidgetPageTitle => 'Widget';
 
   @override
   String get addWidgetDesc =>

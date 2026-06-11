@@ -3340,7 +3340,7 @@ abstract class AppLocalizations {
   /// No description provided for @addWidgetPageTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add Widget'**
+  /// **'Widget'**
   String get addWidgetPageTitle;
 
   /// No description provided for @addWidgetDesc.
