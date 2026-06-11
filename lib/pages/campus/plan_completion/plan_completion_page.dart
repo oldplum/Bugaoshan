@@ -94,14 +94,23 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       PlanCompletionLoadState.idle || PlanCompletionLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
       PlanCompletionLoadState.error => RetryableErrorWidget(
-        message: _provider.error == 'rateLimited'
-            ? l10n.planCompletionRateLimited
-            : _provider.error ?? l10n.loadFailed,
+        message: _getErrorMessage(l10n, _provider.error),
         onRetry: () => _provider.fetchPlanCompletion(),
         iconSize: 56,
       ),
       PlanCompletionLoadState.loaded => _buildTree(context),
     };
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String? errorKey) {
+    switch (errorKey) {
+      case 'rateLimited':
+        return l10n.planCompletionRateLimited;
+      case 'zhjwCampusNetworkRequiredAtNight':
+        return l10n.zhjwCampusNetworkRequiredAtNight;
+      default:
+        return errorKey ?? l10n.loadFailed;
+    }
   }
 
   Widget _buildTree(BuildContext context) {

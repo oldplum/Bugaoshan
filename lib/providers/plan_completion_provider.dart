@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 
 const _keyPlanCompletion = 'plan_completion_nodes';
 
@@ -88,7 +89,7 @@ class PlanCompletionProvider extends ChangeNotifier {
       } else {
         _state = PlanCompletionLoadState.error;
       }
-      _error = e.toString();
+      _error = campusNetworkErrorKey(e.toString());
     }
     _safeNotify();
   }

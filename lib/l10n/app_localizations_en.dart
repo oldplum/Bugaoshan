@@ -190,6 +190,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Access is restricted to campus network during 0:00-6:00. Please connect to campus Wi-Fi or use the school VPN.';
 
   @override
+  String get zhjwCampusNetworkRequiredAtNight =>
+      'Access to the academic affairs system is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.';
+
+  @override
   String get appOnly => 'Available on App only';
 
   @override

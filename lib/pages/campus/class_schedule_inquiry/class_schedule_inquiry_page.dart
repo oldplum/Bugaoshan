@@ -8,6 +8,7 @@ import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 
 class ClassScheduleInquiryPage extends StatefulWidget {
   const ClassScheduleInquiryPage({super.key});
@@ -241,11 +242,15 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
             Text(
               _error == 'sessionExpired'
                   ? l10n.sessionExpired
-                  : l10n.loadFailed,
+                  : getCampusNetworkErrorMessage(l10n, _error),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 16),
-            FilledButton(onPressed: _loadIndex, child: Text(l10n.retry)),
+            FilledButton.icon(
+              onPressed: _loadIndex,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retry),
+            ),
           ],
         ),
       );

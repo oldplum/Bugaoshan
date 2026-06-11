@@ -7,6 +7,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 
 class TrainProgramPage extends StatefulWidget {
@@ -204,7 +205,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
         child: CircularProgressIndicator(),
       ),
       TrainProgramLoadState.error => RetryableErrorWidget(
-        message: _provider.programsError ?? l10n.trainProgramLoadFailed,
+        message: getCampusNetworkErrorMessage(l10n, _provider.programsError),
         onRetry: () => _provider.searchPrograms(),
         iconSize: 56,
       ),
@@ -302,7 +303,10 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
               const Center(child: CircularProgressIndicator()),
             TrainProgramLoadState.error => RetryableErrorWidget(
-              message: _provider.detailError ?? l10n.trainProgramLoadFailed,
+              message: getCampusNetworkErrorMessage(
+                l10n,
+                _provider.detailError,
+              ),
               onRetry: () => _provider.fetchProgramDetail(widget.fajhh),
               iconSize: 56,
             ),

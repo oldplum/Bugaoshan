@@ -439,6 +439,12 @@ abstract class AppLocalizations {
   /// **'Access is restricted to campus network during 0:00-6:00. Please connect to campus Wi-Fi or use the school VPN.'**
   String get campusNetworkRequiredAtNight;
 
+  /// No description provided for @zhjwCampusNetworkRequiredAtNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Access to the academic affairs system is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.'**
+  String get zhjwCampusNetworkRequiredAtNight;
+
   /// No description provided for @appOnly.
   ///
   /// In en, this message translates to:

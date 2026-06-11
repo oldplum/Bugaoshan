@@ -3,6 +3,7 @@ import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 
 enum TrainProgramLoadState { idle, loading, loaded, error }
 
@@ -102,8 +103,8 @@ class TrainProgramProvider extends ChangeNotifier {
     } catch (e) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
-      _collegesError = e.toString();
-      _gradesError = e.toString();
+      _collegesError = campusNetworkErrorKey(e.toString());
+      _gradesError = campusNetworkErrorKey(e.toString());
     }
     _safeNotify();
   }
@@ -128,7 +129,7 @@ class TrainProgramProvider extends ChangeNotifier {
       _programsError = e.message;
     } catch (e) {
       _programsState = TrainProgramLoadState.error;
-      _programsError = e.toString();
+      _programsError = campusNetworkErrorKey(e.toString());
     }
     _safeNotify();
   }
@@ -150,7 +151,7 @@ class TrainProgramProvider extends ChangeNotifier {
       _detailError = e.message;
     } catch (e) {
       _detailState = TrainProgramLoadState.error;
-      _detailError = e.toString();
+      _detailError = campusNetworkErrorKey(e.toString());
     }
     _safeNotify();
   }
@@ -178,7 +179,7 @@ class TrainProgramProvider extends ChangeNotifier {
       _courseDetailError = e.message;
     } catch (e) {
       _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = e.toString();
+      _courseDetailError = campusNetworkErrorKey(e.toString());
     }
     _safeNotify();
   }

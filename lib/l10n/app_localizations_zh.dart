@@ -183,6 +183,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '该时段（0:00-6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试';
 
   @override
+  String get zhjwCampusNetworkRequiredAtNight =>
+      '该时段（23:00-次日6:00）教务系统仅限校园网访问，请连接校园网或使用学校 VPN 后重试';
+
+  @override
   String get appOnly => '仅 App 端可使用';
 
   @override

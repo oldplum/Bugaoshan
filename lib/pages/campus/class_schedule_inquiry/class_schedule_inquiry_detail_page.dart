@@ -6,6 +6,7 @@ import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart'
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 import 'package:bugaoshan/utils/week_parser.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
@@ -60,7 +61,7 @@ class _ClassScheduleInquiryDetailPageState
       debugPrint('ClassScheduleInquiry detail load error: $e');
       if (!mounted) return;
       setState(() {
-        _error = 'loadFailed';
+        _error = campusNetworkErrorKey('loadFailed');
         _isLoading = false;
       });
     }

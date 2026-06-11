@@ -64,7 +64,10 @@ class RetryableErrorWidget extends StatelessWidget {
             color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: 16),
-          Text(message, textAlign: TextAlign.center),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(message, textAlign: TextAlign.center),
+          ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: onRetry,

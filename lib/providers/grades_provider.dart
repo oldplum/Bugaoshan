@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 
 const _keySchemeScores = 'grades_scheme_scores';
 const _keyPassingScores = 'grades_passing_scores';
@@ -66,10 +67,10 @@ class GradesProvider extends ChangeNotifier {
       debugPrint('Scheme scores load error: $e');
       if (_schemeScores != null) {
         _schemeState = GradesLoadState.loaded;
-        _schemeError = 'gradesLoadFailed';
+        _schemeError = campusNetworkErrorKey('gradesLoadFailed');
       } else {
         _schemeState = GradesLoadState.error;
-        _schemeError = 'gradesLoadFailed';
+        _schemeError = campusNetworkErrorKey('gradesLoadFailed');
       }
     }
     notifyListeners();
@@ -110,10 +111,10 @@ class GradesProvider extends ChangeNotifier {
       debugPrint('Passing scores load error: $e');
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
-        _passingError = 'gradesLoadFailed';
+        _passingError = campusNetworkErrorKey('gradesLoadFailed');
       } else {
         _passingState = GradesLoadState.error;
-        _passingError = 'gradesLoadFailed';
+        _passingError = campusNetworkErrorKey('gradesLoadFailed');
       }
     }
     notifyListeners();

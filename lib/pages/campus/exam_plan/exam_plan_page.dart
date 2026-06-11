@@ -8,6 +8,7 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 
 class ExamPlanPage extends StatefulWidget {
   const ExamPlanPage({super.key});
@@ -78,7 +79,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = 'loadFailed';
+          _error = campusNetworkErrorKey('loadFailed');
         });
       }
     }
@@ -120,7 +121,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
 
     if (_error != null) {
       return RetryableErrorWidget(
-        message: l10n.examPlanLoadFailed,
+        message: _getErrorMessage(l10n, _error!),
         onRetry: _loadData,
       );
     }
@@ -144,6 +145,15 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
         itemBuilder: (context, index) => _buildExamCard(_exams[index]),
       ),
     );
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'zhjwCampusNetworkRequiredAtNight':
+        return l10n.zhjwCampusNetworkRequiredAtNight;
+      default:
+        return l10n.examPlanLoadFailed;
+    }
   }
 
   Widget _buildExamCard(ExamInfo exam) {

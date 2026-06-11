@@ -9,6 +9,7 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 
 enum _ViewMode { campus, building, room }
 
@@ -519,9 +520,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
       return const LoginRequiredWidget();
     }
     return RetryableErrorWidget(
-      message: _error == 'sessionExpired'
-          ? l10n.sessionExpired
-          : l10n.loadFailed,
+      message: getCampusNetworkErrorMessage(l10n, _error),
       onRetry: onRetry,
     );
   }

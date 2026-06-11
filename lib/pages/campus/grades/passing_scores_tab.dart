@@ -92,6 +92,8 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
     switch (errorKey) {
       case 'sessionExpired':
         return l10n.sessionExpired;
+      case 'zhjwCampusNetworkRequiredAtNight':
+        return l10n.zhjwCampusNetworkRequiredAtNight;
       case 'gradesLoadFailed':
         return l10n.gradesLoadFailed;
       default:
