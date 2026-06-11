@@ -46,7 +46,7 @@ class SetCourseStylePage extends StatelessWidget {
                   SizedBox(
                     height: previewHeight,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: const CoursePage(demoMode: true),
