@@ -56,13 +56,6 @@ class SoftwareSettingPage extends StatelessWidget {
                   icon: const Icon(Icons.color_lens),
                   child: Text(localizations.themeColor),
                 ),
-                ButtonWithMaxWidth(
-                  onPressed: () {
-                    popupOrNavigate(context, const SetDockPage());
-                  },
-                  icon: const Icon(Icons.dock_outlined),
-                  child: Text(localizations.customDock),
-                ),
 
                 ButtonWithMaxWidth(
                   onPressed: () {
@@ -70,6 +63,14 @@ class SoftwareSettingPage extends StatelessWidget {
                   },
                   icon: const Icon(Icons.style),
                   child: Text(localizations.courseStyleSetting),
+                ),
+
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    popupOrNavigate(context, const SetDockPage());
+                  },
+                  icon: const Icon(Icons.dock_outlined),
+                  child: Text(localizations.customDock),
                 ),
 
                 if (Platform.isAndroid) ...[
