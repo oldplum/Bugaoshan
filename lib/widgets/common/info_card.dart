@@ -16,14 +16,18 @@ class InfoCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: _intersperse(children, divider(theme)),
+      child: Material(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _intersperse(children, divider(theme)),
+        ),
       ),
     );
   }

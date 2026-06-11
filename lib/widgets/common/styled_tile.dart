@@ -14,7 +14,11 @@ class BaseTile extends StatelessWidget {
       child: child,
     );
     if (onTap != null) {
-      return InkWell(onTap: onTap, child: tile);
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: tile,
+      );
     }
     return tile;
   }
