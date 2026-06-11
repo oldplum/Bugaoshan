@@ -235,24 +235,11 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     }
 
     if (_error != null && _classes.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _error == 'sessionExpired'
-                  ? l10n.sessionExpired
-                  : getCampusNetworkErrorMessage(l10n, _error),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _loadIndex,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.retry),
-            ),
-          ],
-        ),
+      return CampusNetworkRequiredWidget(
+        message: _error == 'sessionExpired'
+            ? l10n.sessionExpired
+            : getCampusNetworkErrorMessage(l10n, _error),
+        onRetry: _loadIndex,
       );
     }
 
