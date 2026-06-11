@@ -8,6 +8,8 @@ Bugaoshan (不高山上) — A campus assistant app for Sichuan University stude
 
 ## Build Commands
 
+**IMPORTANT**: All `flutter` and `dart` commands **must** run outside the sandbox (`sandbox_permissions: require_escalated`). Running them inside the sandbox hangs indefinitely due to Flutter's asset download and build tooling.
+
 ```bash
 # Install dependencies
 flutter pub get

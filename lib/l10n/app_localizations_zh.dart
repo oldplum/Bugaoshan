@@ -1912,6 +1912,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String holidayTotalDays(int days) {
     return '共$days天假';
   }
+
+  @override
+  String get dockLabelExamPlan => '考表';
+
+  @override
+  String get examPlan => '考试安排';
+
+  @override
+  String get examPlanDesc => '查询本学期考试时间、地点和座位号';
+
+  @override
+  String get examPlanNoData => '暂无考试安排';
+
+  @override
+  String get examPlanLoadFailed => '考试安排加载失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

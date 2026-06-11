@@ -7,6 +7,7 @@ import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:bugaoshan/pages/campus/downloads/notice_downloaded_page.dart';
+import 'package:bugaoshan/pages/campus/exam_plan/exam_plan_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
@@ -174,6 +175,16 @@ final campusItemAcademicCalendar = CampusItemConfig(
   page: () => const AcademicCalendarPage(),
 );
 
+final campusItemExamPlan = CampusItemConfig(
+  id: dockIdExamPlan,
+  icon: Icons.assignment_outlined,
+  selectedIcon: Icons.assignment,
+  dockLabel: (l10n) => l10n.dockLabelExamPlan,
+  dockFullLabel: (l10n) => l10n.examPlan,
+  desc: (l10n) => l10n.examPlanDesc,
+  page: () => const ExamPlanPage(),
+);
+
 final campusItemNotice = CampusItemConfig(
   id: dockIdNotice,
   icon: Icons.campaign_outlined,
@@ -202,6 +213,7 @@ final campusSections = [
       campusItemCcyl,
       campusItemPlanCompletion,
       campusItemFitnessTest,
+      campusItemExamPlan,
     ],
   ),
   CampusSection(

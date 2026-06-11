@@ -1967,4 +1967,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String holidayTotalDays(int days) {
     return '$days-day holiday';
   }
+
+  @override
+  String get dockLabelExamPlan => 'Exams';
+
+  @override
+  String get examPlan => 'Exam Schedule';
+
+  @override
+  String get examPlanDesc => 'View exam times, locations and seat numbers';
+
+  @override
+  String get examPlanNoData => 'No exam schedule available';
+
+  @override
+  String get examPlanLoadFailed => 'Failed to load exam schedule';
 }

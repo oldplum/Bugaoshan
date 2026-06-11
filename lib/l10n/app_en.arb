@@ -738,5 +738,10 @@
         "placeholders": {
             "days": {"type": "int"}
         }
-    }
+    },
+    "dockLabelExamPlan": "Exams",
+    "examPlan": "Exam Schedule",
+    "examPlanDesc": "View exam times, locations and seat numbers",
+    "examPlanNoData": "No exam schedule available",
+    "examPlanLoadFailed": "Failed to load exam schedule"
 }

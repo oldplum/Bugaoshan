@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
+import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/services/api/api_request.dart';
@@ -487,6 +488,82 @@ class ZhjwApiService {
 
       return _parseZNodes(body);
     });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  考表
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// 获取考试安排列表，通过正则从 HTML 页面解析考试卡片。
+  Future<List<ExamInfo>> fetchExamPlan() {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse('$kZhjwBase/student/examinationManagement/examPlan/index'),
+        headers: {
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Referer': '$kZhjwBase/',
+          'User-Agent': kDefaultUserAgent,
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      return _parseExamCards(body);
+    });
+  }
+
+  /// 用正则从考表 HTML 中提取考试卡片信息。
+  List<ExamInfo> _parseExamCards(String html) {
+    final cards = <ExamInfo>[];
+    final blocks = RegExp(
+      r'<div class="widget-box widget-color-blue">(.*?)'
+      r'</div>\s*</div>\s*</div>\s*</div>',
+      dotAll: true,
+    ).allMatches(html);
+
+    for (final block in blocks) {
+      final blockText = block.group(1)!;
+
+      String? firstMatch(RegExp re) {
+        final m = re.firstMatch(blockText);
+        return m?.group(1)?.trim();
+      }
+
+      final courseName =
+          firstMatch(
+            RegExp(
+              r'<h5 class="widget-title smaller">\s*(.*?)\s*</h5>',
+              dotAll: true,
+            ),
+          ) ??
+          '未知';
+      final weekNum = firstMatch(RegExp(r'(\d+)周')) ?? '';
+      final date = firstMatch(RegExp(r'(\d{4}-\d{2}-\d{2})\s*&nbsp;')) ?? '未知';
+      final weekday = firstMatch(RegExp(r'(星期[一二三四五六日])')) ?? '未知';
+      final timeRange =
+          firstMatch(RegExp(r'&nbsp;(\d{2}:\d{2}-\d{2}:\d{2})')) ?? '未知';
+      final locationRaw = firstMatch(RegExp(r'地点:&nbsp;(.+?)</br>')) ?? '未知';
+      final location = locationRaw.replaceAll('&nbsp;', ' ');
+      final seatNumber = firstMatch(RegExp(r'座位号:&nbsp;(\d+)')) ?? '未知';
+      final ticketNumber = firstMatch(RegExp(r'准考证号:&nbsp;(.*?)</br>')) ?? '';
+      final tip = firstMatch(RegExp(r'考试提示信息：&nbsp;(.*?)</span>')) ?? '无';
+
+      cards.add(
+        ExamInfo(
+          courseName: courseName,
+          week: weekNum.isNotEmpty ? '第 $weekNum 周' : '未知',
+          date: date,
+          weekday: weekday,
+          timeRange: timeRange,
+          location: location,
+          seatNumber: seatNumber,
+          ticketNumber: ticketNumber,
+          tip: tip,
+        ),
+      );
+    }
+
+    return cards;
   }
 
   // ═══════════════════════════════════════════════════════════════════

@@ -3774,6 +3774,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days}-day holiday'**
   String holidayTotalDays(int days);
+
+  /// No description provided for @dockLabelExamPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams'**
+  String get dockLabelExamPlan;
+
+  /// No description provided for @examPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam Schedule'**
+  String get examPlan;
+
+  /// No description provided for @examPlanDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View exam times, locations and seat numbers'**
+  String get examPlanDesc;
+
+  /// No description provided for @examPlanNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No exam schedule available'**
+  String get examPlanNoData;
+
+  /// No description provided for @examPlanLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load exam schedule'**
+  String get examPlanLoadFailed;
 }
 
 class _AppLocalizationsDelegate

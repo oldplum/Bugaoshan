@@ -733,5 +733,10 @@
         "placeholders": {
             "days": {"type": "int"}
         }
-    }
+    },
+    "dockLabelExamPlan": "考表",
+    "examPlan": "考试安排",
+    "examPlanDesc": "查询本学期考试时间、地点和座位号",
+    "examPlanNoData": "暂无考试安排",
+    "examPlanLoadFailed": "考试安排加载失败"
 }
