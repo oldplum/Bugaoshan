@@ -29,7 +29,7 @@ const _pageTransitionsTheme = PageTransitionsTheme(
 
 const _appBarTheme = AppBarTheme(
   toolbarHeight: 48,
-  centerTitle: true,
+  centerTitle: false,
   scrolledUnderElevation: 0,
 );
 

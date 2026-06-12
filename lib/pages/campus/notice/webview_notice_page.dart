@@ -313,6 +313,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       child: Scaffold(
         appBar: AppBar(
           leadingWidth: 152,
+          centerTitle: true,
           title: Text(widget.title),
           leading: Padding(
             padding: const EdgeInsets.only(left: 4),
