@@ -198,6 +198,52 @@ class _AboutPageState extends State<AboutPage> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
+  Widget _buildHeader(
+    ThemeData theme,
+    Color primaryColor,
+    Color onSurfaceVariant,
+    AppLocalizations localizations,
+  ) {
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset('assets/icon.png', fit: BoxFit.cover),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            localizations.bugaoshan,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            localizations.appDescription,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -211,44 +257,7 @@ class _AboutPageState extends State<AboutPage> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
           // Header section with icon and app name
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withValues(alpha: 0.2),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.asset('assets/icon.png', fit: BoxFit.cover),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  localizations.bugaoshan,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  localizations.appDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildHeader(theme, primaryColor, onSurfaceVariant, localizations),
           const SizedBox(height: 32),
 
           // Project info card
@@ -280,11 +289,13 @@ class _AboutPageState extends State<AboutPage> {
               LinkTile(
                 icon: Icons.code_rounded,
                 label: localizations.projectRepository,
+                value: "Github",
                 onTap: () => openProjectRepository(),
               ),
               LinkTile(
                 icon: Icons.group_outlined,
                 label: localizations.developmentTeam,
+                value: "Brotherhood of SCU",
                 onTap: () => openDeveloperTeam(),
               ),
               ValueListenableBuilder<bool>(

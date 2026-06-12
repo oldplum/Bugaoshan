@@ -75,10 +75,10 @@ class IconTile extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onTap,
+    this.value,
     this.trailing,
     this.iconColor,
   }) : _suppressChevron = true,
-       value = null,
        labelColor = null;
 
   @override
@@ -98,13 +98,10 @@ class IconTile extends StatelessWidget {
             ),
           ),
           if (value != null)
-            Flexible(
-              child: Text(
-                value!,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                overflow: TextOverflow.ellipsis,
+            Text(
+              value!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           if (trailing != null) ...[
@@ -196,6 +193,7 @@ class LinkTile extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final Color? iconColor;
+  final String? value;
 
   const LinkTile({
     super.key,
@@ -203,6 +201,7 @@ class LinkTile extends StatelessWidget {
     required this.label,
     this.onTap,
     this.iconColor,
+    this.value,
   });
 
   @override
@@ -212,6 +211,7 @@ class LinkTile extends StatelessWidget {
       label: label,
       onTap: onTap,
       iconColor: iconColor,
+      value: value,
       trailing: Icon(
         Icons.open_in_new,
         color: Theme.of(
