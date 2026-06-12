@@ -18,7 +18,7 @@ Future<void> main() async {
     runApp(MyApp());
   } catch (error, stackTrace) {
     debugPrint('Startup error: $error\n$stackTrace');
-    runApp(const _StartupErrorApp());
+    runApp(_StartupErrorApp(errorMessage: stackTrace.toString()));
   }
 }
 
@@ -55,7 +55,8 @@ bool get _isDesktopPlatform {
 }
 
 class _StartupErrorApp extends StatelessWidget {
-  const _StartupErrorApp();
+  final String? errorMessage;
+  const _StartupErrorApp({this.errorMessage});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +66,22 @@ class _StartupErrorApp extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
-              child: Text('Bugaoshan 启动失败', textAlign: TextAlign.center),
+              child: Column(
+                children: [
+                  Text(
+                    'Bugaoshan 启动失败',
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1.5),
+                  ),
+                  Text(errorMessage ?? ''),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await getIt<SharedPreferences>().clear();
+                    },
+                    child: const Text('Clear Shared Preferences'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

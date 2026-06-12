@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
+import 'package:bugaoshan/pages/settings/set_font_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -70,6 +71,11 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.courseStyleSetting,
                 onTap: () =>
                     popupOrNavigate(context, const SetCourseStylePage()),
+              ),
+              IconTile(
+                icon: Icons.font_download,
+                label: localizations.setFont,
+                onTap: () => popupOrNavigate(context, const SetFontPage()),
               ),
             ],
           ),

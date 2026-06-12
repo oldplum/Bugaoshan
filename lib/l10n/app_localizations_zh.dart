@@ -541,6 +541,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsStyle => '样式';
 
   @override
+  String get setFont => '字体';
+
+  @override
+  String get useGoogleFonts => '使用 Google 字体';
+
+  @override
+  String get fontScale => '字号缩放';
+
+  @override
+  String get fontWeightDelta => '字重偏移';
+
+  @override
   String get settingsDanger => '危险操作';
 
   @override

@@ -24,6 +24,9 @@ const String _keyAcceptedEulaVersion = 'acceptedEulaVersion';
 const String _keyThemeColorMode = 'themeColorMode';
 const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
+const String _keyUseGoogleFonts = 'useGoogleFonts';
+const String _keyFontScale = 'fontScale';
+const String _keyFontWeightDelta = 'fontWeightDelta';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -65,6 +68,9 @@ class AppConfigProvider {
       ValueNotifier<ThemeColorMode>(ThemeColorMode.system);
   final ValueNotifier<bool> widgetShowTomorrow = ValueNotifier<bool>(false);
   final ValueNotifier<bool> usePreviewUpdateSource = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> useGoogleFonts = ValueNotifier<bool>(true);
+  final ValueNotifier<double> fontScale = ValueNotifier<double>(1.0);
+  final ValueNotifier<double> fontWeightDelta = ValueNotifier<double>(0.0);
 
   Future<void> _loadPreferences() async {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -108,6 +114,11 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyWidgetShowTomorrow) ?? false;
     usePreviewUpdateSource.value =
         _sharedPreferences.getBool(_keyUsePreviewUpdateSource) ?? false;
+    useGoogleFonts.value =
+        _sharedPreferences.getBool(_keyUseGoogleFonts) ?? true;
+    fontScale.value = _sharedPreferences.getDouble(_keyFontScale) ?? 1.0;
+    fontWeightDelta.value =
+        _sharedPreferences.getDouble(_keyFontWeightDelta) ?? 0.0;
   }
 
   void _addSaveCallback() {
@@ -198,6 +209,15 @@ class AppConfigProvider {
         _keyUsePreviewUpdateSource,
         usePreviewUpdateSource.value,
       );
+    });
+    useGoogleFonts.addListener(() {
+      _sharedPreferences.setBool(_keyUseGoogleFonts, useGoogleFonts.value);
+    });
+    fontScale.addListener(() {
+      _sharedPreferences.setDouble(_keyFontScale, fontScale.value);
+    });
+    fontWeightDelta.addListener(() {
+      _sharedPreferences.setDouble(_keyFontWeightDelta, fontWeightDelta.value);
     });
   }
 

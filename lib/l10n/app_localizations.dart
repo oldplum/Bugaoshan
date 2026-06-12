@@ -1129,6 +1129,30 @@ abstract class AppLocalizations {
   /// **'Style'**
   String get settingsStyle;
 
+  /// No description provided for @setFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get setFont;
+
+  /// No description provided for @useGoogleFonts.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Google Fonts'**
+  String get useGoogleFonts;
+
+  /// No description provided for @fontScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Scale'**
+  String get fontScale;
+
+  /// No description provided for @fontWeightDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Weight Offset'**
+  String get fontWeightDelta;
+
   /// No description provided for @settingsDanger.
   ///
   /// In en, this message translates to:

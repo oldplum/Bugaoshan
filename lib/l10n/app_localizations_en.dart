@@ -557,6 +557,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsStyle => 'Style';
 
   @override
+  String get setFont => 'Font';
+
+  @override
+  String get useGoogleFonts => 'Use Google Fonts';
+
+  @override
+  String get fontScale => 'Font Scale';
+
+  @override
+  String get fontWeightDelta => 'Font Weight Offset';
+
+  @override
   String get settingsDanger => 'Danger Zone';
 
   @override

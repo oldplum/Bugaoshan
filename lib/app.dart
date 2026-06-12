@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/font_utils.dart';
 import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
@@ -68,6 +69,9 @@ class _MyAppState extends State<MyApp> {
         _appConfig.locale,
         _appConfig.themeColor,
         _appConfig.themeColorMode,
+        _appConfig.useGoogleFonts,
+        _appConfig.fontScale,
+        _appConfig.fontWeightDelta,
       ]),
       builder: (context, _) => MaterialApp(
         navigatorKey: navigatorKey,
@@ -78,9 +82,17 @@ class _MyAppState extends State<MyApp> {
         theme: _buildTheme(Brightness.light),
         darkTheme: _buildTheme(Brightness.dark),
         themeMode: ThemeMode.system,
-        builder: (context, child) => MouseBackHandler(
-          child: SessionExpiredListener(child: child ?? const SizedBox()),
-        ),
+        builder: (context, child) {
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(
+              textScaler: TextScaler.linear(_appConfig.fontScale.value),
+            ),
+            child: MouseBackHandler(
+              child: SessionExpiredListener(child: child ?? const SizedBox()),
+            ),
+          );
+        },
         home: ValueListenableBuilder<int>(
           valueListenable: _appConfig.acceptedEulaVersion,
           builder: (_, eulaVersion, _) {
@@ -112,8 +124,14 @@ class _MyAppState extends State<MyApp> {
       navigationBarTheme: _navigationBarTheme,
     );
 
-    return baseTheme.copyWith(
-      textTheme: GoogleFonts.notoSansScTextTheme(baseTheme.textTheme),
+    TextTheme textTheme = baseTheme.textTheme;
+    if (_appConfig.useGoogleFonts.value) {
+      textTheme = GoogleFonts.notoSansScTextTheme(textTheme);
+    }
+    textTheme = applyFontWeightDelta(
+      textTheme,
+      _appConfig.fontWeightDelta.value,
     );
+    return baseTheme.copyWith(textTheme: textTheme);
   }
 }
