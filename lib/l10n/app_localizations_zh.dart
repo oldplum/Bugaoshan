@@ -547,10 +547,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get useGoogleFonts => '使用 Google 字体';
 
   @override
-  String get fontScale => '字号缩放';
-
-  @override
-  String get fontWeightDelta => '字重偏移';
+  String get fontHint => '如需调整字号和字重，请在系统设置中修改';
 
   @override
   String get settingsDanger => '危险操作';

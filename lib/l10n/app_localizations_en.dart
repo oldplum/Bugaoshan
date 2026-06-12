@@ -563,10 +563,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get useGoogleFonts => 'Use Google Fonts';
 
   @override
-  String get fontScale => 'Font Scale';
-
-  @override
-  String get fontWeightDelta => 'Font Weight Offset';
+  String get fontHint =>
+      'Font size and weight can be adjusted in system settings';
 
   @override
   String get settingsDanger => 'Danger Zone';
