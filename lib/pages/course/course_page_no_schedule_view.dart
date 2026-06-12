@@ -60,18 +60,18 @@ class _NoScheduleView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: onOpenManagement,
-                  icon: const Icon(Icons.list_alt_rounded),
-                  label: Text(l10n.scheduleManagement),
+                  onPressed: onImport,
+                  icon: const Icon(Icons.download_rounded),
+                  label: Text(l10n.importSchedule),
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: onImport,
-                  icon: const Icon(Icons.download_rounded),
-                  label: Text(l10n.importSchedule),
+                  onPressed: onOpenManagement,
+                  icon: const Icon(Icons.list_alt_rounded),
+                  label: Text(l10n.scheduleManagement),
                 ),
               ),
               const SizedBox(height: 10),
