@@ -1,80 +1,56 @@
 import 'package:flutter/material.dart';
 
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/test/auth_log/auth_log_viewer_page.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-/// 单条日志的行视图：时间 · level · tag · message，按 level 着色。
+/// TestPage 入口：认证日志。
+/// 点击进入全屏日志查看器（保存 / 打开文件夹 / 清空由查看器 AppBar 提供）。
 class AuthLogTile extends StatelessWidget {
-  final AuthLogEntry entry;
-  const AuthLogTile({super.key, required this.entry});
+  const AuthLogTile({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final (Color bg, Color fg) = switch (entry.level) {
-      AuthLogLevel.debug => (
-        scheme.surfaceContainerLow,
-        scheme.onSurfaceVariant,
-      ),
-      AuthLogLevel.info => (scheme.primaryContainer, scheme.onPrimaryContainer),
-      AuthLogLevel.warn => (
-        scheme.tertiaryContainer,
-        scheme.onTertiaryContainer,
-      ),
-      AuthLogLevel.error => (scheme.errorContainer, scheme.onErrorContainer),
-    };
-    return Container(
-      color: bg,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 86,
-            child: Text(
-              _formatTime(entry.timestamp),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontFeatures: const [FontFeature.tabularFigures()],
-                color: fg,
-              ),
-            ),
+    final localizations = AppLocalizations.of(context)!;
+    final log = getIt<AuthLogger>();
+
+    return ListenableBuilder(
+      listenable: log,
+      builder: (context, _) {
+        final entries = log.entries;
+        final last = entries.isEmpty ? null : entries.last;
+        final subtitle = last == null
+            ? localizations.authLogEmpty
+            : localizations.authLogLastEntry(
+                _formatTime(last.timestamp),
+                last.level.name.toUpperCase(),
+                last.tag,
+              );
+        return ListTile(
+          leading: const Icon(Icons.key),
+          title: Text(localizations.viewAuthLog),
+          subtitle: Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          SizedBox(
-            width: 44,
-            child: Text(
-              entry.level.name.toUpperCase(),
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: fg, letterSpacing: 0.6),
-            ),
+          trailing: Text(
+            '${entries.length}',
+            style: Theme.of(context).textTheme.labelSmall,
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.tag,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(color: fg),
-                ),
-                const SizedBox(height: 2),
-                SelectableText(
-                  entry.message,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: fg),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+          onTap: () => Navigator.of(
+            logicRootContext,
+          ).push(MaterialPageRoute(builder: (_) => const AuthLogViewerPage())),
+        );
+      },
     );
   }
 
   static String _two(int n) => n.toString().padLeft(2, '0');
-  static String _three(int n) => n.toString().padLeft(3, '0');
   static String _formatTime(DateTime t) {
-    return '${_two(t.hour)}:${_two(t.minute)}:${_two(t.second)}.${_three(t.millisecond)}';
+    return '${_two(t.hour)}:${_two(t.minute)}:${_two(t.second)}';
   }
 }

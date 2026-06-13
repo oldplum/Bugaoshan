@@ -6,8 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
+import 'package:bugaoshan/pages/test/auth_log/auth_log_entry_tile.dart';
 import 'package:bugaoshan/pages/test/auth_log/auth_log_filter_bar.dart';
-import 'package:bugaoshan/pages/test/auth_log/auth_log_tile.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 
@@ -116,7 +116,8 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemCount: reversed.length,
                   separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) => AuthLogTile(entry: reversed[i]),
+                  itemBuilder: (context, i) =>
+                      AuthLogEntryTile(entry: reversed[i]),
                 );
               },
             ),
