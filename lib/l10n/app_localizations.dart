@@ -3846,6 +3846,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load exam schedule'**
   String get examPlanLoadFailed;
+
+  /// No description provided for @campusGridView.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid View'**
+  String get campusGridView;
+
+  /// No description provided for @campusGridViewDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Use grid layout for campus page'**
+  String get campusGridViewDesc;
 }
 
 class _AppLocalizationsDelegate

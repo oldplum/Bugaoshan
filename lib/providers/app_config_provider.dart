@@ -25,6 +25,7 @@ const String _keyThemeColorMode = 'themeColorMode';
 const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
 const String _keyUseGoogleFonts = 'useGoogleFonts';
+const String _keyCampusGridView = 'campusGridView';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -67,6 +68,7 @@ class AppConfigProvider {
   final ValueNotifier<bool> widgetShowTomorrow = ValueNotifier<bool>(false);
   final ValueNotifier<bool> usePreviewUpdateSource = ValueNotifier<bool>(false);
   final ValueNotifier<bool> useGoogleFonts = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> campusGridView = ValueNotifier<bool>(false);
 
   Future<void> _loadPreferences() async {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -112,6 +114,8 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyUsePreviewUpdateSource) ?? false;
     useGoogleFonts.value =
         _sharedPreferences.getBool(_keyUseGoogleFonts) ?? true;
+    campusGridView.value =
+        _sharedPreferences.getBool(_keyCampusGridView) ?? false;
   }
 
   void _addSaveCallback() {
@@ -205,6 +209,9 @@ class AppConfigProvider {
     });
     useGoogleFonts.addListener(() {
       _sharedPreferences.setBool(_keyUseGoogleFonts, useGoogleFonts.value);
+    });
+    campusGridView.addListener(() {
+      _sharedPreferences.setBool(_keyCampusGridView, campusGridView.value);
     });
   }
 

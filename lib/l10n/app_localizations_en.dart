@@ -2005,4 +2005,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get examPlanLoadFailed => 'Failed to load exam schedule';
+
+  @override
+  String get campusGridView => 'Grid View';
+
+  @override
+  String get campusGridViewDesc => 'Use grid layout for campus page';
 }

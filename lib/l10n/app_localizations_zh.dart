@@ -1949,6 +1949,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get examPlanLoadFailed => '考试安排加载失败';
+
+  @override
+  String get campusGridView => '网格视图';
+
+  @override
+  String get campusGridViewDesc => '校园页面使用网格布局';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

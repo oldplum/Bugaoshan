@@ -750,5 +750,7 @@
     "examPlan": "Exam Schedule",
     "examPlanDesc": "View exam times, locations and seat numbers",
     "examPlanNoData": "No exam schedule available",
-    "examPlanLoadFailed": "Failed to load exam schedule"
+    "examPlanLoadFailed": "Failed to load exam schedule",
+    "campusGridView": "Grid View",
+    "campusGridViewDesc": "Use grid layout for campus page"
 }
