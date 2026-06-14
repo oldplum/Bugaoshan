@@ -5,18 +5,18 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: "8d718c5c58904f9937290fd5dbf2d6a0e02456867706bfb6cd7b81d394e738d5"
+      sha256: cd6add6f846f35fb79f3c315296703c1a24f3cfd7f4739d91a74961c1c7e9f1b
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "98.0.0"
+    version: "100.0.0"
   analyzer:
     dependency: transitive
     description:
       name: analyzer
-      sha256: "6141ad5d092d1e1d13929c0504658bbeccc1703505830d7c26e859908f5efc88"
+      sha256: "6ba98576948803398b69e3a444df24eacdbe12ed699c7014e120ea38552debbf"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "12.0.0"
+    version: "13.0.0"
   ansicolor:
     dependency: transitive
     description:
@@ -197,10 +197,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: a4c1ccfee44c7e75ed80484071a5c142a385345e658fd8bd7c4b5c97e7198f98
+      sha256: "59d53ef8eaed9d288ed9767618e2b31c4fa0383a127db59d5eb2e737a7638a60"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.1.8"
+    version: "3.1.9"
   dbus:
     dependency: transitive
     description:
@@ -659,10 +659,10 @@ packages:
     dependency: "direct dev"
     description:
       name: injectable_generator
-      sha256: "433ad4d94837ff187803b2bf04c6707db6fad8d245f1d693e2e34053bc07ec28"
+      sha256: f4489d28a0147d47fd9f16955fa62f84aab88a63e3b89418e6e2467c8e783e9a
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.2"
+    version: "3.1.0"
   intl:
     dependency: "direct main"
     description:
@@ -731,10 +731,10 @@ packages:
     dependency: transitive
     description:
       name: lean_builder
-      sha256: c16e95ddf7b2d49dd551357b7212fe2ce9f13ec7ad1b1e660c157184031e96c0
+      sha256: "123eef9fba96ec12a18b8eb4889850368d78e8c0a6a63eaa45ec4cf3e73fbded"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.1.10"
+    version: "1.2.0"
   lints:
     dependency: transitive
     description:
@@ -1200,10 +1200,10 @@ packages:
     dependency: transitive
     description:
       name: sqlite3
-      sha256: "9488c7d2cdb1091c91cacf7e207cff81b28bff8e366f042bad3afe7d34afe189"
+      sha256: "37356bcb56ce0d9404d602c41e4bdb7765e7e9732a3e47adb3d98c556a6abdad"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.3.2"
+    version: "3.3.3"
   stack_trace:
     dependency: transitive
     description:
