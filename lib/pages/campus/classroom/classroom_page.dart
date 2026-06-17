@@ -242,8 +242,12 @@ class _ClassroomPageState extends State<ClassroomPage> {
     if (result == null) return [];
 
     final currentPeriod = _currentPeriod();
-    if (!_showCurrentFreeOnly || !_isToday || currentPeriod == null) {
+    if (!_showCurrentFreeOnly || !_isToday) {
       return result.classrooms;
+    }
+
+    if (currentPeriod == null) {
+      return [];
     }
 
     return result.classrooms.where((room) {
@@ -419,7 +423,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
     if (_queryResult == null) return const SizedBox.shrink();
 
     final currentPeriod = _currentPeriod();
-    final canFilterCurrentFree = _isToday && currentPeriod != null;
+    final canFilterCurrentFree = _isToday;
+    final shouldHideInfo = _showCurrentFreeOnly && currentPeriod == null;
     final rooms = _visibleRooms();
 
     return Column(
@@ -446,12 +451,13 @@ class _ClassroomPageState extends State<ClassroomPage> {
                   ],
                 ),
               ),
-              Text(
-                '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+              if (!shouldHideInfo)
+                Text(
+                  '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -486,12 +492,12 @@ class _ClassroomPageState extends State<ClassroomPage> {
           ),
         ),
         Expanded(
-          child: rooms.isEmpty
+          child: shouldHideInfo
+              ? const SizedBox.shrink()
+              : rooms.isEmpty
               ? Center(
                   child: Text(
-                    _showCurrentFreeOnly && canFilterCurrentFree
-                        ? '当前没有空闲教室'
-                        : l10n.noData,
+                    _showCurrentFreeOnly ? '当前没有空闲教室' : l10n.noData,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
