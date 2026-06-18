@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 本项目版本号规则：
 添加功能一般升级第二个版本号，小修改或者紧急修复bug则升级第三个版本号。小更新自由发布预览版，版本号不变，git tag为 `v{LatestVersion}-{PreviewName}` ，如 1.0.0 版本的预览版为： `v1.0.0-preview`
 
+
+## [Unreleased]
+
+### Added
+- 教室列表增加「当前空闲」筛选
+
+### Fixed
+- 升级对话框不可滚动的问题
+- 课程卡片中较长的地点文本允许完整换行，并调整小字号
+
+### Changed
+- 底层统一加载错误组件，提供更一致的效果
+
 ## [2.0.1] - 2026-06-15
 
 ### Fixed

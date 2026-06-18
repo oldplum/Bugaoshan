@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
@@ -149,9 +151,16 @@ class UpdateDialogContent extends StatelessWidget {
     );
   }
 
+  static int _min(int a, int b, int c) {
+    return min(a, min(b, c));
+  }
+
   Widget _buildReleaseNotes(BuildContext context) {
     //trim releaseNotes from ### Add
-    final index = releaseNotes!.indexOf('\n### Add');
+    final addIndex = releaseNotes!.indexOf('\n### Add');
+    final fixIndex = releaseNotes!.indexOf('\n### Fix');
+    final changeIndex = releaseNotes!.indexOf('\n### Change');
+    final index = _min(addIndex, fixIndex, changeIndex);
     var trimmedNotes = releaseNotes!;
     if (index != -1) {
       trimmedNotes = releaseNotes!.substring(index);
