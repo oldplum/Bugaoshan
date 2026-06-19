@@ -296,7 +296,7 @@ class ScoreCardWidget extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
-                        item.englishCourseName!,
+                        item.englishCourseName!.trim(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
