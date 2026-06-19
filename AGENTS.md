@@ -162,16 +162,16 @@ Authoritative reference: `docs/decisions/auth-architecture.md`.
 - **`PayAppApiService`** (`payapp_api_service.dart`) — 缴费平台 (电费 / 空调).
 - **`CcylApiService`** (`ccyl_api_service.dart`) — 第二课堂.
 - **`CcylService`** (`lib/services/ccyl/ccyl_service.dart`) — CCYL static stateless data API.
-- **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — pure data API for dorm balances.
+- **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
 
-Each API service follows the **`_request()` template** (see `lib/services/api/api_request.dart`):
+Each API service follows the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
 1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
 
 The CCYL service is special: its token expires via a *business* error code (`CcylException`), so `CcylApiService._retryOnCcylAuthError()` handles that path explicitly (invalidate → re-login → retry).
 
 ### Other Services
 
-- **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite (sqflite / sqflite_common_ffi on desktop). Manages multiple schedule configs and their course data via `switchSchedule()`. Includes a Hive-to-SQLite migration path for users upgrading from older versions.
+- **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite (sqflite / sqflite_common_ffi on desktop). Manages multiple schedule configs and their course data via `switchSchedule()`.
 - **`DownloadManager`** (`lib/services/download_manager.dart`) — `ChangeNotifier` tracking per-task state (pending → downloading → done/error). Drives the UI in `showAttachmentsSheet`.
 - **`IcsService`** — exports course schedules as iCalendar (.ics).
 - **`OcrService`** — TFLite captcha recognition (`flutter_litert`) for SCU login.
@@ -187,14 +187,14 @@ All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth`
 
 - Ring buffer caps at 1000 entries (oldest evicted).
 - Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
-- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Test page "Save" button.
+- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
 - `tag` convention is the class name (uppercase) so the Viewer's tag dropdown naturally groups events by module.
 - `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
-- `AuthLogger` is a `ChangeNotifier` — Test page's `AuthLogCard` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
-- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Test page "Save" button is the recommended path for capturing a snapshot.
+- `AuthLogger` is a `ChangeNotifier` — Dev page's `AuthLogTile` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
+- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Dev page "Save" button is the recommended path for capturing a snapshot.
 
-Test page (`lib/pages/test/`) gains:
-- `AuthLogCard` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
+Dev page (`lib/pages/dev/auth_log/`) gains:
+- `AuthLogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
 - `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
 
 ### Notice Pages
@@ -219,17 +219,17 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 |---|---|
 | `ScuAuthProvider` | 认证控制器；直接持有 `ScuAuth` + `CcylAuth`. Manages SCU login / logout / auto-login (OCR captcha, up to 5 retries) / credential persistence. |
 | `UserInfoProvider` | 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear. |
-| `GradesProvider` | Holds `ZhjwApiService`; fetches scheme & passing scores. Session-expired handling via `retryOnUnauthenticated`. Caches grades to SharedPreferences. |
+| `GradesProvider` | Holds `ZhjwApiService`; fetches scheme & passing scores (session-expired retry handled by the API service layer). Caches grades to SharedPreferences. |
 | `CourseProvider` | 课表 CRUD via `DatabaseService`. |
-| `AppConfigProvider` | ~14 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font, grid visibility, row height, background image, dock items, EULA version, wizard completed, … |
+| `AppConfigProvider` | ~18 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font, card animation duration, grid visibility, row height, background image, dock items, EULA version, wizard completed, … |
 | `SetThemeColorProvider` | 从背景图提取主题色（pixel sampling + `compute()` isolate），支持系统强调色预览. |
 | `AppInfoProvider` | App version + CI build metadata (git tag / commit / build time). |
 | `BalanceQueryProvider` | 电费 / 空调余额状态管理，支持多房间绑定切换. |
 | `CcylProvider` | 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`. |
 | `TrainProgramProvider` | 培养方案查询；管理学院/年级/方案列表 + 详情加载状态. |
 | `PlanCompletionProvider` | 培养方案完成度；缓存到 SharedPreferences，处理 rate-limit 错误. |
-| `ExportScheduleProvider` | 课表导出（剪贴板 JSON / .ics 文件 / 系统日历）. |
-| `SecureStorageProvider` | `FlutterSecureStorage` 单例封装. |
+| `ExportScheduleProvider` | 课表导出（剪贴板 JSON / .ics 文件 / 通过 .ics 间接导入系统日历）. |
+| `SecureStorageProvider` (`lib/utils/secure_storage.dart`) | `FlutterSecureStorage` 单例封装. |
 
 ### Key Patterns
 
@@ -300,7 +300,7 @@ The auto-changelog flow:
 - `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) — 监听 `ScuAuth.onSessionExpired`,全局弹 SnackBar 带「前往登录」action (5 秒防抖).
 - 成绩刷新失败但 `sessionExpired` 时保留 SharedPreferences 缓存,并登出用户.
 - CI 顺序: `build_runner` (代码生成) → `flutter gen-l10n` (代码生成) → `flutter build` —— 代码生成必须先于本地化生成.
-- `DatabaseService` 含 Hive → SQLite 迁移路径 (给老用户升级用).
+
 - 自动登录失败最多重试 5 次,使用 TFLite OCR 识别验证码.
 - 桌面端(`isDesktopPlatform = Windows || Linux || macOS`) 在 `main.dart` 中初始化 `sqflite_common_ffi`、恢复窗口状态、清理旧的安装包.
 - Pre-commit hook (`.githooks/pre-commit`) 对暂存 `.dart` 文件执行 `dart format`. 克隆后需手动链接/复制到 `.git/hooks/`(详见 `CONTRIBUTING.md`).
@@ -322,7 +322,7 @@ The auto-changelog flow:
 - 项目使用 SM2 (`dart_sm`) 加密登录密码再发送到 SCU 统一身份认证. **不要**在日志中打印加密后的密码或访问 token.
 - 凭据(access token、CCYL OAuth token、保存的账号密码)统一存到 `FlutterSecureStorage`,**不要**改用 SharedPreferences.
 - 用户敏感信息(学号、姓名等)在某些查询页默认隐藏,展示前请尊重 `set_privacy_*` 类的设置开关(详见 `CHANGELOG.md` 中 1.1.1 "部分查询页隐藏隐私信息").
-- `CHANGELOG.md` 1.1.0 中提到的"单一认证节点无法使用导致全部功能无法使用"已被修复 —— 新增节点时务必保留单点失败隔离(L2 Auth 失败不应阻塞 L2 兄弟模块).
+- `CHANGELOG.md` 1.1.0 中提到的"单一认证节点无法使用导致全部功能无法使用"已被修复 —— 新增节点时务必保留单点失败隔离(L2 Auth 间通过依赖图表达关系——同级无依赖的模块可并行互不阻塞；但 PayAppAuth 依赖 WfwAuth，若 WfwAuth 失败 PayAppAuth 也会失败).
 - EULA 文本位于 `assets/eula.md` 与 `lib/widgets/eula_content.dart`,版本号定义在两处 — 修改后请同步并通过 `AppConfigProvider.acceptedEulaVersion` 强制老用户重新接受.
 - Android keystore 仅在 CI 从 `secrets.KEYSTORE_BASE64` 解码,本地仓库里的 `upload-keystore.jks` 文件**请勿提交真实生产凭据**.
 - 桌面端 `assets/scripts/update.{bat,sh}` 在更新流程中执行 — 修改时注意命令注入.
