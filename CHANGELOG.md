@@ -19,9 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 升级对话框不可滚动的问题
 - 课程卡片中较长的地点文本允许完整换行，并调整小字号
+- 修复校园网页面冷启动显示网络错误的问题
 
 ### Changed
 - 底层统一加载错误组件，提供更一致的效果
+- 优化窄屏课表地点显示
 
 ## [2.0.1] - 2026-06-15
 

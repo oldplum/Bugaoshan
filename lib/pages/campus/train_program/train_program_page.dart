@@ -494,12 +494,16 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
         ),
         title: Text(plainName, style: Theme.of(context).textTheme.bodyMedium),
         dense: true,
-        onTap: () => _showCourseDetail(context, node.urlPath),
+        onTap: () => _showCourseDetail(context, node.urlPath, plainName),
       );
     }
   }
 
-  void _showCourseDetail(BuildContext context, String urlPath) {
+  void _showCourseDetail(
+    BuildContext context,
+    String urlPath,
+    String? fallbackName,
+  ) {
     _provider.fetchCourseDetail(urlPath);
     showModalBottomSheet(
       context: context,
@@ -535,6 +539,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                       child: _buildCourseDetailContent(
                         context,
                         scrollController,
+                        fallbackName,
                       ),
                     ),
                   ],
@@ -550,6 +555,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
   Widget _buildCourseDetailContent(
     BuildContext context,
     ScrollController scrollController,
+    String? fallbackName,
   ) {
     return switch (_provider.courseDetailState) {
       TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
@@ -561,6 +567,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       TrainProgramLoadState.loaded => _buildCourseDetailLoaded(
         context,
         scrollController,
+        fallbackName,
       ),
     };
   }
@@ -568,6 +575,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
   Widget _buildCourseDetailLoaded(
     BuildContext context,
     ScrollController scrollController,
+    String? fallbackName,
   ) {
     final l10n = AppLocalizations.of(context)!;
     final detail = _provider.currentCourseDetail!;
@@ -584,7 +592,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             children: [
               Expanded(
                 child: Text(
-                  kc.kcm,
+                  kc.kcm == '' ? fallbackName ?? '' : kc.kcm,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
