@@ -291,6 +291,17 @@ class ScoreCardWidget extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  if (item.englishCourseName != null &&
+                      item.englishCourseName!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        item.englishCourseName!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 4),
                   Row(
                     children: [

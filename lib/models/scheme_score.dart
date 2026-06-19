@@ -1,5 +1,6 @@
 class SchemeScoreItem {
   final String courseName;
+  final String? englishCourseName;
   final String courseAttributeName; // 必修/选修/任选
   final String credit;
   final String cj; // 原始成绩
@@ -13,6 +14,7 @@ class SchemeScoreItem {
 
   const SchemeScoreItem({
     required this.courseName,
+    this.englishCourseName,
     required this.courseAttributeName,
     required this.credit,
     required this.cj,
@@ -32,6 +34,7 @@ class SchemeScoreItem {
         (json['gradePointScore'] as num?)?.toDouble() ?? 0.0;
     return SchemeScoreItem(
       courseName: json['courseName']?.toString() ?? '',
+      englishCourseName: json['englishCourseName']?.toString(),
       courseAttributeName: json['courseAttributeName']?.toString() ?? '',
       credit: json['credit']?.toString() ?? '0',
       cj: json['cj']?.toString() ?? '',
